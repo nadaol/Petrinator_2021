@@ -43,6 +43,7 @@ public class SupervisionAction extends AbstractAction
     private Root root;
     private JDialog guiDialog;
     private ButtonBar analizeButton;
+    private ButtonBar superviseButton;
 
     public SupervisionAction(Root root)
     {
@@ -59,8 +60,10 @@ public class SupervisionAction extends AbstractAction
         results = new ResultsHTMLPane("");
         contentPane.add(results);
 
-        analizeButton = new ButtonBar("Analize", new ClassifyListener(), guiDialog.getRootPane());
+        analizeButton = new ButtonBar("Analyse", new ClassifyListener(), guiDialog.getRootPane());
+        superviseButton = new ButtonBar("Add Supervisor/s", new ClassifyListener(), guiDialog.getRootPane());
         contentPane.add(analizeButton);
+        contentPane.add(superviseButton);
     }
 
     public void actionPerformed(ActionEvent e)
@@ -99,20 +102,25 @@ public class SupervisionAction extends AbstractAction
             String s = "<h2>Petri Net Classification</h2>";
 
             try {
-
-
                 /*
                  * Information for boundedness, safeness and deadlock
                  */
                 CRTree statesTree = new CRTree(root, root.getCurrentMarking().getMarkingAsArray()[Marking.CURRENT]);
 
-                s += "<h3>Mathematical Properties</h3>";
+                s += "<h3>Deadlock and S3PR analysis</h3>";
 
+                boolean S3PR = statesTree.hasDeadlock();
+                boolean Deadlock = statesTree.hasDeadlock();
+
+                if(!(Deadlock && S3PR))
+                {
+                    String title = String.format( "The net is not compatible with a deadlock supervision ,the net has to be S3PR and have a deadlock\n"+"S3PR: "+S3PR+"\nDeadlock"+Deadlock);
+                    JOptionPane.showMessageDialog(null,title, "Error", JOptionPane.ERROR_MESSAGE, null);
+                }
                 String[] treeInfo = new String[]{
                         "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",
-                        "Bounded", "" + statesTree.isBounded(),
-                        "Safe", "" + statesTree.isSafe(),
-                        "Deadlock", "" + statesTree.hasDeadlock()
+                        "S3PR", "" + Deadlock,        // ----------------------  ADD S3PR CLASSIFICATION
+                        "Deadlock", "" + S3PR
                 };
 
                 s += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
@@ -123,26 +131,7 @@ public class SupervisionAction extends AbstractAction
                     s += "<h3 style=\"margin-top:10px\">Shortest Path to Deadlock</h3>";
                     s += "<div style=\"margin-top:10px; margin-bottom:10px;\">"+statesTree.getShortestPathToDeadlock()+"</div>";
                 }
-
-                s += "<h3 style=\"margin-top:20px\">Petri Net Types</h3>";
-
-                String[] petriInfo = new String[]{
-                        "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",
-                        "State Machine", "" + stateMachine(root.getDocument().getPetriNet()),
-                        "Marked Graph", "" + markedGraph(root.getDocument().getPetriNet()),
-                        "Free Choice Net", "" + freeChoiceNet(root.getDocument().getPetriNet()),
-                        "Extended FCN", "" + extendedFreeChoiceNet(root.getDocument().getPetriNet()),
-                        "Simple Net", "" + simpleNet(root.getDocument().getPetriNet()),
-                        "Extended SN", "" + extendedSimpleNet(root.getDocument().getPetriNet()),
-                        "Bounded", "" + statesTree.isBounded(),
-                        "Safe", "" + statesTree.isSafe(),
-                        "Deadlock", "" + statesTree.hasDeadlock()
-                };
-
-                s += ResultsHTMLPane.makeTable(petriInfo, 2, false, true, false, true);
-
                 results.setEnabled(true);
-
             }
             catch(OutOfMemoryError e)
             {
