@@ -76,11 +76,23 @@ public class SupervisionAction extends AbstractAction
 
         // Enables classify button
         analizeButton.setButtonsEnabled(true);
+        superviseButton.setButtonsEnabled(false);
 
         // Shows initial pane
         guiDialog.pack();
         guiDialog.setLocationRelativeTo(root.getParentFrame());
         guiDialog.setVisible(true);
+    }
+
+    /*
+        ANALISYS & EXPORT
+
+     */
+
+    public void Runanalysis()
+    {
+
+
     }
 
     /**
@@ -99,7 +111,7 @@ public class SupervisionAction extends AbstractAction
 
             analizeButton.setButtonsEnabled(false);
 
-            String s = "<h2>Petri Net Classification</h2>";
+            String s = "<h2>Deadlock and S3PR analysis</h2>";
 
             try {
                 /*
@@ -107,16 +119,23 @@ public class SupervisionAction extends AbstractAction
                  */
                 CRTree statesTree = new CRTree(root, root.getCurrentMarking().getMarkingAsArray()[Marking.CURRENT]);
 
-                s += "<h3>Deadlock and S3PR analysis</h3>";
-
                 boolean S3PR = statesTree.hasDeadlock();
                 boolean Deadlock = statesTree.hasDeadlock();
 
                 if(!(Deadlock && S3PR))
                 {
-                    String title = String.format( "The net is not compatible with a deadlock supervision ,the net has to be S3PR and have a deadlock\n"+"S3PR: "+S3PR+"\nDeadlock"+Deadlock);
-                    JOptionPane.showMessageDialog(null,title, "Error", JOptionPane.ERROR_MESSAGE, null);
+                    s+="The net is not compatible with a deadlock supervision ,the net has to be S3PR and have a deadlock";
+                    String[] treeInfo = new String[]{
+                            "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",
+                            "S3PR", "" + Deadlock,        // ----------------------  ADD S3PR CLASSIFICATION
+                            "Deadlock", "" + S3PR
+                    };
+                    s += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
+                    results.setEnabled(true);
+                    results.setText(s);
+                    return;
                 }
+                superviseButton.setButtonsEnabled(true);
                 String[] treeInfo = new String[]{
                         "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",
                         "S3PR", "" + Deadlock,        // ----------------------  ADD S3PR CLASSIFICATION
@@ -124,6 +143,7 @@ public class SupervisionAction extends AbstractAction
                 };
 
                 s += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
+
 
 
                 if(statesTree.hasDeadlock())
