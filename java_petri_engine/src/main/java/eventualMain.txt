@@ -1,0 +1,91 @@
+package org.unc.lac.javapetriconcurrencymonitor.monitor;
+
+import org.unc.lac.javapetriconcurrencymonitor.errors.IllegalTransitionFiringError;
+import org.unc.lac.javapetriconcurrencymonitor.exceptions.NotInitializedPetriNetException;
+import org.unc.lac.javapetriconcurrencymonitor.exceptions.PetriNetException;
+import org.unc.lac.javapetriconcurrencymonitor.monitor.policies.FirstInLinePolicy;
+import org.unc.lac.javapetriconcurrencymonitor.monitor.policies.TransitionsPolicy;
+import org.unc.lac.javapetriconcurrencymonitor.petrinets.*;
+import org.unc.lac.javapetriconcurrencymonitor.petrinets.factory.PetriNetFactory;
+import org.unc.lac.javapetriconcurrencymonitor.petrinets.factory.PetriNetFactory.petriNetType;
+
+public class Main 
+{
+
+	public static void main(String[] args) 
+	{
+		setUp();
+		System.out.println("Holis");
+	}
+	
+	public static void setUp() 
+	{
+		  PetriNetFactory factory = new PetriNetFactory("C:/Users/Envy/net.pnml");
+		  RootPetriNet petri =  factory.makePetriNet(petriNetType.PLACE_TRANSITION);
+		  TransitionsPolicy policy = new FirstInLinePolicy();
+		  PetriMonitor monitor = new PetriMonitor(petri, policy);
+
+		  // generate my worker threads here
+		  
+		  Thread worker1 = new Thread( new Runnable() {
+			  @Override
+			  public void run() {
+			    try {
+			      // non-exlusive tasks
+			      monitor.fireTransition("t0");
+			      // do some other task
+			      // maybe fire another transition if needed
+			    } catch (IllegalArgumentException | NotInitializedPetriNetException e) {
+			      // handle the exceptions
+			    } catch (IllegalTransitionFiringError e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (PetriNetException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			  }
+			});
+			worker1.start();
+			
+			 Thread worker2 = new Thread( new Runnable() {
+				  @Override
+				  public void run() {
+				    try {
+				      // non-exlusive tasks
+				      monitor.fireTransition("t2");
+				      // do some other task
+				      // maybe fire another transition if needed
+				    } catch (IllegalArgumentException | NotInitializedPetriNetException e) {
+				      // handle the exceptions
+				    } catch (IllegalTransitionFiringError e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (PetriNetException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				  }
+				});
+				//worker2.start();
+
+		  petri.initializePetriNet(); // never forget to initialize the petri net before using it
+
+		  // launch my worker threads here
+
+		  // do something in the main thread or lock waiting for worker threads to finish
+		  // for example, print the petri net current marking every 5 seconds
+
+		  while(true)
+		  {
+		    try
+		    {
+		      Integer [] marking = petri.getCurrentMarking();
+		      for(int i = 0; i < marking.length; i++)
+		    	  System.out.print(marking[i] + "  ");
+		      System.out.println("");
+		      Thread.sleep(5000);
+		    } catch (InterruptedException e){}
+		  }
+	}
+}
