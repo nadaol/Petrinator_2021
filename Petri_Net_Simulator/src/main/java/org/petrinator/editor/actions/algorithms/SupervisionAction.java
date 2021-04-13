@@ -26,13 +26,18 @@ import org.petrinator.editor.actions.algorithms.reachability.CRTree;
 import org.petrinator.petrinet.*;
 import org.petrinator.util.GraphicsTools;
 import pipe.gui.widgets.ButtonBar;
+import pipe.gui.widgets.FileBrowser;
 import pipe.gui.widgets.ResultsHTMLPane;
+import pipe.utilities.math.Matrix;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Set;
 
 
@@ -88,13 +93,95 @@ public class SupervisionAction extends AbstractAction
         ANALISYS & EXPORT
 
      */
-
     public void Runanalysis()
     {
-
+        //JOptionPane.showMessageDialog(null, "llego al run alanisis", "Error", JOptionPane.ERROR_MESSAGE, null);
+        invariantAnalysis();
 
     }
+    /*
+        INVARIANT ANALYSIS
+     */
+    public void invariantAnalysis()
+    {
+        //PetriNetView sourceDataLayer = new PetriNetView("tmp/tmp.pnml");
+        Matrix _incidenceMatrix;
+        _incidenceMatrix = new Matrix(root.getDocument().getPetriNet().getIncidenceMatrix());
+        //System.out.println(_incidenceMatrix);
+        String s = "<h2>Petri Net Invariant Analysis</h2>";
 
+        if(!root.getDocument().getPetriNet().getRootSubnet().hasPlaces() || !root.getDocument().getPetriNet().getRootSubnet().hasTransitions())
+        {
+            s += "Invalid net!";
+        }
+        else
+        {
+            try
+            {
+
+                //PNMLWriter.saveTemporaryFile(sourceDataLayer,this.getClass().getName());
+                s += InvariantAction.analyse();
+                results.setEnabled(false);
+            }
+            catch(OutOfMemoryError oome)
+            {
+                System.gc();
+                results.setText("");
+                s = "Memory error: " + oome.getMessage();
+
+                s += "<br>Not enough memory. Please use a larger heap size." + "<br>" + "<br>Note:" + "<br>The Java heap size can be specified with the -Xmx option." + "<br>E.g., to use 512MB as heap size, the command line looks like this:" + "<br>java -Xmx512m -classpath ...\n";
+                results.setText(s);
+                return;
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
+                s = "<br>Error" + e.getMessage();
+                results.setText(s);
+                return;
+            }
+        }
+        results.setText(s);
+        SaveHTML("inv");
+    }
+    /*
+        SAVE AS HTML
+     */
+    public void SaveHTML(String name)
+    {
+        try
+        {
+            /*
+            File defaultPath = new File(".");
+            FileBrowser fileBrowser = new FileBrowser("HTML file", "html", defaultPath.getPath());
+            String destFN = fileBrowser.saveFile();
+            if(!destFN.toLowerCase().endsWith(".html"))
+            {
+                destFN += ".html";
+            }*/
+            String path= new File (".").getCanonicalPath()+
+                    "/Modulos/Deadlock-supervisor/tmp/"+ name +".html";
+
+            FileWriter writer = new FileWriter(new File(path));
+            String output = "<html><head><style type=\"text/css\">" +
+                    "body{font-family:Arial,Helvetica,sans-serif;" +
+                    "text-align:center;background:#ffffff}" +
+                    "td.colhead{font-weight:bold;text-align:center;" +
+                    "background:#ffffff}" +
+                    "td.rowhead{font-weight:bold;background:#ffffff}" +
+                    "td.cell{text-align:center;padding:5px,0}" +
+                    "tr.even{background:#a0a0d0}" +
+                    "tr.odd{background:#c0c0f0}" +
+                    "td.empty{background:#ffffff}" +
+                    "</style>" + results.getText();
+            writer.write(output);
+            writer.close();
+        }
+        catch(Exception e)
+        {
+            System.out.println("Error saving HTML to file");
+        }
+    }
     /**
      * Classify button click handler
      */
@@ -152,6 +239,7 @@ public class SupervisionAction extends AbstractAction
                     s += "<div style=\"margin-top:10px; margin-bottom:10px;\">"+statesTree.getShortestPathToDeadlock()+"</div>";
                 }
                 results.setEnabled(true);
+                Runanalysis();
             }
             catch(OutOfMemoryError e)
             {
@@ -355,5 +443,7 @@ public class SupervisionAction extends AbstractAction
 
         return true;
     }
-
+    /*
+    FUNCIONES DUPLICADAS DE InvariantAction
+     */
 }
