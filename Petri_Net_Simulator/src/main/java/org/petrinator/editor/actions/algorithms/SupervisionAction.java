@@ -49,6 +49,7 @@ public class SupervisionAction extends AbstractAction
     private JDialog guiDialog;
     private ButtonBar analizeButton;
     private ButtonBar superviseButton;
+    InvariantAction accion;
 
     public SupervisionAction(Root root)
     {
@@ -69,6 +70,9 @@ public class SupervisionAction extends AbstractAction
         superviseButton = new ButtonBar("Add Supervisor/s", new ClassifyListener(), guiDialog.getRootPane());
         contentPane.add(analizeButton);
         contentPane.add(superviseButton);
+        //creo un objeto de invariantes
+        accion = new InvariantAction(this.root);
+
     }
 
     public void actionPerformed(ActionEvent e)
@@ -105,9 +109,8 @@ public class SupervisionAction extends AbstractAction
     public void invariantAnalysis()
     {
         //PetriNetView sourceDataLayer = new PetriNetView("tmp/tmp.pnml");
-        Matrix _incidenceMatrix;
-        _incidenceMatrix = new Matrix(root.getDocument().getPetriNet().getIncidenceMatrix());
-        //System.out.println(_incidenceMatrix);
+        accion._incidenceMatrix = new Matrix(root.getDocument().getPetriNet().getIncidenceMatrix());;
+        accion._incidenceMatrix.print(0,0);
         String s = "<h2>Petri Net Invariant Analysis</h2>";
 
         if(!root.getDocument().getPetriNet().getRootSubnet().hasPlaces() || !root.getDocument().getPetriNet().getRootSubnet().hasTransitions())
@@ -120,7 +123,7 @@ public class SupervisionAction extends AbstractAction
             {
 
                 //PNMLWriter.saveTemporaryFile(sourceDataLayer,this.getClass().getName());
-                s += InvariantAction.analyse();
+                s += accion.analyse();
                 results.setEnabled(false);
             }
             catch(OutOfMemoryError oome)

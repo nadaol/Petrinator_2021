@@ -42,11 +42,11 @@ import java.util.Date;
  */
 public class InvariantAction extends AbstractAction
 {
-    private static Root root;
+    private Root root;
     //private PetriNetView _pnmlData; // A reference to the Petri Net to be analysed
-    private static Matrix _incidenceMatrix;
-    private static Matrix _PInvariants;
-    private static ResultsHTMLPane results;
+    public Matrix _incidenceMatrix;
+    public Matrix _PInvariants;
+    public ResultsHTMLPane results;
 
     public InvariantAction(Root root)
     {
@@ -143,7 +143,7 @@ public class InvariantAction extends AbstractAction
      * @author Nadeem Akharware
      * @return html information to write to panel
      */
-    public static String analyse()
+    public String analyse()
     {
         Date start_time = new Date(); // start timer for program execution
         // extract data from PN object
@@ -164,7 +164,7 @@ public class InvariantAction extends AbstractAction
      *         Invariants or "None" in place of one of the matrices if it does
      *         not exist.
      */
-    public static String findNetInvariants(int[] M)
+    public String findNetInvariants(int[] M)
     {
         return reportTInvariants(M) + "<br>" + reportPInvariants(M) + "<br>";
     }
@@ -176,7 +176,7 @@ public class InvariantAction extends AbstractAction
      * @return A string containing the resulting matrix of P Invariants,
      *         the P equations and some analysis
      */
-    public static String reportPInvariants(int[] M)
+    public String reportPInvariants(int[] M)
     {
         _PInvariants = findVectors(_incidenceMatrix.transpose());
         String result = "<h3>P-Invariants</h3>";
@@ -203,7 +203,7 @@ public class InvariantAction extends AbstractAction
      * @return A string containing the resulting matrix of T Invariants and
      *         some analysis of it
      */
-    public static String reportTInvariants(int[] M)
+    public String reportTInvariants(int[] M)
     {
         Matrix TInvariants = findVectors(_incidenceMatrix);
 
@@ -289,7 +289,7 @@ public class InvariantAction extends AbstractAction
      * @return A string containing the resulting P equations,
      *         empty string if the equations do not exist.
      */
-    public static String findPEquations(int[] currentMarking)
+    public String findPEquations(int[] currentMarking)
     {
         ArrayList<String> placeNames = root.getDocument().getPetriNet().getSortedPlacesNames();
         String eq = "<h3>P-Invariant equations</h3>";
@@ -340,7 +340,7 @@ public class InvariantAction extends AbstractAction
      * @param c The matrix to transform.
      * @return A matrix containing the vectors.
      */
-    public static Matrix findVectors(Matrix c)
+    public Matrix findVectors(Matrix c)
     {
         /*
        | Tests Invariant Analysis IModule
@@ -594,7 +594,7 @@ public class InvariantAction extends AbstractAction
      * @param pSet The set count the number of non-zero elements.
      * @return The number of non-zero elements.
      */
-    public static int effectiveSetLength(int[] pSet)
+    public int effectiveSetLength(int[] pSet)
     {
         int effectiveLength = 0; // number of non-zero elements
         //int setLength = pSet.length;
@@ -618,7 +618,7 @@ public class InvariantAction extends AbstractAction
      * @param j The column indices of the remaining coefficients
      * @return The adjusted alpha coefficients
      */
-    public static int[] alphaCoef(int k, int[] j)
+    public int[] alphaCoef(int k, int[] j)
     {
         int n = j.length; // the length of one row
         int[] alpha = new int[n];
@@ -646,7 +646,7 @@ public class InvariantAction extends AbstractAction
      * @param n   The length of one row
      * @return The adjusted beta coefficients
      */
-    public static int[] betaCoef(int chk, int n)
+    public int[] betaCoef(int chk, int n)
     {
         int[] beta = new int[n];
         int abschk = Math.abs(chk);
@@ -658,7 +658,7 @@ public class InvariantAction extends AbstractAction
         return beta;
     }
 
-    public static void resetArray(int[] a)
+    public void resetArray(int[] a)
     {
         for(int i = 0; i < a.length; i++)
             a[i] = 0;
@@ -675,7 +675,7 @@ public class InvariantAction extends AbstractAction
      * @param B The second set to unite.
      * @return The union of the two input sets.
      */
-    public static int[] uniteSets(int[] A, int[] B)
+    public int[] uniteSets(int[] A, int[] B)
     {
         int[] union = new int[A.length];
 
@@ -696,7 +696,7 @@ public class InvariantAction extends AbstractAction
      * @param pSet The set to check if it is empty.
      * @return True if the set is empty.
      */
-    public static boolean isEmptySet(int[] pSet)
+    public boolean isEmptySet(int[] pSet)
     {
         int setLength = pSet.length;
 
@@ -711,7 +711,7 @@ public class InvariantAction extends AbstractAction
     }
 
     //TODO view if we should update the ResultsHTMLPane class or keep here
-    public static String makeTable(Matrix matrix, ArrayList<String> name, boolean showLines, boolean doShading, boolean columnHeaders, boolean rowHeaders) {
+    public String makeTable(Matrix matrix, ArrayList<String> name, boolean showLines, boolean doShading, boolean columnHeaders, boolean rowHeaders) {
         int cols = name.size();
         int[] k = matrix.getColumnPackedCopy();
         StringBuilder s = new StringBuilder();
