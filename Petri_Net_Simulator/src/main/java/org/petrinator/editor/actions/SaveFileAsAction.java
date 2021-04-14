@@ -49,7 +49,8 @@ public class SaveFileAsAction extends AbstractAction {
         putValue(SHORT_DESCRIPTION, name);
     }
 
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent e)
+    {
         FileChooserDialog chooser = new FileChooserDialog();
 
         if (root.getCurrentFile() != null) {

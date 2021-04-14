@@ -22,11 +22,9 @@
 package org.petrinator.editor.actions.algorithms;
 
 import org.petrinator.editor.Root;
+import org.petrinator.editor.actions.SaveFileAsAction;
 import org.petrinator.editor.actions.algorithms.reachability.CRTree;
-import org.petrinator.editor.filechooser.FileChooserDialog;
-import org.petrinator.editor.filechooser.FileType;
-import org.petrinator.editor.filechooser.FileTypeException;
-import org.petrinator.editor.filechooser.PipePnmlFileType;
+import org.petrinator.editor.filechooser.*;
 import org.petrinator.petrinet.*;
 import org.petrinator.util.GraphicsTools;
 import pipe.gui.widgets.ButtonBar;
@@ -42,9 +40,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileWriter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Set;
+import java.io.IOException;
+import java.util.*;
+import java.util.List;
 
 
 public class SupervisionAction extends AbstractAction
@@ -116,6 +114,28 @@ public class SupervisionAction extends AbstractAction
         matricesAnalysis();
         coverabilityAnalysis();
         sifonnalysis();
+        saveNet();
+    }
+    public void saveNet() {
+
+        FileChooserDialog chooser = new FileChooserDialog();
+        chooser.setVisible(false);
+        chooser.setAcceptAllFileFilterUsed(false);
+
+        String pathNet = null;
+        try {
+            pathNet = pathNet = new File(".").getCanonicalPath() +
+                        "/Modulos/Deadlock-supervisor/tmp/net.pflow";
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        File file = new File(pathNet);
+        FileType chosenFileType = (FileType) new PflowFileType();
+        try {
+            chosenFileType.save(root.getDocument(), file);
+        } catch (FileTypeException ex) {
+            JOptionPane.showMessageDialog(root.getParentFrame(), ex.getMessage());
+        }
     }
     /*
      SIFON ANALYSIS
@@ -459,182 +479,4 @@ public class SupervisionAction extends AbstractAction
 
         }
     };
-
-
-    /**
-     * State machine detection
-     *
-     * @return true if and only if all transitions have at most one input or output
-     */
-    private boolean stateMachine(PetriNet petriNet)
-    {
-        ArrayList<Node> sortedTransitions = petriNet.getSortedTransitions();
-
-        for (Node transition : sortedTransitions) {
-
-            if (transition.getConnectedArcsToNode().size() > 1 || transition.getConnectedArcsFromNode().size() > 1) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Marked graph detection
-     *
-     * @return true if and only if all places have at most one input or output
-     */
-    private boolean markedGraph(PetriNet petriNet)
-    {
-
-        ArrayList<Node> sortedPlaces = petriNet.getSortedPlaces();
-
-        for (Node place : sortedPlaces) {
-
-            if(place.getConnectedArcsToNode().size() > 1 || place.getConnectedArcsFromNode().size() > 1){
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Free choice net detection
-     *
-     * @return true iff no places' outputs go to the same transition, unless those places both have only one output
-     */
-    private boolean freeChoiceNet(PetriNet petriNet)
-    {
-        ArrayList<Node> sortedTransitions = petriNet.getSortedTransitions();
-
-        for (Node transition: sortedTransitions) {
-
-            Set<Node> inputPlaces = transition.getInputNodes();
-
-            if(inputPlaces.size() > 1){
-
-                for(Node place: inputPlaces){
-                    if(place.getConnectedArcsFromNode().size() > 1){
-                        return false;
-                    }
-                }
-            }
-
-
-        }
-
-        return true;
-    }
-
-    /**
-     * Extended free choice net detection
-     *
-     * @return true iff no places' outputs go to the same transition, unless both places outputs are identical
-     */
-    private boolean extendedFreeChoiceNet(PetriNet petriNet)
-    {
-
-        ArrayList<Node> sortedTransitions = petriNet.getSortedTransitions();
-
-        for (Node transition: sortedTransitions) {
-
-            Set<Node> inputPlaces = transition.getInputNodes();
-            Set<Node> previousOutputs = null;
-
-            if(inputPlaces.size() > 1){
-
-                for(Node place: inputPlaces){
-
-                    if(previousOutputs != null){
-                        if(!previousOutputs.containsAll(place.getOutputNodes())){
-                            return false;
-                        }
-                    }
-                    else {
-                        previousOutputs = place.getOutputNodes();
-                    }
-
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Simple net (SPL-net) detection
-     *
-     * @return true iff no places' outputs go to the same transition, unless one of the places only has one output
-     */
-    private boolean simpleNet(PetriNet petriNet)
-    {
-
-        ArrayList<Node> transitions = petriNet.getSortedTransitions();
-
-        for(Node trans : transitions){
-            boolean t_simple = false;
-            Set<Node> inputs = trans.getInputNodes();
-            if(inputs.size() == 1) //en el caso que la transicion tenga una sola entrada, es una simpleNet
-            {
-                t_simple = true;
-            }
-            for(Node n : inputs){
-                int outputs = n.getOutputNodes().size();
-                if(outputs == 1)
-                    t_simple = true;
-            }
-            if(!t_simple){
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Extended simple net (ESPL-net) detection
-     *
-     * @return true iff no places' outputs go to the same transition, unless one of the places' outputs is a subset of or equal to the other's
-     */
-    private boolean extendedSimpleNet(PetriNet petriNet)
-    {
-
-        ArrayList<Node> sortedTransitions = petriNet.getSortedTransitions();
-
-        for (Node transition: sortedTransitions) {
-
-            Set<Node> inputPlaces = transition.getInputNodes();
-            ArrayList<Set<Node>> placesOutputs = new ArrayList<>();
-
-            if(inputPlaces.size() > 1){
-
-                for(Node place: inputPlaces){
-                    placesOutputs.add(place.getOutputNodes());
-                }
-
-
-                int largest = 0;
-                int index = 0;
-
-                for(int i=0; i<placesOutputs.size(); i++){
-                    if(placesOutputs.get(i).size() > largest){
-                        largest = placesOutputs.get(i).size();
-                        index = i;
-                    }
-                }
-
-                for (Set<Node> placesOutput : placesOutputs) {
-                    if (!placesOutputs.get(index).containsAll(placesOutput)) {
-                        return false;
-                    }
-                }
-
-            }
-        }
-
-        return true;
-    }
-    /*
-    FUNCIONES DUPLICADAS DE InvariantAction
-     */
 }
