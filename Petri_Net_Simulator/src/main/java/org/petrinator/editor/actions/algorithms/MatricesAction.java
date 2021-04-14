@@ -231,7 +231,7 @@ public class MatricesAction extends AbstractAction
      * @param pnames arraylist with the net's places names
      * @param tnames arraylist with the net's transitions names
      */
-    private String renderMatrix(ArrayList<String> pnames, ArrayList<String> tnames, int[][] matrix) {
+    public String renderMatrix(ArrayList<String> pnames, ArrayList<String> tnames, int[][] matrix) {
 
         if((matrix.length == 0) || (matrix[0].length == 0))
         {
@@ -266,7 +266,7 @@ public class MatricesAction extends AbstractAction
      * @param pnames arraylist with the net's places names
      * @param doc current Document
      */
-    private String renderMarkingMatrices(ArrayList<String> pnames, Document doc) {
+    public String renderMarkingMatrices(ArrayList<String> pnames, Document doc) {
 
         Marking mark = doc.getPetriNet().getInitialMarking();
         int markingMatrix [][] =  mark.getMarkingAsArray();
@@ -304,7 +304,7 @@ public class MatricesAction extends AbstractAction
      * @param sortedNames array list with the transitions labels
      * @param doc current Document
      */
-    private String renderTransitionStates(ArrayList<String> sortedNames, Document doc) {
+    public String renderTransitionStates(ArrayList<String> sortedNames, Document doc) {
 
         ArrayList<Transition> enabledArray = new ArrayList<Transition>(doc.getPetriNet().getInitialMarking().getAllEnabledTransitions());
         ArrayList<String> enabledNamesArray = new ArrayList<>();

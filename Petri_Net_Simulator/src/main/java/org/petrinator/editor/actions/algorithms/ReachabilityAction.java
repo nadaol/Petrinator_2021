@@ -58,7 +58,7 @@ public class ReachabilityAction extends AbstractAction
     private ButtonBar graphGenerate;
     private ButtonBar calculateButton;
 
-    private ArrayList<Integer>[][] reachMatrix;
+    public ArrayList<Integer>[][] reachMatrix;
 
     public ReachabilityAction(Root root) {
         this.root = root;
