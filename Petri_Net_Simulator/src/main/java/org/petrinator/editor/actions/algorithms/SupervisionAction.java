@@ -34,21 +34,26 @@ import pipe.modules.minimalSiphons.MinimalSiphons;
 import pipe.utilities.math.Matrix;
 import pipe.views.PetriNetView;
 
+
 import javax.swing.*;
 import java.awt.*;
+import java.util.*;
+import java.net.*;
+import java.lang.*;
+import java.io.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
-import java.util.List;
+import  java.util.Scanner;
 
 
 public class SupervisionAction extends AbstractAction
 {
     private static final String MODULE_NAME = "Deadlock Supervisor";
     private ResultsHTMLPane results;
+    private String sPanel;
     private Root root;
     private JDialog guiDialog;
     private ButtonBar analizeButton;
@@ -71,6 +76,7 @@ public class SupervisionAction extends AbstractAction
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
 
         results = new ResultsHTMLPane("");
+        sPanel = new String();//new
         contentPane.add(results);
 
         analizeButton = new ButtonBar("Analyse", new ClassifyListener(), guiDialog.getRootPane());
@@ -115,6 +121,68 @@ public class SupervisionAction extends AbstractAction
         coverabilityAnalysis();
         sifonnalysis();
         saveNet();
+        socketServer();
+    }
+    public void socketServer()
+    {
+        ServerSocket server = null;
+        int port=0;
+        String Respuesta;
+        String pathCliente;
+        boolean abierto = false;
+        Process proceso = null;
+        Socket cli = null;
+        DataOutputStream outw = null;
+        DataInputStream inw = null;
+
+        try {
+            server = new ServerSocket(0);
+            port = server.getLocalPort();
+            pathCliente = "python " + new File (".").getCanonicalPath()+
+                    "/Modulos/Deadlock-supervisor/"+ "tesis.py " + port;
+            try {
+                proceso = Runtime.getRuntime().exec(pathCliente);
+            } catch ( Exception e) {
+                e.printStackTrace();
+            }
+            //System.out.println (proceso.getOutputStream());
+            System.out.println (pathCliente);
+            cli = server.accept();
+            System.out.println ("acepte");
+            outw = new DataOutputStream(cli.getOutputStream());
+            inw = new DataInputStream(cli.getInputStream());
+            abierto = true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            outw.writeUTF("1");
+            outw.flush();
+            Respuesta =inw.readUTF();
+            System.out.println ("Respuesta:");
+            System.out.println (Respuesta);
+            System.out.println ("sigo con mi vida");
+            String[] treeInfo = new String[]{
+                    Respuesta
+            };
+            sPanel += "<h2>Net Anylisis Results (byPort:"+ Integer.toString(port)+")</h2>";
+            sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
+            results.setText(sPanel);
+            results.setEnabled(true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //cierro sockets y streams
+        try {
+            outw.close();
+            inw.close();
+            server.close();
+            proceso.destroy();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
     public void saveNet() {
 
@@ -409,7 +477,7 @@ public class SupervisionAction extends AbstractAction
 
             analizeButton.setButtonsEnabled(false);
 
-            String s = "<h2>Deadlock and S3PR analysis</h2>";
+            sPanel = "<h2>Deadlock and S3PR analysis</h2>";
 
             try {
                 /*
@@ -422,15 +490,15 @@ public class SupervisionAction extends AbstractAction
 
                 if(!(Deadlock && S3PR))
                 {
-                    s+="The net is not compatible with a deadlock supervision ,the net has to be S3PR and have a deadlock";
+                    sPanel+="The net is not compatible with a deadlock supervision ,the net has to be S3PR and have a deadlock";
                     String[] treeInfo = new String[]{
                             "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",
                             "S3PR", "" + Deadlock,        // ----------------------  ADD S3PR CLASSIFICATION
                             "Deadlock", "" + S3PR
                     };
-                    s += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
-                    results.setEnabled(true);
-                    results.setText(s);
+                    sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
+                    //results.setEnabled(false);
+                    //results.setText(s);
                     return;
                 }
                 superviseButton.setButtonsEnabled(true);
@@ -440,30 +508,23 @@ public class SupervisionAction extends AbstractAction
                         "Deadlock", "" + S3PR
                 };
 
-                s += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
+                sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
 
-
-
-                if(statesTree.hasDeadlock())
-                {
-                    s += "<h3 style=\"margin-top:10px\">Shortest Path to Deadlock</h3>";
-                    s += "<div style=\"margin-top:10px; margin-bottom:10px;\">"+statesTree.getShortestPathToDeadlock()+"</div>";
-                }
-                results.setEnabled(true);
+                //results.setEnabled(false);
                 Runanalysis();
             }
             catch(OutOfMemoryError e)
             {
                 System.gc();
                 results.setText("");
-                s = "Memory error: " + e.getMessage();
+                sPanel = "Memory error: " + e.getMessage();
 
-                s += "<br>Not enough memory. Please use a larger heap size." +
+                sPanel += "<br>Not enough memory. Please use a larger heap size." +
                         "<br>" + "<br>Note:" +
                         "<br>The Java heap size can be specified with the -Xmx option." +
                         "<br>E.g., to use 512MB as heap size, the command line looks like this:" +
                         "<br>java -Xmx512m -classpath ...\n";
-                results.setText(s);
+                results.setText(sPanel);
             }
             catch (StackOverflowError e){
                 results.setText("An error has occurred, the net might have too many states...");
@@ -471,11 +532,11 @@ public class SupervisionAction extends AbstractAction
             catch(Exception e)
             {
                 e.printStackTrace();
-                s = "<br>Error" + e.getMessage();
-                results.setText(s);
+                sPanel = "<br>Error" + e.getMessage();
+                results.setText(sPanel);
             }
 
-            results.setText(s);
+            results.setText(sPanel);
 
         }
     };
