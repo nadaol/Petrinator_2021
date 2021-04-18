@@ -18,6 +18,7 @@
 !*.jar
 !*.pom
 !*.xml
+!*.py
 
 out/artifacts/petrinator_jar/tmp/GSPN_Analysis.html
 !out/artifacts/petrinator_jar/petrinator.jar

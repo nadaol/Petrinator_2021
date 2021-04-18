@@ -130,7 +130,7 @@ public class SupervisionAction extends AbstractAction
         String Respuesta;
         String pathCliente;
         boolean abierto = false;
-        Process proceso = null;
+        //Process proceso = null;
         Socket cli = null;
         DataOutputStream outw = null;
         DataInputStream inw = null;
@@ -138,17 +138,24 @@ public class SupervisionAction extends AbstractAction
         try {
             server = new ServerSocket(0);
             port = server.getLocalPort();
-            pathCliente = "python " + new File (".").getCanonicalPath()+
-                    "/Modulos/Deadlock-supervisor/"+ "tesis.py " + port;
-            try {
-                proceso = Runtime.getRuntime().exec(pathCliente);
-            } catch ( Exception e) {
-                e.printStackTrace();
-            }
-            //System.out.println (proceso.getOutputStream());
-            System.out.println (pathCliente);
+            //obtengo donde se ejecuta pyhton (Linux)
+            Process pathPython = Runtime.getRuntime().exec("which -a python3");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(pathPython.getInputStream()));
+            String StringPathPython = reader.readLine();
+            //System.out.println(StringPathPython);
+            String pathActual = new File(".").getCanonicalPath() +"/Modulos/Deadlock-supervisor/";
+            String pathClientePy = "python" +" " + pathActual + "tesis.py "+port;
+            System.out.println(pathClientePy);
+            //boolean abierto = true;
+            Runtime.getRuntime().exec(pathClientePy);
+            /*version 2
+            ProcessBuilder processBuilder = new ProcessBuilder("/Library/Frameworks/Python.framework/Versions/2.7/bin/python",absolute_file_path));
+            Process process = processBuilder.start();
+            */
             cli = server.accept();
-            System.out.println ("acepte");
+            //System.out.println (proceso.getOutputStream());
+            //System.out.println (pathCliente);
+            //System.out.println ("acepte");
             outw = new DataOutputStream(cli.getOutputStream());
             inw = new DataInputStream(cli.getInputStream());
             abierto = true;
@@ -178,7 +185,6 @@ public class SupervisionAction extends AbstractAction
             outw.close();
             inw.close();
             server.close();
-            proceso.destroy();
         } catch (IOException e) {
             e.printStackTrace();
         }
