@@ -139,9 +139,9 @@ public class SupervisionAction extends AbstractAction
             server = new ServerSocket(0);
             port = server.getLocalPort();
             //obtengo donde se ejecuta pyhton (Linux)
-            Process pathPython = Runtime.getRuntime().exec("which -a python3");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(pathPython.getInputStream()));
-            String StringPathPython = reader.readLine();
+            //Process pathPython = Runtime.getRuntime().exec("which -a python3");
+            //BufferedReader reader = new BufferedReader(new InputStreamReader(pathPython.getInputStream()));
+            //String StringPathPython = reader.readLine();
             //System.out.println(StringPathPython);
             String pathActual = new File(".").getCanonicalPath() +"/Modulos/Deadlock-supervisor/";
             String pathClientePy = "python" +" " + pathActual + "tesis.py "+port;
