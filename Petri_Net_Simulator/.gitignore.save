@@ -1,0 +1,32 @@
+# Ignore everything
+*
+
+# Whitelist subdirectories
+!*/
+!*/Modulos
+
+# Whitelist the following extensions
+!*.java
+!*.gif
+!*.png
+!*.xslt
+!*.xcf
+!.gitignore
+!*.html
+!*.xsl
+!lib/*
+!repo/*
+!*.jar
+!*.pom
+!*.xml
+!*.py
+
+out/artifacts/petrinator_jar/tmp/GSPN_Analysis.html
+!out/artifacts/petrinator_jar/petrinator.jar
+
+# Project exclude paths
+/out/
+
+.idea/
+target/
+!pom.xml
