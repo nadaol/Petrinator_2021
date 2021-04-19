@@ -139,12 +139,12 @@ public class SupervisionAction extends AbstractAction
             server = new ServerSocket(0);
             port = server.getLocalPort();
             //obtengo donde se ejecuta pyhton (Linux)
-            //Process pathPython = Runtime.getRuntime().exec("which -a python3");
-            //BufferedReader reader = new BufferedReader(new InputStreamReader(pathPython.getInputStream()));
-            //String StringPathPython = reader.readLine();
+            Process pathPython = Runtime.getRuntime().exec("which -a python3");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(pathPython.getInputStream()));
+            String StringPathPython = reader.readLine();
             //System.out.println(StringPathPython);
             String pathActual = new File(".").getCanonicalPath() +"/Modulos/Deadlock-supervisor/";
-            String pathClientePy = "python" +" " + pathActual + "tesis.py "+port;
+            String pathClientePy = StringPathPython +" "+ pathActual + "tesis.py "+ port;
             System.out.println(pathClientePy);
             //boolean abierto = true;
             Runtime.getRuntime().exec(pathClientePy);
@@ -169,11 +169,11 @@ public class SupervisionAction extends AbstractAction
             Respuesta =inw.readUTF();
             System.out.println ("Respuesta:");
             System.out.println (Respuesta);
-            System.out.println ("sigo con mi vida");
+            System.out.println ("cerro el socket, sigo la ejecucion");
             String[] treeInfo = new String[]{
                     Respuesta
             };
-            sPanel += "<h2>Net Anylisis Results (byPort:"+ Integer.toString(port)+")</h2>";
+            sPanel += "<h2>Net Anylisis Results</h2>";
             sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
             results.setText(sPanel);
             results.setEnabled(true);

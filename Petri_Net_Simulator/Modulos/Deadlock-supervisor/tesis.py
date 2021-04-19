@@ -24,6 +24,7 @@ import socket as sk
 #Variable globales
 id=0
 name_pflow= ""
+#respuesta =""
 #
 def siphones_traps(cantidad_plazas):
     """ 
@@ -206,6 +207,7 @@ def conflict_t_invariante(t_conflict,t_invariant,matriz_pos,plazas_sifon_complem
         plazas_sifon_complemento    -- Plazas complemento del sifon a controlar
         t_in                        -- Transiciones de entrada al supervisor
     """
+    respuestaTI=""
     for ii in range(0,len(t_conflict)):
         flag_sifon=0
         for jj in range(0,len(t_invariant)):
@@ -220,7 +222,10 @@ def conflict_t_invariante(t_conflict,t_invariant,matriz_pos,plazas_sifon_complem
 
         if(flag_sifon==0):
             print("Transicion input:",int(t_conflict[ii])+1)
+            respuestaTI= "<br>Transicion input: " + str(int(t_conflict[ii])+1)
             t_in.append("T"+str(int(t_conflict[ii])+1))
+    
+    return str(respuestaTI)
 
 
 
@@ -241,7 +246,7 @@ def path_conflict(t_idle,t_analizar,flag_idle,plazas_sifon_complemento,matriz_pr
         t_invariant                 -- T-Invariante
         t_in                        -- Transiciones input al supervisor
     """
-
+    respuestaPC=""
     if(t_idle!=t_analizar or flag_idle==1):
         flag_idle=0
         p_idle=[] #Plaza a las que le pone tokens la transicion
@@ -260,11 +265,12 @@ def path_conflict(t_idle,t_analizar,flag_idle,plazas_sifon_complemento,matriz_pr
                     file_t_conflict_orig.write(str(t_conflict[ij]) + ' ')
                 file_t_conflict_orig.close()
 
-                conflict_t_invariante(t_conflict,t_invariant,matriz_pos,plazas_sifon_complemento,t_in)
+                respuestaPC=conflict_t_invariante(t_conflict,t_invariant,matriz_pos,plazas_sifon_complemento,t_in)
 
             else: #no hay conflicto
-                path_conflict(t_idle,t_conflict[0],flag_idle,plazas_sifon_complemento,matriz_pre,matriz_pos,cantidad_plazas,cantidad_transiciones,t_invariant,t_in)
+                respuestaPC=path_conflict(t_idle,t_conflict[0],flag_idle,plazas_sifon_complemento,matriz_pre,matriz_pos,cantidad_plazas,cantidad_transiciones,t_invariant,t_in)
 
+    return respuestaPC
 
 
 def supervisor(cantidad_transiciones,cantidad_plazas,sifon,matriz_es_tr,matriz_pos,matriz_pre,matriz_sifones,t_invariant,lista_supervisores):
@@ -284,18 +290,22 @@ def supervisor(cantidad_transiciones,cantidad_plazas,sifon,matriz_es_tr,matriz_p
     """
     global id
     print("\nid=", id)
+    respuestaSup= "<br><br>id="+ str(id)
     id=id+1
     trans_idle=[] #Transiciones habilitadas en el marcado inicial
     marcado_supervisor=sifon[2]-1 #Es la posicion 2 debido que el sifon esta declarado estado deadlock[0], numero sifon[1], marcado sifon[2]
     #Marcado del supervisor
     print("Sifon a controlar: ",sifon[1]+1)
+    respuestaSup+= "<br>Sifon a controlar: "+ str(sifon[1]+1)
     plazas_sifon_aux=np.copy(matriz_sifones[sifon[1]])
     sif_aux = []
     for i in range (len(plazas_sifon_aux)): 
         if(plazas_sifon_aux[i] != 0):
             sif_aux.append(f"P{i+1}")
     print("Plazas del Sifon: ",sif_aux)
+    respuestaSup+= "<br>Plazas del Sifon: "+ str(sif_aux)
     print("Marcado del supervisor",marcado_supervisor) 
+    respuestaSup+= "<br>Marcado del supervisor: "+ str(marcado_supervisor)
 
     #Transiciones que salen del estado idle, le quitan tokens a los supervisores
     #estas se encuentran sensibilizadas en el estado inicial (0) y son las transiciones
@@ -306,7 +316,7 @@ def supervisor(cantidad_transiciones,cantidad_plazas,sifon,matriz_es_tr,matriz_p
             trans_idle.append(ii)
             t_out.append("T"+str(ii+1))
             print("Transicion output: ",ii+1) #+1 Por problemas de indice en petrinator empieza en 1
-
+            respuestaSup+= "<br>Transicion output: "+ str(ii+1)
 
     tran_sifon=np.zeros(cantidad_transiciones) #Vector que indica que transiciones sacan/ponen tokens en el sifon
 
@@ -324,6 +334,7 @@ def supervisor(cantidad_transiciones,cantidad_plazas,sifon,matriz_es_tr,matriz_p
     for i in range(0,cantidad_transiciones):
         if(tran_sifon[i]>0): #Si es mayor a 0 significa que esta transicion coloca mas tokens a los sifones de los que le quitan
             print("Transicion input:", i+1) #Petrinator empieza en 1 y no en cero por eso el +1
+            respuestaSup+= "<br>Transicion input: " + str(i+1)
             t_in.append("T"+str(i+1))
     plazas_sifon_complemento=np.copy(plazas_sifon) #Usado para calcular la 3er transicion de Ezpeleta
 
@@ -342,10 +353,10 @@ def supervisor(cantidad_transiciones,cantidad_plazas,sifon,matriz_es_tr,matriz_p
             if(t_invariant[yy][trans_idle[tt]]==1):
                 cont_t_invariante=cont_t_invariante+1
         if(cont_t_invariante>=2):
-            path_conflict(trans_idle[tt],trans_idle[tt],1,plazas_sifon_complemento,matriz_pre,matriz_pos,cantidad_plazas,cantidad_transiciones,t_invariant,t_in) #El 1 indica que es flag_idle
+            respuestaSup+=path_conflict(trans_idle[tt],trans_idle[tt],1,plazas_sifon_complemento,matriz_pre,matriz_pos,cantidad_plazas,cantidad_transiciones,t_invariant,t_in) #El 1 indica que es flag_idle
 
     lista_supervisores.append(["P"+str(cantidad_plazas+1),str(marcado_supervisor),t_in,t_out])
-   
+    return respuestaSup
 
 
 def fun_sifones_deadlock(estado,matriz_sifones,matriz_es_pl,idle,cantidad_plazas,cantidad_sifones,sifon_idle,sifon_deadlock):
@@ -391,15 +402,24 @@ def fun_sifones_deadlock(estado,matriz_sifones,matriz_es_pl,idle,cantidad_plazas
                     if(sifon_agregado):
                         sifon_deadlock.append([estado,i,marcado]) #Devuelve el sifon y su marcado inicial, para ese estado deadlock
             else:
-                sifon_idle.append[i]
+                sifon_idle.append(i)#sifon_idle.append[i]
 
 def cleanTXTS():
+    '''
     pathActual = os.path.dirname(os.path.realpath(__file__))
     files = os.listdir(pathActual)
     for name in files:
         if name.endswith(".txt"):
             os.remove(pathActual+"/"+name)
     shutil.rmtree(pathActual+"/"+"__pycache__")
+    '''
+    pathActual = os.path.dirname(os.path.realpath(__file__))
+    files = os.listdir()
+    for name in files:
+        if name.endswith(".txt"):
+            os.remove(name)
+    shutil.rmtree(pathActual+"/"+"__pycache__")
+    
 
 
 def main():
@@ -433,12 +453,13 @@ def main():
     analisis = sCliente.recv(length_of_message).decode("UTF-8")
 
      #ENVIO INFO AL SOCKET
-    respuesta = "recibi el 1 en la tesis pibe <br>-id:0<br>-id:1".encode("UTF-8")
-    sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
-    sCliente.send(respuesta)
+    #respuesta = "recibi el 1 en la tesis pibe <br>-id:0<br>-id:1".encode("UTF-8")
+    #sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
+    #sCliente.send(respuesta)
     #temporal
-    sCliente.close()
-    exit(0)
+    #sCliente.close()
+    #cleanTXTS()
+    #exit(0)
     #TERMINO DE ENVIAR INFO
 
 
@@ -482,7 +503,9 @@ def main():
         for i in range (0, len(state_deadlock)):
             fun_sifones_deadlock(state_deadlock[i],matriz_sifones,matriz_es_pl,idle,cantidad_plazas,cantidad_sifones,sifon_idle,sifon_deadlock)
         print("Cantidad de estados con deadlock:", len(state_deadlock))
+        respuesta = "Cantidad de estados con deadlock: "+ str(len(state_deadlock)) +"<br>"
         print("Cantidad de sifones vacios:", len(sifon_deadlock))
+        respuesta += "Cantidad de sifones vacios: "+ str(len(sifon_deadlock)) +"<br>"
 
         lista_supervisores=[]
  
@@ -491,7 +514,7 @@ def main():
             sifon=np.copy(sifon_deadlock[i])
             
             #Agregamos el supervisor del bad-sifon
-            supervisor(cantidad_transiciones,cantidad_plazas,sifon,matriz_es_tr,matriz_pos,matriz_pre,matriz_sifones,t_invariant,lista_supervisores)
+            respuesta +=supervisor(cantidad_transiciones,cantidad_plazas,sifon,matriz_es_tr,matriz_pos,matriz_pre,matriz_sifones,t_invariant,lista_supervisores)
 
         #Elimina archivo temporal
         os.remove("filtrado_prueba.txt")
@@ -587,9 +610,10 @@ def main():
     decision = ""
     #esta parte necesitamos modificarrr
     #ENVIO INFO AL SOCKET
-    respuesta = "lei el mensaje que fue 1<br> son dos sifones <br>-id:0<br>-id:1".encode("UTF-8")
+    respuesta = respuesta.encode("UTF-8")
     sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
     sCliente.send(respuesta)
+    cleanTXTS()
     #temporal
     sCliente.close()
     exit(0)

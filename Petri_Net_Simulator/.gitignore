@@ -3,7 +3,7 @@
 
 # Whitelist subdirectories
 !*/
-
+!*/Modulos
 # Whitelist the following extensions
 !*.java
 !*.gif
