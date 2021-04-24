@@ -1102,6 +1102,22 @@
             <type value="regular"/>
             <exported>true</exported>
         </arc>
+        <arc id="A" source="P22" target="T1">
+            <inscription>
+                <value>Default,1</value>
+                <graphics/>
+            </inscription>
+            <type value="regular"/>
+            <exported>true</exported>
+        </arc>
+        <arc id="A" source="P22" target="T1">
+            <inscription>
+                <value>Default,1</value>
+                <graphics/>
+            </inscription>
+            <type value="regular"/>
+            <exported>true</exported>
+        </arc>
         <arc id="A" source="T13" target="P8">
             <inscription>
                 <value>Default,1</value>

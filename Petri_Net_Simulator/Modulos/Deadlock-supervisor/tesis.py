@@ -24,6 +24,7 @@ import socket as sk
 #Variable globales
 id=0
 name_pflow= ""
+Plflow_path =""
 #respuesta =""
 #
 def siphones_traps(cantidad_plazas):
@@ -418,7 +419,7 @@ def cleanTXTS():
     for name in files:
         if name.endswith(".txt"):
             os.remove(name)
-    shutil.rmtree(pathActual+"/"+"__pycache__")
+    shutil.rmtree(pathActual+"/__pycache__")
     
 
 
@@ -461,11 +462,6 @@ def main():
     #cleanTXTS()
     #exit(0)
     #TERMINO DE ENVIAR INFO
-
-
-    if (analisis == "quit"):
-        sCliente.close()
-        exit(0)
 
     if(analisis=="1"):
         #Obtenemos la cantidad de plazas de la red original
@@ -522,7 +518,7 @@ def main():
 
 
 
-    elif(analisis=="3"):   #se obtienen los supervisores (3) o Anular brazos de idle a supervisores (4)
+    if(analisis=="3"):   #se obtienen los supervisores (3) o Anular brazos de idle a supervisores (4)
 
         file_plazas = open('cantidad_plazas_red_original.txt', 'r')
         cantidad_plazas_red_original=int(file_plazas.read())
@@ -603,38 +599,57 @@ def main():
         for i in range (len(msjdel)):
             print(msjdel[i])     
 
-    else:
-        print("Opcion erronea")
-        exit()
-
-    decision = ""
-    #esta parte necesitamos modificarrr
     #ENVIO INFO AL SOCKET
     respuesta = respuesta.encode("UTF-8")
     sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
     sCliente.send(respuesta)
-    cleanTXTS()
-    #temporal
-    sCliente.close()
-    exit(0)
-    #TERMINO DE ENVIAR INFO
-
-    if(analisis!="3"):
-        decision=input("\n¿Agregar supervisor?(S/N) ").upper()
+    decision = ""
+    #esta parte necesitamos modificarrr
+    
+    if(analisis!="3"): #aca recibe la desicion S
+        length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
+        decision = sCliente.recv(length_of_message).decode("UTF-8")
 
     if(decision=="S"):
-        id_int=int(input("AGREGA EL ID: "))
-        new_red.main(lista_supervisores[id_int][0],lista_supervisores[id_int][1],lista_supervisores[id_int][2],lista_supervisores[id_int][3],name_pflow)
+        id_int= 0 #int(input("AGREGA EL ID: "))
+        new_red.main(lista_supervisores[id_int][0],lista_supervisores[id_int][1],lista_supervisores[id_int][2],lista_supervisores[id_int][3],Plflow_path)
+        respuesta = Plflow_path
+        respuesta = respuesta.encode("UTF-8")
+        sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
+        sCliente.send(respuesta)
+    
+    #aca llegamos luego del addsupervisor en espera de saber si hay deadlock o no para continuar el analisis
+    length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
+    decision = sCliente.recv(length_of_message).decode("UTF-8")
+    
+    if (decision == "quit"):
+        respuesta = "me cerre"
+        respuesta = respuesta.encode("UTF-8")
+        sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
+        sCliente.send(respuesta)
+        cleanTXTS()
+        sCliente.close()
+        exit(0)
 
+    '''
+    else:
+        print("Opcion erronea")
+        exit()
+    '''
+    
+  
 #creamos el socket
 host = "127.0.0.1"
 port = int(sys.argv[1])
 #print(port)
+Plflow_path=str(sys.argv[2])
+print(Plflow_path)
 sCliente =  sk.socket()
 sCliente.connect((host, port))
+flag = 1
 
 while(1): #El algoritmo se ejecuta iterativamente hasta que se controla la red. De no ser así se dice que el algoritmo no converge
-    flag = 0
+    
     id=0
     main()
     
@@ -642,10 +657,17 @@ while(1): #El algoritmo se ejecuta iterativamente hasta que se controla la red. 
     print("Ingrese:")
     print("1 - Deadlock = true  - Volver a ejecutar el Algoritmo")
     print("0 - Deadlock = false - Finalizar ejecucion")
-    flag = input("Opcion: ")
+    #flag = input("Opcion: ")
     print("-------------------------------------------------------------")
 
     if(flag=="0"):
         #agregar borrar todos los txt
+        #temporal
+        respuesta = "me cerre"
+        respuesta = respuesta.encode("UTF-8")
+        sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
+        sCliente.send(respuesta)
         cleanTXTS()
-        exit()
+        sCliente.close()
+        exit(0)
+        #exit()

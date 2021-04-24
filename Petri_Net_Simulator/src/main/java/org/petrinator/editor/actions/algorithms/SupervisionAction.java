@@ -22,6 +22,8 @@
 package org.petrinator.editor.actions.algorithms;
 
 import org.petrinator.editor.Root;
+import org.petrinator.editor.actions.ReloadFileAction;
+import org.petrinator.editor.actions.SaveAction;
 import org.petrinator.editor.actions.SaveFileAsAction;
 import org.petrinator.editor.actions.algorithms.reachability.CRTree;
 import org.petrinator.editor.filechooser.*;
@@ -46,6 +48,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 import  java.util.Scanner;
 
 
@@ -58,10 +61,16 @@ public class SupervisionAction extends AbstractAction
     private JDialog guiDialog;
     private ButtonBar analizeButton;
     private ButtonBar superviseButton;
+    private ButtonBar exitButton;
     InvariantAction accion;
     MatricesAction matrices;
     ReachabilityAction states;
     //SiphonsAction sifon;
+    //test
+    ServerSocket server = null;
+    Process proceso = null;
+    DataOutputStream outw = null;
+    DataInputStream inw = null;
 
     public SupervisionAction(Root root)
     {
@@ -78,11 +87,13 @@ public class SupervisionAction extends AbstractAction
         results = new ResultsHTMLPane("");
         sPanel = new String();//new
         contentPane.add(results);
-
         analizeButton = new ButtonBar("Analyse", new ClassifyListener(), guiDialog.getRootPane());
-        superviseButton = new ButtonBar("Add Supervisor/s", new ClassifyListener(), guiDialog.getRootPane());
+        superviseButton = new ButtonBar("Add Supervisor/s", new AddSupervisorListener(), guiDialog.getRootPane());
+        exitButton = new ButtonBar("Exit", new ExitListener(), guiDialog.getRootPane());
+
         contentPane.add(analizeButton);
         contentPane.add(superviseButton);
+        contentPane.add(exitButton);
         //creo un objeto de invariantes
         accion = new InvariantAction(this.root);
         matrices = new MatricesAction(this.root);
@@ -102,6 +113,7 @@ public class SupervisionAction extends AbstractAction
         // Enables classify button
         analizeButton.setButtonsEnabled(true);
         superviseButton.setButtonsEnabled(false);
+        exitButton.setButtonsEnabled(true);
 
         // Shows initial pane
         guiDialog.pack();
@@ -125,17 +137,25 @@ public class SupervisionAction extends AbstractAction
     }
     public void socketServer()
     {
+        /*
         ServerSocket server = null;
+        Process proceso = null;
+        DataOutputStream outw = null;
+        DataInputStream inw = null;
+        */
         int port=0;
         String Respuesta;
         String pathCliente;
         boolean abierto = false;
-        //Process proceso = null;
         Socket cli = null;
-        DataOutputStream outw = null;
-        DataInputStream inw = null;
+
 
         try {
+            Process pathAnaconda = Runtime.getRuntime().exec("which -a anaconda");
+            BufferedReader Acacondareader = new BufferedReader(new InputStreamReader(pathAnaconda.getInputStream()));
+            String StringPathAnaconda = Acacondareader.readLine();
+            System.out.println("el path de a anaconda es:" +StringPathAnaconda);
+
             server = new ServerSocket(0);
             port = server.getLocalPort();
             //obtengo donde se ejecuta pyhton (Linux)
@@ -144,21 +164,24 @@ public class SupervisionAction extends AbstractAction
             String StringPathPython = reader.readLine();
             //System.out.println(StringPathPython);
             String pathActual = new File(".").getCanonicalPath() +"/Modulos/Deadlock-supervisor/";
-            String pathClientePy = StringPathPython +" "+ pathActual + "tesis.py "+ port;
+            String pathClientePy = StringPathPython +" "+ pathActual + "tesis.py "+ port + " " + root.getCurrentFile().getPath();
             System.out.println(pathClientePy);
-            //boolean abierto = true;
-            Runtime.getRuntime().exec(pathClientePy);
-            /*version 2
-            ProcessBuilder processBuilder = new ProcessBuilder("/Library/Frameworks/Python.framework/Versions/2.7/bin/python",absolute_file_path));
-            Process process = processBuilder.start();
+            /*
+            String pathPython2 = new File(".").getCanonicalPath() +"/Modulos/Deadlock-supervisor/tesis.py " + port;
+            System.out.println(pathPython2);
+            ProcessBuilder pb = new ProcessBuilder("python3", pathPython2);
+            Map<String, String> env = pb.environment();
+            env.put("VAR1", "myValue");
+            env.remove("OTHERVAR");
+            env.put("VAR2", env.get("VAR1") + "suffix");
+            pb.directory(new File("."));
+            Process p = pb.start();
             */
+            proceso=Runtime.getRuntime().exec(pathClientePy);
             cli = server.accept();
-            //System.out.println (proceso.getOutputStream());
-            //System.out.println (pathCliente);
-            //System.out.println ("acepte");
             outw = new DataOutputStream(cli.getOutputStream());
             inw = new DataInputStream(cli.getInputStream());
-            abierto = true;
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -169,7 +192,6 @@ public class SupervisionAction extends AbstractAction
             Respuesta =inw.readUTF();
             System.out.println ("Respuesta:");
             System.out.println (Respuesta);
-            System.out.println ("cerro el socket, sigo la ejecucion");
             String[] treeInfo = new String[]{
                     Respuesta
             };
@@ -177,17 +199,13 @@ public class SupervisionAction extends AbstractAction
             sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
             results.setText(sPanel);
             results.setEnabled(true);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
+        superviseButton.setButtonsEnabled(true);
         //cierro sockets y streams
-        try {
-            outw.close();
-            inw.close();
-            server.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
 
     }
     public void saveNet() {
@@ -494,7 +512,7 @@ public class SupervisionAction extends AbstractAction
                 boolean S3PR = statesTree.hasDeadlock();
                 boolean Deadlock = statesTree.hasDeadlock();
 
-                if(!(Deadlock && S3PR))
+                if(Deadlock ==false || S3PR==false)
                 {
                     sPanel+="The net is not compatible with a deadlock supervision ,the net has to be S3PR and have a deadlock";
                     String[] treeInfo = new String[]{
@@ -503,8 +521,9 @@ public class SupervisionAction extends AbstractAction
                             "Deadlock", "" + S3PR
                     };
                     sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
-                    //results.setEnabled(false);
-                    //results.setText(s);
+                    results.setEnabled(true);
+                    results.setText(sPanel);
+                    System.out.println("Soy falso");
                     return;
                 }
                 superviseButton.setButtonsEnabled(true);
@@ -546,4 +565,82 @@ public class SupervisionAction extends AbstractAction
 
         }
     };
+    private class ExitListener implements ActionListener {
+
+        public void actionPerformed(ActionEvent actionEvent)
+        {
+            sPanel = "<h2>Close</h2>";
+            //System.out.println(root.getCurrentFile().getPath());
+            results.setText(sPanel);
+            String Respuesta="";
+            if(outw!=null)
+            {
+                try {
+                    outw.writeUTF("quit");
+                    outw.flush();
+                    Respuesta =inw.readUTF();
+                    System.out.println ("Respuesta:");
+                    System.out.println (Respuesta);
+                    outw.close();
+                    inw.close();
+                    server.close();
+                    proceso.destroy();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    };
+
+    private class AddSupervisorListener implements ActionListener {
+
+        public void actionPerformed(ActionEvent actionEvent)
+        {
+            sPanel = "<h2>Add Supervisors</h2>";
+            results.setText(sPanel);
+            String Respuesta;
+            try {
+                outw.writeUTF("S");
+                outw.flush();
+                Respuesta =inw.readUTF();
+                System.out.println ("Respuesta:");
+                System.out.println (Respuesta);
+                reSaveNet();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            /*
+            //solo para cerrar
+            try {
+                outw.close();
+                inw.close();
+                server.close();
+                proceso.destroy();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            */
+        }
+    };
+    public void reSaveNet() {
+
+        FileType chosenFileType = (FileType) new PflowFileType();
+        List<FileType> fileTypes = new LinkedList<>();
+        fileTypes.add(chosenFileType);
+        //SaveAction guardar = new SaveAction(this.root, fileTypes);
+        //guardar.actionPerformed(null);
+        ReloadFileAction reload = new ReloadFileAction(this.root, fileTypes);
+        reload.actionPerformed(null);
+        /*
+        File file = root.getCurrentFile();
+        if (file != null) {
+            try {
+                FileType fileType = (FileType) new PflowFileType();
+                fileType.save(root.getDocument(), file);
+                root.setModified(false);
+            } catch (FileTypeException ex) {
+                JOptionPane.showMessageDialog(root.getParentFrame(), ex.getMessage());
+            }
+        }*/
+    }
 }

@@ -50,6 +50,7 @@ org/petrinator/editor/commands/AddTransitionsToRolesCommand.class
 org/petrinator/auxiliar/ResultsHTMLPane.class
 org/petrinator/util/EPSGraphics2D.class
 org/petrinator/petrinet/Subnet.class
+org/petrinator/editor/actions/algorithms/SupervisionAction$AddSupervisorListener.class
 org/petrinator/editor/actions/AboutAction.class
 org/petrinator/petrinet/xml/XmlTransition.class
 org/petrinator/editor/MainFrame.class
@@ -99,6 +100,7 @@ org/petrinator/editor/actions/algorithms/ResponseTimeAction.class
 org/petrinator/editor/canvas/Selection.class
 org/petrinator/util/StringTools.class
 org/petrinator/editor/actions/BehaviorAction.class
+org/petrinator/editor/actions/algorithms/SupervisionAction$ExitListener.class
 org/petrinator/LanguageNode.class
 org/petrinator/util/Xslt.class
 org/petrinator/editor/Main.class
