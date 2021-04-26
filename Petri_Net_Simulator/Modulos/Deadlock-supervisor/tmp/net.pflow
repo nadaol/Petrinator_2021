@@ -17,6 +17,14 @@
             <isStatic>false</isStatic>
         </place>
         <place>
+            <id>P16</id>
+            <x>-161</x>
+            <y>254</y>
+            <label>P16</label>
+            <tokens>2</tokens>
+            <isStatic>false</isStatic>
+        </place>
+        <place>
             <id>P2</id>
             <x>-213</x>
             <y>-245</y>
@@ -517,6 +525,36 @@
             <type>regular</type>
             <sourceId>T11</sourceId>
             <destinationId>P4</destinationId>
+            <multiplicity>1</multiplicity>
+        </arc>
+        <arc>
+            <type>regular</type>
+            <sourceId>P16</sourceId>
+            <destinationId>T7</destinationId>
+            <multiplicity>1</multiplicity>
+        </arc>
+        <arc>
+            <type>regular</type>
+            <sourceId>P16</sourceId>
+            <destinationId>T1</destinationId>
+            <multiplicity>1</multiplicity>
+        </arc>
+        <arc>
+            <type>regular</type>
+            <sourceId>T2</sourceId>
+            <destinationId>P16</destinationId>
+            <multiplicity>1</multiplicity>
+        </arc>
+        <arc>
+            <type>regular</type>
+            <sourceId>T8</sourceId>
+            <destinationId>P16</destinationId>
+            <multiplicity>1</multiplicity>
+        </arc>
+        <arc>
+            <type>regular</type>
+            <sourceId>T5</sourceId>
+            <destinationId>P16</destinationId>
             <multiplicity>1</multiplicity>
         </arc>
         <arc>

@@ -626,6 +626,15 @@ def main():
         respuesta = respuesta.encode("UTF-8")
         sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
         sCliente.send(respuesta)
+
+    if (decision == "quit"):
+        respuesta = "Closed conection"
+        respuesta = respuesta.encode("UTF-8")
+        sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
+        sCliente.send(respuesta)
+        cleanTXTS()
+        sCliente.close()
+        exit(0)
     
     #aca llegamos luego del addsupervisor en espera de saber si hay deadlock o no para continuar el analisis
 #    length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')

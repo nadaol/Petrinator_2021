@@ -143,29 +143,13 @@ public class SupervisionAction extends AbstractAction
         */
         int port=0;
         String Respuesta;
-        String pathCliente;
-        boolean abierto = false;
         Socket cli = null;
 
 
         try {
 
-            /*Process pathAnaconda = Runtime.getRuntime().exec("which -a anaconda");
-            BufferedReader Acacondareader = new BufferedReader(new InputStreamReader(pathAnaconda.getInputStream()));
-            String StringPathAnaconda = Acacondareader.readLine();
-            System.out.println("el path de a anaconda es:" +StringPathAnaconda);*/
-
             server = new ServerSocket(0);
             port = server.getLocalPort();
-
-            //obtengo donde se ejecuta pyhton (Linux)
-            /*          Process pathPython = Runtime.getRuntime().exec("which -a python3");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(pathPython.getInputStream()));
-            String StringPathPython = reader.readLine();
-            //System.out.println(StringPathPython);
-            String pathActual = new File(".").getCanonicalPath() +"/Modulos/Deadlock-supervisor/";
-            String pathClientePy = StringPathPython +" "+ pathActual + "tesis.py "+ port + " " + root.getCurrentFile().getPath();
-            System.out.println(pathClientePy);*/
 
             //Get tesis python path and execute
             String pathToPythonMain = get_Current_JarPath() +"/Modulos/Deadlock-supervisor/tesis.py";
@@ -201,9 +185,6 @@ public class SupervisionAction extends AbstractAction
             e.printStackTrace();
         }
         superviseButton.setButtonsEnabled(true);
-        //cierro sockets y streams
-
-
     }
 
     //Function to save the current net in a temp.pflow file for later supervision analisys
@@ -479,6 +460,24 @@ public class SupervisionAction extends AbstractAction
             System.out.println("Error saving HTML "+save_path);
         }
     }
+
+    public void close_socket()
+    {
+        try {
+            outw.writeUTF("quit");
+            outw.flush();
+            String Respuesta =inw.readUTF();
+            System.out.println ("Respuesta:");
+            System.out.println (Respuesta);
+            outw.close();
+            inw.close();
+            server.close();
+            proceso.destroy();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //cierro sockets y streams
+    }
     /**
      * Listener for analyse button
      */
@@ -526,11 +525,10 @@ public class SupervisionAction extends AbstractAction
                         "S3PR", "" + Deadlock,        // ----------------------  ADD S3PR CLASSIFICATION
                         "Deadlock", "" + S3PR
                 };
-
                 sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
-
                 //results.setEnabled(false);
                 Runanalysis();
+                close_socket();
             }
             catch(OutOfMemoryError e)
             {
@@ -563,7 +561,7 @@ public class SupervisionAction extends AbstractAction
     //Added supervisors end
     public void EndSupervision()
     {
-        sPanel = "<h2>Close</h2>";
+        sPanel = "<h2>Added Supervisors</h2>";
 
         String[] treeInfo = new String[]{
                 "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",       // ----------------------  ADD S3PR CLASSIFICATION
@@ -597,6 +595,8 @@ public class SupervisionAction extends AbstractAction
 
         public void actionPerformed(ActionEvent actionEvent)
         {
+            Runanalysis();
+
             sPanel = "<h2>Add Supervisors</h2>";
             results.setText(sPanel);
             String Respuesta;
@@ -645,17 +645,7 @@ public class SupervisionAction extends AbstractAction
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            /*
-            //solo para cerrar
-            try {
-                outw.close();
-                inw.close();
-                server.close();
-                proceso.destroy();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            */
+
         }
     };
 
@@ -669,17 +659,7 @@ public class SupervisionAction extends AbstractAction
         //guardar.actionPerformed(null);
         ReloadFileAction reload = new ReloadFileAction(this.root, fileTypes);
         reload.actionPerformed(null);
-        /*
-        File file = root.getCurrentFile();
-        if (file != null) {
-            try {
-                FileType fileType = (FileType) new PflowFileType();
-                fileType.save(root.getDocument(), file);
-                root.setModified(false);
-            } catch (FileTypeException ex) {
-                JOptionPane.showMessageDialog(root.getParentFrame(), ex.getMessage());
-            }
-        }*/
+
     }
 
     //Get actual absolute executed .jar path
