@@ -122,7 +122,7 @@ public class SupervisionAction extends AbstractAction
     }
 
     /*
-        ANALISYS & EXPORT
+        Exports all html analysis and pflow net for suprevision analysis
 
      */
     public void Runanalysis()
@@ -133,8 +133,10 @@ public class SupervisionAction extends AbstractAction
         coverabilityAnalysis();
         sifonnalysis();
         saveNet();
-        socketServer();
+        socketServer();//Supervision analysis
     }
+
+    // Executes tesis.py and get the response using sockets
     public void socketServer()
     {
         /*
@@ -151,34 +153,33 @@ public class SupervisionAction extends AbstractAction
 
 
         try {
-            Process pathAnaconda = Runtime.getRuntime().exec("which -a anaconda");
+
+            /*Process pathAnaconda = Runtime.getRuntime().exec("which -a anaconda");
             BufferedReader Acacondareader = new BufferedReader(new InputStreamReader(pathAnaconda.getInputStream()));
             String StringPathAnaconda = Acacondareader.readLine();
-            System.out.println("el path de a anaconda es:" +StringPathAnaconda);
+            System.out.println("el path de a anaconda es:" +StringPathAnaconda);*/
 
             server = new ServerSocket(0);
             port = server.getLocalPort();
+
             //obtengo donde se ejecuta pyhton (Linux)
-            Process pathPython = Runtime.getRuntime().exec("which -a python3");
+            /*          Process pathPython = Runtime.getRuntime().exec("which -a python3");
             BufferedReader reader = new BufferedReader(new InputStreamReader(pathPython.getInputStream()));
             String StringPathPython = reader.readLine();
             //System.out.println(StringPathPython);
             String pathActual = new File(".").getCanonicalPath() +"/Modulos/Deadlock-supervisor/";
             String pathClientePy = StringPathPython +" "+ pathActual + "tesis.py "+ port + " " + root.getCurrentFile().getPath();
-            System.out.println(pathClientePy);
-            /*
-            String pathPython2 = new File(".").getCanonicalPath() +"/Modulos/Deadlock-supervisor/tesis.py " + port;
-            System.out.println(pathPython2);
-            ProcessBuilder pb = new ProcessBuilder("python3", pathPython2);
-            Map<String, String> env = pb.environment();
-            env.put("VAR1", "myValue");
-            env.remove("OTHERVAR");
-            env.put("VAR2", env.get("VAR1") + "suffix");
-            pb.directory(new File("."));
-            Process p = pb.start();
-            */
-            proceso=Runtime.getRuntime().exec(pathClientePy);
+            System.out.println(pathClientePy);*/
+
+            //Get tesis python path and execute
+            String pathToPythonMain = get_Current_JarPath() +"/Modulos/Deadlock-supervisor/tesis.py";
+            String pathPythonExec = "python3 "+pathToPythonMain + " "+ port + " " + root.getCurrentFile().getPath();
+            System.out.println(pathPythonExec);
+            proceso=Runtime.getRuntime().exec(pathPythonExec);
+
+            //Blocking accept executed python client
             cli = server.accept();
+            //Instantiate input and output socket buffers
             outw = new DataOutputStream(cli.getOutputStream());
             inw = new DataInputStream(cli.getInputStream());
 
@@ -208,20 +209,17 @@ public class SupervisionAction extends AbstractAction
 
 
     }
+
+    //Function to save the current net in a temp.pflow file for later supervision analisys
     public void saveNet() {
 
         FileChooserDialog chooser = new FileChooserDialog();
         chooser.setVisible(false);
         chooser.setAcceptAllFileFilterUsed(false);
 
-        String pathNet = null;
-        try {
-            pathNet = pathNet = new File(".").getCanonicalPath() +
-                        "/Modulos/Deadlock-supervisor/tmp/net.pflow";
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        File file = new File(pathNet);
+        String Temp_net_path = get_Current_JarPath() + "/Modulos/Deadlock-supervisor/tmp/net.pflow";
+
+        File file = new File(Temp_net_path);
         FileType chosenFileType = (FileType) new PflowFileType();
         try {
             chosenFileType.save(root.getDocument(), file);
@@ -230,7 +228,7 @@ public class SupervisionAction extends AbstractAction
         }
     }
     /*
-     SIFON ANALYSIS
+     Do Siphon's and trap's analisys and saves it in html extension
   */
     public void sifonnalysis()
     {
@@ -296,7 +294,7 @@ public class SupervisionAction extends AbstractAction
         SaveHTML("sif");
     }
     /*
-       COVERALITY ANALYSIS
+       Do the coverability analisys and saves it in html extension
     */
     public void coverabilityAnalysis()
     {
@@ -329,7 +327,7 @@ public class SupervisionAction extends AbstractAction
 
     }
     /*
-        INVARIANT ANALYSIS
+        Do the invariant analisys and saves it in html extension
      */
     public void invariantAnalysis()
     {
@@ -372,7 +370,7 @@ public class SupervisionAction extends AbstractAction
         SaveHTML("inv");
     }
     /*
-        MAT ANALYSIS mat.html
+        Get matrices and saves it in html extension
      */
     public void matricesAnalysis()
     {
@@ -452,6 +450,7 @@ public class SupervisionAction extends AbstractAction
      */
     public void SaveHTML(String name)
     {
+        String save_path="";
         try
         {
             /*
@@ -462,10 +461,9 @@ public class SupervisionAction extends AbstractAction
             {
                 destFN += ".html";
             }*/
-            String path= new File (".").getCanonicalPath()+
-                    "/Modulos/Deadlock-supervisor/tmp/"+ name +".html";
+            save_path= get_Current_JarPath() +"/Modulos/Deadlock-supervisor/tmp/"+ name +".html";
 
-            FileWriter writer = new FileWriter(new File(path));
+            FileWriter writer = new FileWriter(new File(save_path));
             String output = "<html><head><style type=\"text/css\">" +
                     "body{font-family:Arial,Helvetica,sans-serif;" +
                     "text-align:center;background:#ffffff}" +
@@ -482,11 +480,11 @@ public class SupervisionAction extends AbstractAction
         }
         catch(Exception e)
         {
-            System.out.println("Error saving HTML to file");
+            System.out.println("Error saving HTML "+save_path);
         }
     }
     /**
-     * Classify button click handler
+     * Listener for analyse button
      */
     private class ClassifyListener implements ActionListener {
 
@@ -565,6 +563,8 @@ public class SupervisionAction extends AbstractAction
 
         }
     };
+
+    //Listener boton exit
     private class ExitListener implements ActionListener {
 
         public void actionPerformed(ActionEvent actionEvent)
@@ -592,6 +592,7 @@ public class SupervisionAction extends AbstractAction
         }
     };
 
+    //Listener boton add supervisor
     private class AddSupervisorListener implements ActionListener {
 
         public void actionPerformed(ActionEvent actionEvent)
@@ -622,12 +623,14 @@ public class SupervisionAction extends AbstractAction
             */
         }
     };
+
+    //Function to save and reload net when the supervisor is added
     public void reSaveNet() {
 
         FileType chosenFileType = (FileType) new PflowFileType();
         List<FileType> fileTypes = new LinkedList<>();
         fileTypes.add(chosenFileType);
-        //SaveAction guardar = new SaveAction(this.root, fileTypes);
+        SaveAction guardar = new SaveAction(this.root, fileTypes);
         //guardar.actionPerformed(null);
         ReloadFileAction reload = new ReloadFileAction(this.root, fileTypes);
         reload.actionPerformed(null);
@@ -642,5 +645,13 @@ public class SupervisionAction extends AbstractAction
                 JOptionPane.showMessageDialog(root.getParentFrame(), ex.getMessage());
             }
         }*/
+    }
+
+    //Get actual absolute executed .jar path
+    public String get_Current_JarPath()
+    {
+        String pathNet = SupervisionAction.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        pathNet = pathNet.substring(0,pathNet.lastIndexOf("/"));
+        return pathNet;
     }
 }
