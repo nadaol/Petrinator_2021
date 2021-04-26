@@ -429,7 +429,9 @@ def main():
     #print("--------------------------------------------------------------------------")
     #print("Algoritmo para la solucion de deadlock para redes de petri tipo S3PR")
     #print("--------------------------------------------------------------------------")
-    
+    #obetnemos primer argumento del socket
+    length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
+    analisis = sCliente.recv(length_of_message).decode("UTF-8")
     #Conversion de archivos html a txt
     hta.main()
 
@@ -449,9 +451,16 @@ def main():
     print("2 - Análisis de red con supervisores")
     print("3 - Red con supervisores, tratamiento de conflicto y t_idle")
 
-    #obetnemos primer argumento del socket
-    length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
-    analisis = sCliente.recv(length_of_message).decode("UTF-8")
+
+
+    if (analisis == "quit"):
+        respuesta = "Closed conection"
+        respuesta = respuesta.encode("UTF-8")
+        sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
+        sCliente.send(respuesta)
+        cleanTXTS()
+        sCliente.close()
+        exit(0)
 
      #ENVIO INFO AL SOCKET
     #respuesta = "recibi el 1 en la tesis pibe <br>-id:0<br>-id:1".encode("UTF-8")
@@ -613,23 +622,16 @@ def main():
     if(decision=="S"):
         id_int= 0 #int(input("AGREGA EL ID: "))
         new_red.main(lista_supervisores[id_int][0],lista_supervisores[id_int][1],lista_supervisores[id_int][2],lista_supervisores[id_int][3],Plflow_path)
-        respuesta = Plflow_path
+        respuesta = "Added first supervisor"
         respuesta = respuesta.encode("UTF-8")
         sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
         sCliente.send(respuesta)
     
     #aca llegamos luego del addsupervisor en espera de saber si hay deadlock o no para continuar el analisis
-    length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
-    decision = sCliente.recv(length_of_message).decode("UTF-8")
+#    length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
+#    decision = sCliente.recv(length_of_message).decode("UTF-8")
     
-    if (decision == "quit"):
-        respuesta = "me cerre"
-        respuesta = respuesta.encode("UTF-8")
-        sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
-        sCliente.send(respuesta)
-        cleanTXTS()
-        sCliente.close()
-        exit(0)
+
 
     '''
     else:

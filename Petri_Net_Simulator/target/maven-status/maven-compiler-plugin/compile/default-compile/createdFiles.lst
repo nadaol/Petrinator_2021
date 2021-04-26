@@ -100,7 +100,6 @@ org/petrinator/editor/commands/SetEdgeZigzagPointCommand.class
 org/petrinator/editor/canvas/Selection.class
 org/petrinator/util/StringTools.class
 org/petrinator/editor/actions/BehaviorAction.class
-org/petrinator/editor/actions/algorithms/SupervisionAction$ExitListener.class
 org/petrinator/LanguageNode.class
 org/petrinator/util/Xslt.class
 org/petrinator/editor/Main.class

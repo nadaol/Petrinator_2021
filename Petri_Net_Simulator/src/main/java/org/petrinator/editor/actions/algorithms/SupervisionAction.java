@@ -61,7 +61,6 @@ public class SupervisionAction extends AbstractAction
     private JDialog guiDialog;
     private ButtonBar analizeButton;
     private ButtonBar superviseButton;
-    private ButtonBar exitButton;
     InvariantAction accion;
     MatricesAction matrices;
     ReachabilityAction states;
@@ -89,11 +88,9 @@ public class SupervisionAction extends AbstractAction
         contentPane.add(results);
         analizeButton = new ButtonBar("Analyse", new ClassifyListener(), guiDialog.getRootPane());
         superviseButton = new ButtonBar("Add Supervisor/s", new AddSupervisorListener(), guiDialog.getRootPane());
-        exitButton = new ButtonBar("Exit", new ExitListener(), guiDialog.getRootPane());
 
         contentPane.add(analizeButton);
         contentPane.add(superviseButton);
-        contentPane.add(exitButton);
         //creo un objeto de invariantes
         accion = new InvariantAction(this.root);
         matrices = new MatricesAction(this.root);
@@ -113,7 +110,6 @@ public class SupervisionAction extends AbstractAction
         // Enables classify button
         analizeButton.setButtonsEnabled(true);
         superviseButton.setButtonsEnabled(false);
-        exitButton.setButtonsEnabled(true);
 
         // Shows initial pane
         guiDialog.pack();
@@ -564,33 +560,37 @@ public class SupervisionAction extends AbstractAction
         }
     };
 
-    //Listener boton exit
-    private class ExitListener implements ActionListener {
+    //Added supervisors end
+    public void EndSupervision()
+    {
+        sPanel = "<h2>Close</h2>";
 
-        public void actionPerformed(ActionEvent actionEvent)
-        {
-            sPanel = "<h2>Close</h2>";
-            //System.out.println(root.getCurrentFile().getPath());
-            results.setText(sPanel);
-            String Respuesta="";
-            if(outw!=null)
-            {
-                try {
-                    outw.writeUTF("quit");
-                    outw.flush();
-                    Respuesta =inw.readUTF();
-                    System.out.println ("Respuesta:");
-                    System.out.println (Respuesta);
-                    outw.close();
-                    inw.close();
-                    server.close();
-                    proceso.destroy();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        String[] treeInfo = new String[]{
+                "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",       // ----------------------  ADD S3PR CLASSIFICATION
+                "Deadlock", "false"
+        };
+        sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
+        results.setEnabled(true);
+        results.setText(sPanel);
+        //System.out.println(root.getCurrentFile().getPath());
+        String Respuesta="";
+
+            try {
+                outw.writeUTF("quit");
+                outw.flush();
+                Respuesta =inw.readUTF();
+                System.out.println ("Respuesta:");
+                System.out.println (Respuesta);
+                outw.close();
+                inw.close();
+                server.close();
+                proceso.destroy();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        }
-    };
+
+    }
+
 
     //Listener boton add supervisor
     private class AddSupervisorListener implements ActionListener {
@@ -607,6 +607,41 @@ public class SupervisionAction extends AbstractAction
                 System.out.println ("Respuesta:");
                 System.out.println (Respuesta);
                 reSaveNet();
+                // if deadlock true export all and send 1 and S. Else send 'quit' and close server socket.
+                CRTree statesTree ;
+                //int S3PR = statesTree.hasDeadlock();
+                boolean Deadlock ;
+                while(true)
+                {
+                    statesTree = new CRTree(root, root.getCurrentMarking().getMarkingAsArray()[Marking.CURRENT]);
+                    Deadlock = statesTree.hasDeadlock();
+                    if(!Deadlock)
+                    {
+                        EndSupervision();
+                        break;
+                    }
+                    else
+                    {
+                        invariantAnalysis();
+                        coverabilityAnalysis();
+                        matricesAnalysis();
+                        sifonnalysis();
+                        saveNet();
+                        outw.writeUTF("1");
+                        outw.flush();
+                        Respuesta =inw.readUTF();
+                        System.out.println ("Respuesta:");
+                        System.out.println (Respuesta);
+
+                        outw.writeUTF("S");
+                        outw.flush();
+                        Respuesta =inw.readUTF();
+                        System.out.println ("Respuesta:");
+                        System.out.println (Respuesta);
+                        reSaveNet();
+                    }
+                }
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
