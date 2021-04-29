@@ -597,7 +597,7 @@ public class SupervisionAction extends AbstractAction
         public void actionPerformed(ActionEvent actionEvent)
         {
             Runanalysis();
-
+            String[] choices ;
             sPanel = "<h2>Add Supervisors</h2>";
             results.setText(sPanel);
             String Respuesta;
@@ -607,6 +607,19 @@ public class SupervisionAction extends AbstractAction
                 Respuesta =inw.readUTF();
                 System.out.println ("Respuesta:");
                 System.out.println (Respuesta);
+                //PIDO ID
+                //String id = JOptionPane.showInputDialog("Indicar ID");
+                choices=Respuesta.split(" ");
+                String id = (String) JOptionPane.showInputDialog(null, "Choose now...",
+                        "Indicar ID", JOptionPane.QUESTION_MESSAGE, null,
+                        choices, // Array of choices
+                        choices[0]); // Initial choice
+                outw.writeUTF(id);
+                outw.flush();
+                Respuesta =inw.readUTF();
+                System.out.println ("Respuesta:");
+                System.out.println (Respuesta);
+                //hasta aca
                 reSaveNet();
                 // if deadlock true export all and send 1 and S. Else send 'quit' and close server socket.
                 CRTree statesTree ;
@@ -623,6 +636,7 @@ public class SupervisionAction extends AbstractAction
                     }
                     else
                     {
+
                         invariantAnalysis();
                         coverabilityAnalysis();
                         matricesAnalysis();
@@ -633,12 +647,33 @@ public class SupervisionAction extends AbstractAction
                         Respuesta =inw.readUTF();
                         System.out.println ("Respuesta:");
                         System.out.println (Respuesta);
-
+                        //muestro por panel
+                        String[] treeInfo = new String[]{
+                                Respuesta
+                        };
+                        sPanel = "<h2>Net Anylisis Results</h2>";
+                        sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
+                        results.setText(sPanel);
+                        results.setEnabled(true);
+                        results.setVisible(true);
                         outw.writeUTF("S");
                         outw.flush();
                         Respuesta =inw.readUTF();
                         System.out.println ("Respuesta:");
                         System.out.println (Respuesta);
+                        //PIDO ID
+                        //String id2 = JOptionPane.showInputDialog("Indicar ID");
+                        choices=Respuesta.split(" ");
+                        String id2 = (String) JOptionPane.showInputDialog(null, "Choose now...",
+                                "Indicar ID", JOptionPane.QUESTION_MESSAGE, null,
+                                choices, // Array of choices
+                                choices[0]); // Initial choice
+                        outw.writeUTF(id2);
+                        outw.flush();
+                        Respuesta =inw.readUTF();
+                        System.out.println ("Respuesta:");
+                        System.out.println (Respuesta);
+                        //hasta aca
                         reSaveNet();
                     }
                 }

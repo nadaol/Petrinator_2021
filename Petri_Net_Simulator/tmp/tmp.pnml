@@ -18,23 +18,6 @@
                 <value>0</value>
             </capacity>
         </place>
-        <place id="P16">
-            <graphics>
-                <position x="151" y="325"/>
-            </graphics>
-            <name>
-                <value>P16</value>
-                <graphics>
-                    <offset x="5" y="33"/>
-                </graphics>
-            </name>
-            <initialMarking>
-                <value>Default,2</value>
-            </initialMarking>
-            <capacity>
-                <value>0</value>
-            </capacity>
-        </place>
         <place id="P2">
             <graphics>
                 <position x="178" y="97"/>
@@ -866,46 +849,6 @@
             <type value="regular"/>
             <exported>true</exported>
             <breakPoint x="594" y="178"/>
-        </arc>
-        <arc id="A" source="P16" target="T7">
-            <inscription>
-                <value>Default,1</value>
-                <graphics/>
-            </inscription>
-            <type value="regular"/>
-            <exported>true</exported>
-        </arc>
-        <arc id="A" source="P16" target="T1">
-            <inscription>
-                <value>Default,1</value>
-                <graphics/>
-            </inscription>
-            <type value="regular"/>
-            <exported>true</exported>
-        </arc>
-        <arc id="A" source="T2" target="P16">
-            <inscription>
-                <value>Default,1</value>
-                <graphics/>
-            </inscription>
-            <type value="regular"/>
-            <exported>true</exported>
-        </arc>
-        <arc id="A" source="T8" target="P16">
-            <inscription>
-                <value>Default,1</value>
-                <graphics/>
-            </inscription>
-            <type value="regular"/>
-            <exported>true</exported>
-        </arc>
-        <arc id="A" source="T5" target="P16">
-            <inscription>
-                <value>Default,1</value>
-                <graphics/>
-            </inscription>
-            <type value="regular"/>
-            <exported>true</exported>
         </arc>
         <arc id="A" source="P12" target="T7">
             <inscription>

@@ -424,9 +424,13 @@ def cleanTXTS():
         if name.endswith(".txt"):
             os.remove(name)
     shutil.rmtree(pathActual+"/__pycache__")
-    
-    
 
+def createString(len):
+    i=0
+    arr = ""
+    for i in range(len):
+        arr+= str(i) + " "
+    return arr   
 
 def main():
 
@@ -625,12 +629,22 @@ def main():
         decision = sCliente.recv(length_of_message).decode("UTF-8")
 
     if(decision=="S"):
-        id_int= 0 #int(input("AGREGA EL ID: "))
-        new_red.main(lista_supervisores[id_int][0],lista_supervisores[id_int][1],lista_supervisores[id_int][2],lista_supervisores[id_int][3],Plflow_path)
-        respuesta = "Added first supervisor"
+        respuesta = createString(len(sifon_deadlock))#le envio la cantidad de sifones
         respuesta = respuesta.encode("UTF-8")
         sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
         sCliente.send(respuesta)
+        #espero un ID
+       
+        length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
+        id_int = int(sCliente.recv(length_of_message).decode("UTF-8"))
+        #id_int= 0 #int(input("AGREGA EL ID: ")) 
+        new_red.main(lista_supervisores[id_int][0],lista_supervisores[id_int][1],lista_supervisores[id_int][2],lista_supervisores[id_int][3],Plflow_path)
+        #nuevo
+        respuesta = "agrege el supervisor"
+        respuesta = respuesta.encode("UTF-8")
+        sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
+        sCliente.send(respuesta)
+        #hasta aca
 
     if (decision == "quit"):
         respuesta = "Closed conection"
