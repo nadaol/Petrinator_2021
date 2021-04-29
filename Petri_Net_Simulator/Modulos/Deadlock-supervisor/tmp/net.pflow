@@ -18,8 +18,8 @@
         </place>
         <place>
             <id>P16</id>
-            <x>-161</x>
-            <y>254</y>
+            <x>0</x>
+            <y>-271</y>
             <label>P16</label>
             <tokens>2</tokens>
             <isStatic>false</isStatic>

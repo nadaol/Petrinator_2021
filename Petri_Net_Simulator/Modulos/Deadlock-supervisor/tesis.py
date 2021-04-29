@@ -10,9 +10,16 @@ Autores: \n
 """
 
 import os
+import sys
+#file_dir = os.path.dirname(__file__)
+""" sys.path is a built-in variable within the sys module. It contains a list of directories that the interpreter will search in for the required module. 
+When a module(a module is a python file) is imported within a Python file, the interpreter first searches for the specified module among its built-in modules. 
+If not found it looks through the list of directories(a directory is a folder that contains related modules) defined by sys.path. """
+#sys.path.append(file_dir)
+#print(sys.path)
+#exit(0)
 import numpy as np
 import re
-import sys
 import html_txt_all as hta
 import filter_data as filterdata
 import new_red
@@ -406,20 +413,18 @@ def fun_sifones_deadlock(estado,matriz_sifones,matriz_es_pl,idle,cantidad_plazas
                 sifon_idle.append(i)#sifon_idle.append[i]
 
 def cleanTXTS():
-    '''
-    pathActual = os.path.dirname(os.path.realpath(__file__))
-    files = os.listdir(pathActual)
-    for name in files:
-        if name.endswith(".txt"):
-            os.remove(pathActual+"/"+name)
-    shutil.rmtree(pathActual+"/"+"__pycache__")
-    '''
+
     pathActual = os.path.dirname(os.path.realpath(__file__))
     files = os.listdir()
     for name in files:
         if name.endswith(".txt"):
             os.remove(name)
+    files = os.listdir(Plflow_path)
+    for name in files:
+        if name.endswith(".txt"):
+            os.remove(name)
     shutil.rmtree(pathActual+"/__pycache__")
+    
     
 
 
@@ -668,17 +673,13 @@ while(1): #El algoritmo se ejecuta iterativamente hasta que se controla la red. 
     print("Ingrese:")
     print("1 - Deadlock = true  - Volver a ejecutar el Algoritmo")
     print("0 - Deadlock = false - Finalizar ejecucion")
-    #flag = input("Opcion: ")
     print("-------------------------------------------------------------")
 
     if(flag=="0"):
-        #agregar borrar todos los txt
-        #temporal
         respuesta = "me cerre"
         respuesta = respuesta.encode("UTF-8")
         sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
         sCliente.send(respuesta)
-        cleanTXTS()
+        #cleanTXTS()
         sCliente.close()
         exit(0)
-        #exit()

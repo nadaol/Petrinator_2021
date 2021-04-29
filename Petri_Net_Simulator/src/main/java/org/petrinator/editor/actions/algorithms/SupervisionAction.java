@@ -472,7 +472,7 @@ public class SupervisionAction extends AbstractAction
             outw.close();
             inw.close();
             server.close();
-            proceso.destroy();
+            //proceso.destroy();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -561,6 +561,7 @@ public class SupervisionAction extends AbstractAction
     //Added supervisors end
     public void EndSupervision()
     {
+        superviseButton.setButtonsEnabled(false);
         sPanel = "<h2>Added Supervisors</h2>";
 
         String[] treeInfo = new String[]{
@@ -582,7 +583,7 @@ public class SupervisionAction extends AbstractAction
                 outw.close();
                 inw.close();
                 server.close();
-                proceso.destroy();
+                //proceso.destroy();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -662,11 +663,24 @@ public class SupervisionAction extends AbstractAction
 
     }
 
+    public String getOsName()
+    {
+        return System.getProperty("os.name");
+    }
+
     //Get actual absolute executed .jar path
     public String get_Current_JarPath()
     {
         String pathNet = SupervisionAction.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         pathNet = pathNet.substring(0,pathNet.lastIndexOf("/"));
-        return pathNet;
+        if(getOsName().startsWith("Windows") && pathNet.startsWith("/"))pathNet = pathNet.substring(1,pathNet.length());
+        String decodedPath=null;
+    try{
+            decodedPath = URLDecoder.decode(pathNet, "UTF-8");
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    System.out.println("Jar path : " + decodedPath);
+        return decodedPath;
     }
 }

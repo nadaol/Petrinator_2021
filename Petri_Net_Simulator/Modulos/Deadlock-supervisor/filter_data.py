@@ -84,7 +84,7 @@ def main():
     plaza_file.close
 
     #Elimina archivo temporal
-    os.remove("plaza.txt")
+    #os.remove("plaza.txt")
 
     """
     Inicializacion de matriz a partir de la información filtrada de la RdP.
