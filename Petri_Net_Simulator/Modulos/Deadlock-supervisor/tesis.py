@@ -30,7 +30,7 @@ import socket as sk
 
 #Variable globales
 id=0
-name_pflow= ""
+#name_pflow= ""
 Plflow_path =""
 #respuesta =""
 #
@@ -413,13 +413,9 @@ def fun_sifones_deadlock(estado,matriz_sifones,matriz_es_pl,idle,cantidad_plazas
                 sifon_idle.append(i)#sifon_idle.append[i]
 
 def cleanTXTS():
-
+    
     pathActual = os.path.dirname(os.path.realpath(__file__))
     files = os.listdir()
-    for name in files:
-        if name.endswith(".txt"):
-            os.remove(name)
-    files = os.listdir(Plflow_path)
     for name in files:
         if name.endswith(".txt"):
             os.remove(name)
@@ -431,6 +427,14 @@ def createString(len):
     for i in range(len):
         arr+= str(i) + " "
     return arr   
+def closeSocket():
+    respuesta = "Closed conection"
+    respuesta = respuesta.encode("UTF-8")
+    sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
+    sCliente.send(respuesta)
+    cleanTXTS()
+    sCliente.close()
+    exit(0)
 
 def main():
 
@@ -463,13 +467,7 @@ def main():
 
 
     if (analisis == "quit"):
-        respuesta = "Closed conection"
-        respuesta = respuesta.encode("UTF-8")
-        sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
-        sCliente.send(respuesta)
-        cleanTXTS()
-        sCliente.close()
-        exit(0)
+        closeSocket()
 
      #ENVIO INFO AL SOCKET
     #respuesta = "recibi el 1 en la tesis pibe <br>-id:0<br>-id:1".encode("UTF-8")
@@ -495,9 +493,9 @@ def main():
             file_t_inv_orig.write("\n")
         file_t_inv_orig.close()
 
-        global name_pflow
+        #global name_pflow
         #name_pflow = input("Ingrese el nombre de la red(.pflow): ")
-        name_pflow = os.path.dirname(os.path.realpath(__file__))+"/tmp/net.pflow"
+        #name_pflow = os.path.dirname(os.path.realpath(__file__))+"/tmp/net.pflow"
         print("\n")
 
         file_t_conflict_orig = open('t_conflict_red_original.txt', 'w')
@@ -534,10 +532,41 @@ def main():
         os.remove("filtrado_prueba.txt")
         #respuesta
 
+    #ENVIO INFO AL SOCKET
+    respuesta = respuesta.encode("UTF-8")
+    sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
+    sCliente.send(respuesta)
+    decision = ""
+    #esta parte necesitamos modificarrr
+    
+    if(analisis!="3"): #aca recibe la desicion S
+        length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
+        decision = sCliente.recv(length_of_message).decode("UTF-8")
 
-
-    if(analisis=="3"):   #se obtienen los supervisores (3) o Anular brazos de idle a supervisores (4)
-
+    if(decision=="S"):
+        respuesta = createString(len(sifon_deadlock))#le envio la cantidad de sifones
+        respuesta = respuesta.encode("UTF-8")
+        sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
+        sCliente.send(respuesta)
+        #espero un ID
+       
+        length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
+        recv=sCliente.recv(length_of_message).decode("UTF-8")
+        if(recv=="quit"):
+            closeSocket()
+        id_int = int(recv)
+        #id_int= 0 #int(input("AGREGA EL ID: ")) 
+        new_red.main(lista_supervisores[id_int][0],lista_supervisores[id_int][1],lista_supervisores[id_int][2],lista_supervisores[id_int][3],Plflow_path)
+        #nuevo
+        respuesta = "agrege el supervisor"
+        respuesta = respuesta.encode("UTF-8")
+        sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
+        sCliente.send(respuesta)
+        #hasta aca
+    
+    if(decision=="3"):   #se obtienen los supervisores (3) o Anular brazos de idle a supervisores (4)
+        
+        respuesta=""
         file_plazas = open('cantidad_plazas_red_original.txt', 'r')
         cantidad_plazas_red_original=int(file_plazas.read())
         array_supervisor =[]
@@ -598,62 +627,36 @@ def main():
                                     cont = cont + 1
                                     print(f"La transicion en conflicto T{aux+1} le tiene que devolver un token al supervisor  P{array_supervisor[m]+1}")
                                     msjadd.append('Se agrego un arco desde '+ str(f'T{aux+1}') + ' hasta ' + str(f'P{array_supervisor[m]+1}'))
-                                    
                                     #Se agrega el arco
-                                    arcosrdp.agregararco(name_pflow,aux+1,array_supervisor[m]+1)
+                                    arcosrdp.agregararco(Plflow_path,aux+1,array_supervisor[m]+1)
 
                             if(cont == 0):
                                 if(int(matriz_pre[int(array_supervisor[m])][int(trans_idle[i])])==1):
                                     print(f"Eliminar arco desde  P{array_supervisor[m]+1} hasta  T{trans_idle[i]+1}")
                                     msjdel.append('Se elimino el arco desde '+ str(f'P{array_supervisor[m]+1}') + ' hasta ' + str(f'T{trans_idle[i]+1}'))
-
                                     #Se elimina el arco
-                                    arcosrdp.eliminararco(name_pflow, array_supervisor[m]+1, trans_idle[i]+1)
+                                    arcosrdp.eliminararco(Plflow_path, array_supervisor[m]+1, trans_idle[i]+1)
 
         print("\n")
         for i in range (len(msjadd)):
             print(msjadd[i])
+            respuesta+=msjadd[i]+ "<br>"
 
         for i in range (len(msjdel)):
-            print(msjdel[i])     
+            print(msjdel[i]) 
+            respuesta+=msjdel[i]+ "<br>"  
 
-    #ENVIO INFO AL SOCKET
-    respuesta = respuesta.encode("UTF-8")
-    sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
-    sCliente.send(respuesta)
-    decision = ""
-    #esta parte necesitamos modificarrr
-    
-    if(analisis!="3"): #aca recibe la desicion S
-        length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
-        decision = sCliente.recv(length_of_message).decode("UTF-8")
-
-    if(decision=="S"):
-        respuesta = createString(len(sifon_deadlock))#le envio la cantidad de sifones
+        
         respuesta = respuesta.encode("UTF-8")
         sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
         sCliente.send(respuesta)
-        #espero un ID
-       
         length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
-        id_int = int(sCliente.recv(length_of_message).decode("UTF-8"))
-        #id_int= 0 #int(input("AGREGA EL ID: ")) 
-        new_red.main(lista_supervisores[id_int][0],lista_supervisores[id_int][1],lista_supervisores[id_int][2],lista_supervisores[id_int][3],Plflow_path)
-        #nuevo
-        respuesta = "agrege el supervisor"
-        respuesta = respuesta.encode("UTF-8")
-        sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
-        sCliente.send(respuesta)
-        #hasta aca
+        recv=sCliente.recv(length_of_message).decode("UTF-8")
+        if(recv=="quit"):
+            closeSocket()
 
     if (decision == "quit"):
-        respuesta = "Closed conection"
-        respuesta = respuesta.encode("UTF-8")
-        sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
-        sCliente.send(respuesta)
-        cleanTXTS()
-        sCliente.close()
-        exit(0)
+        closeSocket()
     
     #aca llegamos luego del addsupervisor en espera de saber si hay deadlock o no para continuar el analisis
 #    length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
@@ -694,6 +697,6 @@ while(1): #El algoritmo se ejecuta iterativamente hasta que se controla la red. 
         respuesta = respuesta.encode("UTF-8")
         sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
         sCliente.send(respuesta)
-        #cleanTXTS()
+        cleanTXTS()
         sCliente.close()
         exit(0)

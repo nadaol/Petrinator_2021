@@ -61,6 +61,7 @@ public class SupervisionAction extends AbstractAction
     private JDialog guiDialog;
     private ButtonBar analizeButton;
     private ButtonBar superviseButton;
+    private ButtonBar fixConflictButton;
     InvariantAction accion;
     MatricesAction matrices;
     ReachabilityAction states;
@@ -88,9 +89,10 @@ public class SupervisionAction extends AbstractAction
         contentPane.add(results);
         analizeButton = new ButtonBar("Analyse", new ClassifyListener(), guiDialog.getRootPane());
         superviseButton = new ButtonBar("Add Supervisor/s", new AddSupervisorListener(), guiDialog.getRootPane());
-
+        fixConflictButton = new ButtonBar("Fix Conflict/s", new FixConflictListener(), guiDialog.getRootPane());
         contentPane.add(analizeButton);
         contentPane.add(superviseButton);
+        contentPane.add(fixConflictButton);
         //creo un objeto de invariantes
         accion = new InvariantAction(this.root);
         matrices = new MatricesAction(this.root);
@@ -110,6 +112,7 @@ public class SupervisionAction extends AbstractAction
         // Enables classify button
         analizeButton.setButtonsEnabled(true);
         superviseButton.setButtonsEnabled(false);
+        fixConflictButton.setButtonsEnabled(false);
 
         // Shows initial pane
         guiDialog.pack();
@@ -494,6 +497,7 @@ public class SupervisionAction extends AbstractAction
 
             analizeButton.setButtonsEnabled(false);
 
+
             sPanel = "<h2>Deadlock and S3PR analysis</h2>";
 
             try {
@@ -520,6 +524,7 @@ public class SupervisionAction extends AbstractAction
                     return;
                 }
                 superviseButton.setButtonsEnabled(true);
+                fixConflictButton.setButtonsEnabled(true);
                 String[] treeInfo = new String[]{
                         "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",
                         "S3PR", "" + Deadlock,        // ----------------------  ADD S3PR CLASSIFICATION
@@ -594,128 +599,132 @@ public class SupervisionAction extends AbstractAction
     //Listener boton add supervisor
     private class AddSupervisorListener implements ActionListener {
 
-        public void actionPerformed(ActionEvent actionEvent)
-        {
+        public void actionPerformed(ActionEvent actionEvent) {
             Runanalysis();
-            String[] choices ;
-            sPanel = "<h2>Add Supervisors</h2>";
-            results.setText(sPanel);
+            String[] choices;
+            //sPanel = "<h2>Add Supervisors</h2>";
+            //results.setText(sPanel);
             String Respuesta;
             try {
                 outw.writeUTF("S");
                 outw.flush();
-                Respuesta =inw.readUTF();
-                System.out.println ("Respuesta:");
-                System.out.println (Respuesta);
+                Respuesta = inw.readUTF();
+                System.out.println("Respuesta:");
+                System.out.println(Respuesta);
                 //PIDO ID
                 //String id = JOptionPane.showInputDialog("Indicar ID");
-                choices=Respuesta.split(" ");
+                choices = Respuesta.split(" ");
                 String id = (String) JOptionPane.showInputDialog(null, "Choose now...",
                         "Indicar ID", JOptionPane.QUESTION_MESSAGE, null,
                         choices, // Array of choices
                         choices[0]); // Initial choice
+                if (id == null)//chequeo si se toco cancelar o cerrar
+                {
+                    close_socket();
+                    return;
+                }
                 outw.writeUTF(id);
+                outw.flush();
+                Respuesta = inw.readUTF();
+                System.out.println("Respuesta:");
+                System.out.println(Respuesta);
+                //hasta aca
+                reSaveNet();
+                // if deadlock true export all and send 1 and S. Else send 'quit' and close server socket.
+                CRTree statesTree;
+                //int S3PR = statesTree.hasDeadlock();
+                boolean Deadlock;
+                statesTree = new CRTree(root, root.getCurrentMarking().getMarkingAsArray()[Marking.CURRENT]);
+                Deadlock = statesTree.hasDeadlock();
+                if (!Deadlock) {
+                    EndSupervision();
+                    return;
+                }
+                invariantAnalysis();
+                coverabilityAnalysis();
+                matricesAnalysis();
+                sifonnalysis();
+                saveNet();
+                outw.writeUTF("1");
+                outw.flush();
+                Respuesta = inw.readUTF();
+                System.out.println("Respuesta:");
+                System.out.println(Respuesta);
+                //muestro por panel
+                String[] treeInfo = new String[]{
+                        Respuesta
+                };
+                sPanel = "<h2>Net Anylisis results</h2>";
+                sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
+                results.setText(sPanel);
+                results.setEnabled(true);
+                results.setVisible(true);
+                close_socket();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    };
+    //Listener boton add supervisor
+    private class FixConflictListener implements ActionListener {
+
+        public void actionPerformed(ActionEvent actionEvent)
+        {
+            Runanalysis();
+            String Respuesta;
+            try {
+                outw.writeUTF("3");
                 outw.flush();
                 Respuesta =inw.readUTF();
                 System.out.println ("Respuesta:");
                 System.out.println (Respuesta);
-                //hasta aca
+                String[] treeInfo = new String[]{
+                        Respuesta
+                };
+                sPanel = "<h2>Conflicts Results</h2>";
+                sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
+                results.setText(sPanel);
+                results.setEnabled(true);
                 reSaveNet();
-                // if deadlock true export all and send 1 and S. Else send 'quit' and close server socket.
-                CRTree statesTree ;
-                //int S3PR = statesTree.hasDeadlock();
-                boolean Deadlock ;
-                while(true)
-                {
-                    statesTree = new CRTree(root, root.getCurrentMarking().getMarkingAsArray()[Marking.CURRENT]);
-                    Deadlock = statesTree.hasDeadlock();
-                    if(!Deadlock)
-                    {
-                        EndSupervision();
-                        break;
-                    }
-                    else
-                    {
-
-                        invariantAnalysis();
-                        coverabilityAnalysis();
-                        matricesAnalysis();
-                        sifonnalysis();
-                        saveNet();
-                        outw.writeUTF("1");
-                        outw.flush();
-                        Respuesta =inw.readUTF();
-                        System.out.println ("Respuesta:");
-                        System.out.println (Respuesta);
-                        //muestro por panel
-                        String[] treeInfo = new String[]{
-                                Respuesta
-                        };
-                        sPanel = "<h2>Net Anylisis Results</h2>";
-                        sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
-                        results.setText(sPanel);
-                        results.setEnabled(true);
-                        results.setVisible(true);
-                        outw.writeUTF("S");
-                        outw.flush();
-                        Respuesta =inw.readUTF();
-                        System.out.println ("Respuesta:");
-                        System.out.println (Respuesta);
-                        //PIDO ID
-                        //String id2 = JOptionPane.showInputDialog("Indicar ID");
-                        choices=Respuesta.split(" ");
-                        String id2 = (String) JOptionPane.showInputDialog(null, "Choose now...",
-                                "Indicar ID", JOptionPane.QUESTION_MESSAGE, null,
-                                choices, // Array of choices
-                                choices[0]); // Initial choice
-                        outw.writeUTF(id2);
-                        outw.flush();
-                        Respuesta =inw.readUTF();
-                        System.out.println ("Respuesta:");
-                        System.out.println (Respuesta);
-                        //hasta aca
-                        reSaveNet();
-                    }
-                }
-
+                close_socket();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+
+    };
+        //Function to save and reload net when the supervisor is added
+        public void reSaveNet() {
+
+            FileType chosenFileType = (FileType) new PflowFileType();
+            List<FileType> fileTypes = new LinkedList<>();
+            fileTypes.add(chosenFileType);
+            SaveAction guardar = new SaveAction(this.root, fileTypes);
+            //guardar.actionPerformed(null);
+            ReloadFileAction reload = new ReloadFileAction(this.root, fileTypes);
+            reload.actionPerformed(null);
 
         }
-    };
 
-    //Function to save and reload net when the supervisor is added
-    public void reSaveNet() {
+        public String getOsName() {
+            return System.getProperty("os.name");
+        }
 
-        FileType chosenFileType = (FileType) new PflowFileType();
-        List<FileType> fileTypes = new LinkedList<>();
-        fileTypes.add(chosenFileType);
-        SaveAction guardar = new SaveAction(this.root, fileTypes);
-        //guardar.actionPerformed(null);
-        ReloadFileAction reload = new ReloadFileAction(this.root, fileTypes);
-        reload.actionPerformed(null);
-
+        //Get actual absolute executed .jar path
+        public String get_Current_JarPath()
+        {
+            String pathNet = SupervisionAction.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+            pathNet = pathNet.substring(0, pathNet.lastIndexOf("/"));
+            if (getOsName().startsWith("Windows") && pathNet.startsWith("/"))
+                pathNet = pathNet.substring(1, pathNet.length());
+            String decodedPath = null;
+            try {
+                decodedPath = URLDecoder.decode(pathNet, "UTF-8");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            System.out.println("Jar path : " + decodedPath);
+            return decodedPath;
+        }
     }
-
-    public String getOsName()
-    {
-        return System.getProperty("os.name");
-    }
-
-    //Get actual absolute executed .jar path
-    public String get_Current_JarPath()
-    {
-        String pathNet = SupervisionAction.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        pathNet = pathNet.substring(0,pathNet.lastIndexOf("/"));
-        if(getOsName().startsWith("Windows") && pathNet.startsWith("/"))pathNet = pathNet.substring(1,pathNet.length());
-        String decodedPath=null;
-    try{
-            decodedPath = URLDecoder.decode(pathNet, "UTF-8");
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
-    System.out.println("Jar path : " + decodedPath);
-        return decodedPath;
-    }
-}

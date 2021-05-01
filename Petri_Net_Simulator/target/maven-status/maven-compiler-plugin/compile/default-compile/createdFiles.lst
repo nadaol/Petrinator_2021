@@ -165,6 +165,7 @@ org/petrinator/editor/canvas/TokenFeature.class
 org/petrinator/editor/actions/SetArcReaderAction.class
 org/petrinator/petrinet/FiringSequence.class
 org/petrinator/editor/actions/AddSelectedTransitionsToSelectedRolesAction.class
+org/petrinator/editor/actions/algorithms/SupervisionAction$FixConflictListener.class
 org/petrinator/util/CachedGraphics2D$6.class
 org/petrinator/editor/canvas/PlaceTransitionMakerFeature.class
 org/petrinator/editor/filechooser/PflowFileType.class
