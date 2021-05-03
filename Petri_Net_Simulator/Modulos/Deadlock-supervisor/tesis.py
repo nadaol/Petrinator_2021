@@ -417,7 +417,7 @@ def cleanTXTS():
     pathActual = os.path.dirname(os.path.realpath(__file__))
     files = os.listdir()
     for name in files:
-        if name.endswith(".txt"):
+        if name.endswith(".txt") and not(name.endswith("original.txt")) :
             os.remove(name)
     shutil.rmtree(pathActual+"/__pycache__")
 
@@ -566,7 +566,6 @@ def main():
     
     if(decision=="3"):   #se obtienen los supervisores (3) o Anular brazos de idle a supervisores (4)
         
-        respuesta=""
         file_plazas = open('cantidad_plazas_red_original.txt', 'r')
         cantidad_plazas_red_original=int(file_plazas.read())
         array_supervisor =[]
@@ -587,10 +586,10 @@ def main():
 
         for line in file_t_invariant_red_original:
             aux_t_inv.append(line)
-
+           
         for i in range(len(aux_t_inv)):
             t_invariant_red_original.append(str(aux_t_inv[i]).split())
-
+           
         #Guardamos los conflictos de la red original
         file_t_conflict_red_original = open("./t_conflict_red_original.txt","r")
 
@@ -600,12 +599,13 @@ def main():
 
         for line in file_t_conflict_red_original:
             aux_conflic.append(line)
-
+            
         for i in range(len(aux_conflic)):
             t_conflict_red_original_aux.append(str(aux_conflic[i]).split())
-
+            
         if(len(t_conflict_red_original_aux)!=0):
             t_conflict_red_original = t_conflict_red_original_aux[0]
+          
 
         msjadd = []
         msjdel = []
@@ -634,18 +634,18 @@ def main():
                                 if(int(matriz_pre[int(array_supervisor[m])][int(trans_idle[i])])==1):
                                     print(f"Eliminar arco desde  P{array_supervisor[m]+1} hasta  T{trans_idle[i]+1}")
                                     msjdel.append('Se elimino el arco desde '+ str(f'P{array_supervisor[m]+1}') + ' hasta ' + str(f'T{trans_idle[i]+1}'))
+                                    
                                     #Se elimina el arco
                                     arcosrdp.eliminararco(Plflow_path, array_supervisor[m]+1, trans_idle[i]+1)
 
+        respuesta="<br>"
         print("\n")
         for i in range (len(msjadd)):
             print(msjadd[i])
-            respuesta+=msjadd[i]+ "<br>"
-
+            respuesta+=msjadd[i]+"<br>"
         for i in range (len(msjdel)):
-            print(msjdel[i]) 
-            respuesta+=msjdel[i]+ "<br>"  
-
+            print(msjdel[i])
+            respuesta+=msjdel[i]+"<br>"
         
         respuesta = respuesta.encode("UTF-8")
         sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
@@ -655,7 +655,7 @@ def main():
         if(recv=="quit"):
             closeSocket()
 
-    if (decision == "quit"):
+    elif (decision == "quit"):
         closeSocket()
     
     #aca llegamos luego del addsupervisor en espera de saber si hay deadlock o no para continuar el analisis

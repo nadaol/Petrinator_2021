@@ -11,7 +11,7 @@ Autores:
 #--------------------------------------------------------------------------------------------
 # Eliminar Arco
 #--------------------------------------------------------------------------------------------
-def eliminararco(name_pflow, aS, aD):
+def eliminararco(Plflow_path, aS, aD):
     """
     Elimina un arco de la red. Desde una plaza supervisor hasta una transición. \n
     
@@ -28,7 +28,7 @@ def eliminararco(name_pflow, aS, aD):
     pos = 0
     arco_eliminado = [] 
 
-    f = open(name_pflow,"r")
+    f = open(Plflow_path,"r")
     archivo = f.readlines()
     f.close()
 
@@ -48,7 +48,7 @@ def eliminararco(name_pflow, aS, aD):
             arco_eliminado.pop(pos)
             arc = 0
 
-    with open(name_pflow, 'w') as f:  #Se reescribe el archivo '.pflow' 
+    with open(Plflow_path, 'w') as f:  #Se reescribe el archivo '.pflow' 
         for item in arco_eliminado:
             f.write("%s\n" % item)
     f.close()
@@ -57,7 +57,7 @@ def eliminararco(name_pflow, aS, aD):
 #--------------------------------------------------------------------------------------------
 # Agregar Arco
 #--------------------------------------------------------------------------------------------
-def agregararco(name_pflow, aS, aD): 
+def agregararco(Plflow_path, aS, aD): 
     """
     Agrega un arco de la red. Desde una transición hasta una plaza supervisor. \n
     
@@ -73,7 +73,7 @@ def agregararco(name_pflow, aS, aD):
     flag = 0
     archivo_sin_espacio=[]
 
-    f = open(name_pflow,"r")
+    f = open(Plflow_path,"r")
     archivo = f.readlines()
     f.close()
 
@@ -84,7 +84,7 @@ def agregararco(name_pflow, aS, aD):
             archivo_sin_espacio.append('<arc>\n<type>regular</type>\n<sourceId>'+ aS + '</sourceId>\n<destinationId>'+ aD +'</destinationId>\n<multiplicity>1</multiplicity>\n</arc>')
             flag = 1
 
-    with open(name_pflow, 'w') as f: #Se reescribe el archivo '.pflow' 
+    with open(Plflow_path, 'w') as f: #Se reescribe el archivo '.pflow' 
         for item in archivo_sin_espacio:
             f.write("%s\n" % item)
     f.close()

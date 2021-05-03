@@ -134,7 +134,16 @@ public class SupervisionAction extends AbstractAction
         saveNet();
         socketServer();//Supervision analysis
     }
-
+    public void Runanalysis2()
+    {
+        //JOptionPane.showMessageDialog(null, "llego al run alanisis", "Error", JOptionPane.ERROR_MESSAGE, null);
+        invariantAnalysis();
+        matricesAnalysis();
+        coverabilityAnalysis();
+        sifonnalysis();
+        saveNet();
+        socketServer2();//Supervision analysis
+    }
     // Executes tesis.py and get the response using sockets
     public void socketServer()
     {
@@ -600,7 +609,7 @@ public class SupervisionAction extends AbstractAction
     private class AddSupervisorListener implements ActionListener {
 
         public void actionPerformed(ActionEvent actionEvent) {
-            Runanalysis();
+            Runanalysis2();
             String[] choices;
             //sPanel = "<h2>Add Supervisors</h2>";
             //results.setText(sPanel);
@@ -645,7 +654,7 @@ public class SupervisionAction extends AbstractAction
                 matricesAnalysis();
                 sifonnalysis();
                 saveNet();
-                outw.writeUTF("1");
+                outw.writeUTF("2");//antes 1
                 outw.flush();
                 Respuesta = inw.readUTF();
                 System.out.println("Respuesta:");
@@ -671,7 +680,7 @@ public class SupervisionAction extends AbstractAction
 
         public void actionPerformed(ActionEvent actionEvent)
         {
-            Runanalysis();
+            Runanalysis2();
             String Respuesta;
             try {
                 outw.writeUTF("3");
@@ -727,4 +736,60 @@ public class SupervisionAction extends AbstractAction
             System.out.println("Jar path : " + decodedPath);
             return decodedPath;
         }
+
+    // Executes tesis.py and get the response using sockets
+    public void socketServer2()
+    {
+        /*
+        ServerSocket server = null;
+        Process proceso = null;
+        DataOutputStream outw = null;
+        DataInputStream inw = null;
+        */
+        int port=0;
+        String Respuesta;
+        Socket cli = null;
+
+
+        try {
+
+            server = new ServerSocket(0);
+            port = server.getLocalPort();
+
+            //Get tesis python path and execute
+            String pathToPythonMain = get_Current_JarPath() +"/Modulos/Deadlock-supervisor/tesis.py";
+            String pathPythonExec = "python3 "+pathToPythonMain + " "+ port + " " + root.getCurrentFile().getPath();
+            System.out.println(pathPythonExec);
+            proceso=Runtime.getRuntime().exec(pathPythonExec);
+
+            //Blocking accept executed python client
+            cli = server.accept();
+            //Instantiate input and output socket buffers
+            outw = new DataOutputStream(cli.getOutputStream());
+            inw = new DataInputStream(cli.getInputStream());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            outw.writeUTF("2");
+            outw.flush();
+            Respuesta =inw.readUTF();
+            System.out.println ("Respuesta:");
+            System.out.println (Respuesta);
+            String[] treeInfo = new String[]{
+                    Respuesta
+            };
+            sPanel += "<h2>Net Anylisis Results</h2>";
+            sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
+            results.setText(sPanel);
+            results.setEnabled(true);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        superviseButton.setButtonsEnabled(true);
     }
+
+}
