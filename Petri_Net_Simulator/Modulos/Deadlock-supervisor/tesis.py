@@ -558,7 +558,7 @@ def main():
         #id_int= 0 #int(input("AGREGA EL ID: ")) 
         new_red.main(lista_supervisores[id_int][0],lista_supervisores[id_int][1],lista_supervisores[id_int][2],lista_supervisores[id_int][3],Plflow_path)
         #nuevo
-        respuesta = "agrege el supervisor"
+        respuesta = "Se agrego el supervisor id: " + recv
         respuesta = respuesta.encode("UTF-8")
         sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
         sCliente.send(respuesta)
@@ -638,7 +638,7 @@ def main():
                                     #Se elimina el arco
                                     arcosrdp.eliminararco(Plflow_path, array_supervisor[m]+1, trans_idle[i]+1)
 
-        respuesta="<br>"
+        respuesta=""
         print("\n")
         for i in range (len(msjadd)):
             print(msjadd[i])

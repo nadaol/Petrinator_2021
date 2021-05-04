@@ -24,13 +24,11 @@ package org.petrinator.editor.actions.algorithms;
 import org.petrinator.editor.Root;
 import org.petrinator.editor.actions.ReloadFileAction;
 import org.petrinator.editor.actions.SaveAction;
-import org.petrinator.editor.actions.SaveFileAsAction;
 import org.petrinator.editor.actions.algorithms.reachability.CRTree;
 import org.petrinator.editor.filechooser.*;
 import org.petrinator.petrinet.*;
 import org.petrinator.util.GraphicsTools;
 import pipe.gui.widgets.ButtonBar;
-import pipe.gui.widgets.FileBrowser;
 import pipe.gui.widgets.ResultsHTMLPane;
 import pipe.modules.minimalSiphons.MinimalSiphons;
 import pipe.utilities.math.Matrix;
@@ -49,7 +47,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
-import  java.util.Scanner;
 
 
 public class SupervisionAction extends AbstractAction
@@ -59,7 +56,8 @@ public class SupervisionAction extends AbstractAction
     private String sPanel;
     private Root root;
     private JDialog guiDialog;
-    private ButtonBar analizeButton;
+    private ButtonBar FirstAnalizeButton;
+    private ButtonBar SecondAnalizeButton;
     private ButtonBar superviseButton;
     private ButtonBar fixConflictButton;
     InvariantAction accion;
@@ -87,10 +85,12 @@ public class SupervisionAction extends AbstractAction
         results = new ResultsHTMLPane("");
         sPanel = new String();//new
         contentPane.add(results);
-        analizeButton = new ButtonBar("Analyse", new ClassifyListener(), guiDialog.getRootPane());
+        FirstAnalizeButton = new ButtonBar("First Analysis", new ClassifyListener(), guiDialog.getRootPane());
+        SecondAnalizeButton = new ButtonBar("Net Analysis (with supervisors)", new SecondClassifyListener(), guiDialog.getRootPane());
         superviseButton = new ButtonBar("Add Supervisor/s", new AddSupervisorListener(), guiDialog.getRootPane());
         fixConflictButton = new ButtonBar("Fix Conflict/s", new FixConflictListener(), guiDialog.getRootPane());
-        contentPane.add(analizeButton);
+        contentPane.add(FirstAnalizeButton);
+        contentPane.add(SecondAnalizeButton);
         contentPane.add(superviseButton);
         contentPane.add(fixConflictButton);
         //creo un objeto de invariantes
@@ -110,7 +110,7 @@ public class SupervisionAction extends AbstractAction
         results.setEnabled(false);
 
         // Enables classify button
-        analizeButton.setButtonsEnabled(true);
+        FirstAnalizeButton.setButtonsEnabled(true);
         superviseButton.setButtonsEnabled(false);
         fixConflictButton.setButtonsEnabled(false);
 
@@ -124,7 +124,7 @@ public class SupervisionAction extends AbstractAction
         Exports all html analysis and pflow net for suprevision analysis
 
      */
-    public void Runanalysis()
+    public void Runanalysis(String message)
     {
         //JOptionPane.showMessageDialog(null, "llego al run alanisis", "Error", JOptionPane.ERROR_MESSAGE, null);
         invariantAnalysis();
@@ -132,20 +132,10 @@ public class SupervisionAction extends AbstractAction
         coverabilityAnalysis();
         sifonnalysis();
         saveNet();
-        socketServer();//Supervision analysis
-    }
-    public void Runanalysis2()
-    {
-        //JOptionPane.showMessageDialog(null, "llego al run alanisis", "Error", JOptionPane.ERROR_MESSAGE, null);
-        invariantAnalysis();
-        matricesAnalysis();
-        coverabilityAnalysis();
-        sifonnalysis();
-        saveNet();
-        socketServer2();//Supervision analysis
+        socketServer(message);//Supervision analysis
     }
     // Executes tesis.py and get the response using sockets
-    public void socketServer()
+    public void socketServer(String message)
     {
         /*
         ServerSocket server = null;
@@ -180,7 +170,7 @@ public class SupervisionAction extends AbstractAction
         }
 
         try {
-            outw.writeUTF("1");
+            outw.writeUTF(message);
             outw.flush();
             Respuesta =inw.readUTF();
             System.out.println ("Respuesta:");
@@ -504,7 +494,7 @@ public class SupervisionAction extends AbstractAction
                 return;
             }
 
-            analizeButton.setButtonsEnabled(false);
+            FirstAnalizeButton.setButtonsEnabled(false);
 
 
             sPanel = "<h2>Deadlock and S3PR analysis</h2>";
@@ -541,7 +531,7 @@ public class SupervisionAction extends AbstractAction
                 };
                 sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
                 //results.setEnabled(false);
-                Runanalysis();
+                Runanalysis("1");
                 close_socket();
             }
             catch(OutOfMemoryError e)
@@ -571,7 +561,85 @@ public class SupervisionAction extends AbstractAction
 
         }
     };
+    private class SecondClassifyListener implements ActionListener {
 
+        public void actionPerformed(ActionEvent actionEvent)
+        {
+
+            // Checks if the net is valid
+            if(!root.getDocument().getPetriNet().getRootSubnet().isValid()) {
+                JOptionPane.showMessageDialog(null, "Invalid Net!", "Error", JOptionPane.ERROR_MESSAGE, null);
+                return;
+            }
+
+            FirstAnalizeButton.setButtonsEnabled(false);
+
+
+            sPanel = "<h2>Deadlock and S3PR analysis</h2>";
+
+            try {
+                /*
+                 * Information for boundedness, safeness and deadlock
+                 */
+                CRTree statesTree = new CRTree(root, root.getCurrentMarking().getMarkingAsArray()[Marking.CURRENT]);
+
+                boolean S3PR = statesTree.hasDeadlock();
+                boolean Deadlock = statesTree.hasDeadlock();
+
+                if(Deadlock ==false || S3PR==false)
+                {
+                    sPanel+="The net is not compatible with a deadlock supervision ,the net has to be S3PR and have a deadlock";
+                    String[] treeInfo = new String[]{
+                            "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",
+                            "S3PR", "" + Deadlock,        // ----------------------  ADD S3PR CLASSIFICATION
+                            "Deadlock", "" + S3PR
+                    };
+                    sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
+                    results.setEnabled(true);
+                    results.setText(sPanel);
+                    superviseButton.setButtonsEnabled(false);
+                    fixConflictButton.setButtonsEnabled(false);
+                    return;
+                }
+                superviseButton.setButtonsEnabled(true);
+                fixConflictButton.setButtonsEnabled(true);
+                SecondAnalizeButton.setButtonsEnabled(false);
+                String[] treeInfo = new String[]{
+                        "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",
+                        "S3PR", "" + Deadlock,        // ----------------------  ADD S3PR CLASSIFICATION
+                        "Deadlock", "" + S3PR
+                };
+                sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
+                //results.setEnabled(false);
+                Runanalysis("2");
+                close_socket();
+            }
+            catch(OutOfMemoryError e)
+            {
+                System.gc();
+                results.setText("");
+                sPanel = "Memory error: " + e.getMessage();
+
+                sPanel += "<br>Not enough memory. Please use a larger heap size." +
+                        "<br>" + "<br>Note:" +
+                        "<br>The Java heap size can be specified with the -Xmx option." +
+                        "<br>E.g., to use 512MB as heap size, the command line looks like this:" +
+                        "<br>java -Xmx512m -classpath ...\n";
+                results.setText(sPanel);
+            }
+            catch (StackOverflowError e){
+                results.setText("An error has occurred, the net might have too many states...");
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
+                sPanel = "<br>Error" + e.getMessage();
+                results.setText(sPanel);
+            }
+
+            results.setText(sPanel);
+        }
+    };
     //Added supervisors end
     public void EndSupervision()
     {
@@ -609,7 +677,7 @@ public class SupervisionAction extends AbstractAction
     private class AddSupervisorListener implements ActionListener {
 
         public void actionPerformed(ActionEvent actionEvent) {
-            Runanalysis2();
+            Runanalysis("2");
             String[] choices;
             //sPanel = "<h2>Add Supervisors</h2>";
             //results.setText(sPanel);
@@ -639,36 +707,17 @@ public class SupervisionAction extends AbstractAction
                 System.out.println(Respuesta);
                 //hasta aca
                 reSaveNet();
-                // if deadlock true export all and send 1 and S. Else send 'quit' and close server socket.
-                CRTree statesTree;
-                //int S3PR = statesTree.hasDeadlock();
-                boolean Deadlock;
-                statesTree = new CRTree(root, root.getCurrentMarking().getMarkingAsArray()[Marking.CURRENT]);
-                Deadlock = statesTree.hasDeadlock();
-                if (!Deadlock) {
-                    EndSupervision();
-                    return;
-                }
-                invariantAnalysis();
-                coverabilityAnalysis();
-                matricesAnalysis();
-                sifonnalysis();
-                saveNet();
-                outw.writeUTF("2");//antes 1
-                outw.flush();
-                Respuesta = inw.readUTF();
-                System.out.println("Respuesta:");
-                System.out.println(Respuesta);
-                //muestro por panel
                 String[] treeInfo = new String[]{
                         Respuesta
                 };
-                sPanel = "<h2>Net Anylisis results</h2>";
+                sPanel = "<h2>Added supervisors , run analysis for more details</h2>";
                 sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
                 results.setText(sPanel);
                 results.setEnabled(true);
-                results.setVisible(true);
                 close_socket();
+                superviseButton.setButtonsEnabled(false);
+                fixConflictButton.setButtonsEnabled(false);
+                SecondAnalizeButton.setButtonsEnabled(true);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -680,7 +729,7 @@ public class SupervisionAction extends AbstractAction
 
         public void actionPerformed(ActionEvent actionEvent)
         {
-            Runanalysis2();
+            Runanalysis("2");
             String Respuesta;
             try {
                 outw.writeUTF("3");
@@ -691,12 +740,15 @@ public class SupervisionAction extends AbstractAction
                 String[] treeInfo = new String[]{
                         Respuesta
                 };
-                sPanel = "<h2>Conflicts Results</h2>";
+                sPanel = "<h2>Conflicts Results, run analysis for more details</h2>";
                 sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
                 results.setText(sPanel);
                 results.setEnabled(true);
                 reSaveNet();
                 close_socket();
+                fixConflictButton.setButtonsEnabled(false);
+                superviseButton.setButtonsEnabled(false);
+                SecondAnalizeButton.setButtonsEnabled(true);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -736,60 +788,5 @@ public class SupervisionAction extends AbstractAction
             System.out.println("Jar path : " + decodedPath);
             return decodedPath;
         }
-
-    // Executes tesis.py and get the response using sockets
-    public void socketServer2()
-    {
-        /*
-        ServerSocket server = null;
-        Process proceso = null;
-        DataOutputStream outw = null;
-        DataInputStream inw = null;
-        */
-        int port=0;
-        String Respuesta;
-        Socket cli = null;
-
-
-        try {
-
-            server = new ServerSocket(0);
-            port = server.getLocalPort();
-
-            //Get tesis python path and execute
-            String pathToPythonMain = get_Current_JarPath() +"/Modulos/Deadlock-supervisor/tesis.py";
-            String pathPythonExec = "python3 "+pathToPythonMain + " "+ port + " " + root.getCurrentFile().getPath();
-            System.out.println(pathPythonExec);
-            proceso=Runtime.getRuntime().exec(pathPythonExec);
-
-            //Blocking accept executed python client
-            cli = server.accept();
-            //Instantiate input and output socket buffers
-            outw = new DataOutputStream(cli.getOutputStream());
-            inw = new DataInputStream(cli.getInputStream());
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            outw.writeUTF("2");
-            outw.flush();
-            Respuesta =inw.readUTF();
-            System.out.println ("Respuesta:");
-            System.out.println (Respuesta);
-            String[] treeInfo = new String[]{
-                    Respuesta
-            };
-            sPanel += "<h2>Net Anylisis Results</h2>";
-            sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
-            results.setText(sPanel);
-            results.setEnabled(true);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        superviseButton.setButtonsEnabled(true);
-    }
 
 }

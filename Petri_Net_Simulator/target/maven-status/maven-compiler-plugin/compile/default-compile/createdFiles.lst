@@ -158,6 +158,7 @@ org/petrinator/editor/actions/SelectAllAction.class
 org/petrinator/util/CachedGraphics2D$10.class
 org/petrinator/editor/commands/SetArcMultiplicityCommand.class
 org/petrinator/editor/actions/SetArcMultiplicityAction.class
+org/petrinator/editor/actions/algorithms/SupervisionAction$SecondClassifyListener.class
 org/petrinator/editor/actions/algorithms/ClassificationAction$1.class
 org/petrinator/editor/actions/algorithms/InvariantAction.class
 org/petrinator/editor/filechooser/PngFileType.class
