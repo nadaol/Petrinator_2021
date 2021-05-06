@@ -111,6 +111,8 @@ public class SupervisionAction extends AbstractAction
 
         // Enables classify button
         FirstAnalizeButton.setButtonsEnabled(true);
+        FirstAnalizeButton.setEnabled(true);//para luego chequear
+        SecondAnalizeButton.setButtonsEnabled(true);
         superviseButton.setButtonsEnabled(false);
         fixConflictButton.setButtonsEnabled(false);
 
@@ -133,6 +135,30 @@ public class SupervisionAction extends AbstractAction
         sifonnalysis();
         saveNet();
         socketServer(message);//Supervision analysis
+    }
+    public void execServer()
+    {
+        int port=0;
+        Socket cli = null;
+
+        try {
+            server = new ServerSocket(0);
+            port = server.getLocalPort();
+
+            //Get tesis python path and execute
+            String pathToPythonMain = get_Current_JarPath() +"/Modulos/Deadlock-supervisor/tesis.py";
+            String pathPythonExec = "python3 "+pathToPythonMain + " "+ port + " " + root.getCurrentFile().getPath();
+            System.out.println(pathPythonExec);
+            proceso=Runtime.getRuntime().exec(pathPythonExec);
+            //Blocking accept executed python client
+            cli = server.accept();
+            //Instantiate input and output socket buffers
+            outw = new DataOutputStream(cli.getOutputStream());
+            inw = new DataInputStream(cli.getInputStream());
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     // Executes tesis.py and get the response using sockets
     public void socketServer(String message)
@@ -495,7 +521,7 @@ public class SupervisionAction extends AbstractAction
             }
 
             FirstAnalizeButton.setButtonsEnabled(false);
-
+            FirstAnalizeButton.setEnabled(false);//para luego chequear
 
             sPanel = "<h2>Deadlock and S3PR analysis</h2>";
 
@@ -571,7 +597,18 @@ public class SupervisionAction extends AbstractAction
                 JOptionPane.showMessageDialog(null, "Invalid Net!", "Error", JOptionPane.ERROR_MESSAGE, null);
                 return;
             }
-
+            /*
+            //chequeo que no se aprete primero este boton que el first analysis
+            if (FirstAnalizeButton.isEnabled())
+            {
+                int resp = JOptionPane.showConfirmDialog(null, "En caso de ser la red original, Hacer primero 'first analysis'",//<- EL MENSAJE
+                        "Alerta!", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (resp==JOptionPane.OK_OPTION)
+                {
+                    return;
+                }
+            }*/
+            //sigo
             FirstAnalizeButton.setButtonsEnabled(false);
 
 
@@ -677,7 +714,8 @@ public class SupervisionAction extends AbstractAction
     private class AddSupervisorListener implements ActionListener {
 
         public void actionPerformed(ActionEvent actionEvent) {
-            Runanalysis("2");
+            //Runanalysis("2");
+            execServer();
             String[] choices;
             //sPanel = "<h2>Add Supervisors</h2>";
             //results.setText(sPanel);
@@ -729,7 +767,8 @@ public class SupervisionAction extends AbstractAction
 
         public void actionPerformed(ActionEvent actionEvent)
         {
-            Runanalysis("2");
+            //Runanalysis("2");
+            execServer();
             String Respuesta;
             try {
                 outw.writeUTF("3");
@@ -785,7 +824,7 @@ public class SupervisionAction extends AbstractAction
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            System.out.println("Jar path : " + decodedPath);
+            //System.out.println("Jar path : " + decodedPath);
             return decodedPath;
         }
 

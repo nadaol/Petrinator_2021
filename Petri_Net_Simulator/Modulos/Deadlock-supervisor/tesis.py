@@ -427,6 +427,7 @@ def createString(len):
     for i in range(len):
         arr+= str(i) + " "
     return arr   
+
 def closeSocket():
     respuesta = "Closed conection"
     respuesta = respuesta.encode("UTF-8")
@@ -502,7 +503,7 @@ def main():
         file_t_conflict_orig.close()
 
 
-    if(analisis=="2" or analisis=="1"):
+    if(analisis=="2" or analisis=="1"  or analisis == "S"):#entro en la opcion S para obtener: sifon_deadlock
         sifon_idle=[] #Estado_idle sifon
         sifon_deadlock=[] #Estado_deadlock-sifon-marcado
 
@@ -531,19 +532,12 @@ def main():
         #Elimina archivo temporal
         os.remove("filtrado_prueba.txt")
         #respuesta
-
-    #ENVIO INFO AL SOCKET
-    respuesta = respuesta.encode("UTF-8")
-    sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
-    sCliente.send(respuesta)
-    decision = ""
-    #esta parte necesitamos modificarrr
-    
+    '''
     if(analisis!="3"): #aca recibe la desicion S
         length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
         decision = sCliente.recv(length_of_message).decode("UTF-8")
-
-    if(decision=="S"):
+    '''
+    if(analisis=="S"):
         respuesta = createString(len(sifon_deadlock))#le envio la cantidad de sifones
         respuesta = respuesta.encode("UTF-8")
         sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
@@ -559,12 +553,9 @@ def main():
         new_red.main(lista_supervisores[id_int][0],lista_supervisores[id_int][1],lista_supervisores[id_int][2],lista_supervisores[id_int][3],Plflow_path)
         #nuevo
         respuesta = "Se agrego el supervisor id: " + recv
-        respuesta = respuesta.encode("UTF-8")
-        sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
-        sCliente.send(respuesta)
-        #hasta aca
+       
     
-    if(decision=="3"):   #se obtienen los supervisores (3) o Anular brazos de idle a supervisores (4)
+    if(analisis=="3"):   #se obtienen los supervisores (3) o Anular brazos de idle a supervisores (4)
         
         file_plazas = open('cantidad_plazas_red_original.txt', 'r')
         cantidad_plazas_red_original=int(file_plazas.read())
@@ -647,29 +638,18 @@ def main():
             print(msjdel[i])
             respuesta+=msjdel[i]+"<br>"
         
-        respuesta = respuesta.encode("UTF-8")
-        sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
-        sCliente.send(respuesta)
-        length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
-        recv=sCliente.recv(length_of_message).decode("UTF-8")
-        if(recv=="quit"):
-            closeSocket()
+        if (respuesta==""):
+            respuesta="No hay conflictos<br>"
 
-    elif (decision == "quit"):
-        closeSocket()
-    
+        
     #aca llegamos luego del addsupervisor en espera de saber si hay deadlock o no para continuar el analisis
 #    length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
 #    decision = sCliente.recv(length_of_message).decode("UTF-8")
-    
 
-
-    '''
-    else:
-        print("Opcion erronea")
-        exit()
-    '''
-    
+    #ENVIO INFO AL SOCKET
+    respuesta = respuesta.encode("UTF-8")
+    sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
+    sCliente.send(respuesta)
   
 #creamos el socket
 host = "127.0.0.1"

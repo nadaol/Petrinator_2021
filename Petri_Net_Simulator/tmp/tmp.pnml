@@ -18,23 +18,6 @@
                 <value>0</value>
             </capacity>
         </place>
-        <place id="P22">
-            <graphics>
-                <position x="669" y="297"/>
-            </graphics>
-            <name>
-                <value>P22</value>
-                <graphics>
-                    <offset x="5" y="33"/>
-                </graphics>
-            </name>
-            <initialMarking>
-                <value>Default,3</value>
-            </initialMarking>
-            <capacity>
-                <value>0</value>
-            </capacity>
-        </place>
         <place id="P2">
             <graphics>
                 <position x="191" y="165"/>
@@ -1112,38 +1095,6 @@
             <exported>true</exported>
         </arc>
         <arc id="A" source="T12" target="P21">
-            <inscription>
-                <value>Default,1</value>
-                <graphics/>
-            </inscription>
-            <type value="regular"/>
-            <exported>true</exported>
-        </arc>
-        <arc id="A" source="P22" target="T13">
-            <inscription>
-                <value>Default,1</value>
-                <graphics/>
-            </inscription>
-            <type value="regular"/>
-            <exported>true</exported>
-        </arc>
-        <arc id="A" source="P22" target="T1">
-            <inscription>
-                <value>Default,1</value>
-                <graphics/>
-            </inscription>
-            <type value="regular"/>
-            <exported>true</exported>
-        </arc>
-        <arc id="A" source="T11" target="P22">
-            <inscription>
-                <value>Default,1</value>
-                <graphics/>
-            </inscription>
-            <type value="regular"/>
-            <exported>true</exported>
-        </arc>
-        <arc id="A" source="T5" target="P22">
             <inscription>
                 <value>Default,1</value>
                 <graphics/>

@@ -44,6 +44,22 @@ public class NodeIdGenerator {
         node.setId(id);
     }
 
+    public void deleteUniqueId(Node node)
+    {
+        String id;
+        if (node instanceof Place) {
+            id = "P" + Integer.toString(nextUniquePlaceNumber--);
+        } else if (node instanceof Transition) {
+            id = "T" + Integer.toString(nextUniqueTransitionNumber--);
+        } else if (node instanceof Subnet) {
+            id = "S" + Integer.toString(nextUniqueSubnetNumber--);
+        } else if (node instanceof ReferencePlace) {
+            id = "RP" + Integer.toString(nextUniqueReferencePlaceNumber--);
+        } else {
+            throw new RuntimeException("Node which is not Place, Transition, Subnet neither ReferencePlace");
+        }
+    }
+
     public void resetUniqueIds(){
         nextUniquePlaceNumber = 1;
         nextUniqueReferencePlaceNumber = 1;

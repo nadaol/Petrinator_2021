@@ -17,14 +17,6 @@
             <isStatic>false</isStatic>
         </place>
         <place>
-            <id>P22</id>
-            <x>158</x>
-            <y>6</y>
-            <label>P22</label>
-            <tokens>3</tokens>
-            <isStatic>false</isStatic>
-        </place>
-        <place>
             <id>P2</id>
             <x>-320</x>
             <y>-126</y>
@@ -662,30 +654,6 @@
             <type>regular</type>
             <sourceId>T12</sourceId>
             <destinationId>P21</destinationId>
-            <multiplicity>1</multiplicity>
-        </arc>
-        <arc>
-            <type>regular</type>
-            <sourceId>P22</sourceId>
-            <destinationId>T13</destinationId>
-            <multiplicity>1</multiplicity>
-        </arc>
-        <arc>
-            <type>regular</type>
-            <sourceId>P22</sourceId>
-            <destinationId>T1</destinationId>
-            <multiplicity>1</multiplicity>
-        </arc>
-        <arc>
-            <type>regular</type>
-            <sourceId>T11</sourceId>
-            <destinationId>P22</destinationId>
-            <multiplicity>1</multiplicity>
-        </arc>
-        <arc>
-            <type>regular</type>
-            <sourceId>T5</sourceId>
-            <destinationId>P22</destinationId>
             <multiplicity>1</multiplicity>
         </arc>
         <arc>

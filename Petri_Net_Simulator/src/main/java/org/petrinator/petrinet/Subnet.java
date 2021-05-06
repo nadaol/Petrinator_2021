@@ -161,7 +161,11 @@ public class Subnet extends TransitionNode {
     }
 
     public void removeElement(Element element) {
+
+        //elements.deleteUniqueId(element);
+        //aca decrementaos el id??
         elements.remove(element);
+
     }
 
     public void removeElements() {

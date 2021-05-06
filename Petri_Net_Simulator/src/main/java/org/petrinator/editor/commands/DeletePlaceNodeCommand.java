@@ -52,7 +52,10 @@ public class DeletePlaceNodeCommand implements Command {
         for (Command deleteArc : deleteAllArcEdges) {
             deleteArc.execute();
         }
+        //testeo de decrementar id
+        //petriNet.getNodeSimpleIdGenerator().deleteUniqueId(placeNode);
         placeNode.getParentSubnet().removeElement(placeNode);
+        //aca tenemos que verificar el id y restar
     }
 
     public void undo() {
