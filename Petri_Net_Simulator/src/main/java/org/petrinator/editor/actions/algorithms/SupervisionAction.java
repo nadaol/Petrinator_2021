@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
+import org.apache.commons.io.FileUtils;
 
 
 public class SupervisionAction extends AbstractAction
@@ -102,6 +103,49 @@ public class SupervisionAction extends AbstractAction
 
     }
 
+
+
+    public String catch_error()
+    {
+        String Respuesta = "";
+        try {
+            Respuesta = inw.readUTF();
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+            results.setText("");
+            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error reading python module input buffer", JOptionPane.ERROR_MESSAGE); 
+            guiDialog.setVisible(false); 
+            return null;
+        }
+
+        System.out.println ("Respuesta:" + Respuesta);
+        if(Respuesta.startsWith("Error"))
+        {
+            try {
+                outw.close();
+                inw.close();
+                server.close();
+                //proceso.destroy();
+            } 
+            catch (IOException e) 
+            {
+                //e.printStackTrace();
+                results.setText("");
+                JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error in python module", JOptionPane.ERROR_MESSAGE); 
+                guiDialog.setVisible(false);
+                return null;
+            }
+
+            results.setText("");
+            JOptionPane.showMessageDialog(root.getParentFrame(),Respuesta, "Error in python module", JOptionPane.ERROR_MESSAGE); 
+            guiDialog.setVisible(false);
+            return null;
+        }
+        return Respuesta;
+    }
+
     public void actionPerformed(ActionEvent e)
     {
 
@@ -149,13 +193,10 @@ public class SupervisionAction extends AbstractAction
             String pathToPythonMain;
             if(jar_path!= null)pathToPythonMain = jar_path +"/Modulos/Deadlock-supervisor/tesis.py";
             else return 1;
-            //----------------- String pathPythonExec = "python3 \""+pathToPythonMain + "\" "+ port + " \"" + root.getCurrentFile().getPath() + "\"" ;
-            // -------------------System.out.println(pathPythonExec);
-            //----------------- proceso=Runtime.getRuntime().exec(pathPythonExec);
 
-            ProcessBuilder pb = new ProcessBuilder("python3", pathToPythonMain,String.valueOf(port), root.getCurrentFile().getPath());
+            ProcessBuilder pb = new ProcessBuilder("python3", pathToPythonMain,String.valueOf(port), root.getCurrentFile().getPath(),jar_path);
             pb.start();
-
+            System.out.println("python3 '" + pathToPythonMain + "' "+ String.valueOf(port) + " '" + root.getCurrentFile().getPath() + "'");
 
             //Blocking accept executed python client
             cli = server.accept();
@@ -174,16 +215,9 @@ public class SupervisionAction extends AbstractAction
     // Executes tesis.py and get the response using sockets
     public int socketServer(String message)
     {
-        /*
-        ServerSocket server = null;
-        Process proceso = null;
-        DataOutputStream outw = null;
-        DataInputStream inw = null;
-        */
         int port=0;
         String Respuesta;
         Socket cli = null;
-
 
         try {
 
@@ -195,12 +229,10 @@ public class SupervisionAction extends AbstractAction
             String pathToPythonMain ;
             if(jar_path!=null)pathToPythonMain= jar_path +"/Modulos/Deadlock-supervisor/tesis.py";
             else return 1;
-            // --------------------------------- String pathPythonExec = "python3 \""+pathToPythonMain + "\" "+ port + " \"" + root.getCurrentFile().getPath() + "\"";
-            // --------------------------------System.out.println(pathPythonExec);
-            // ---------------------------------- proceso=Runtime.getRuntime().exec(pathPythonExec);
 
-            ProcessBuilder pb = new ProcessBuilder("python3", pathToPythonMain,String.valueOf(port), root.getCurrentFile().getPath());
+            ProcessBuilder pb = new ProcessBuilder("python3", pathToPythonMain,String.valueOf(port), root.getCurrentFile().getPath(),jar_path);
             pb.start();
+            System.out.println("python3 '" + pathToPythonMain + "' "+ String.valueOf(port) + " '" + root.getCurrentFile().getPath() + "'");
 
             //Blocking accept executed python client
             cli = server.accept();
@@ -218,9 +250,8 @@ public class SupervisionAction extends AbstractAction
         try {
             outw.writeUTF(message);
             outw.flush();
-            Respuesta =inw.readUTF();
-            System.out.println ("Respuesta:");
-            System.out.println (Respuesta);
+            Respuesta = catch_error();
+            if(Respuesta==null)return 1;
             String[] treeInfo = new String[]{
                     Respuesta
             };
@@ -283,7 +314,7 @@ public class SupervisionAction extends AbstractAction
         chooser.setCurrentDirectory(root.getCurrentDirectory());
         chooser.setDialogTitle("Save as...");
 
-        File file = new File("tmp/" + "tmp" + "." + "pnml");
+        File file = new File(get_Current_JarPath() + "/tmp/" + "tmp" + "." + "pnml");
         FileType chosenFileType = (FileType) chooser.getFileFilter();
         try {
             chosenFileType.save(root.getDocument(), file);
@@ -296,7 +327,7 @@ public class SupervisionAction extends AbstractAction
         /*
          * Read tmp file
          */
-        PetriNetView sourceDataLayer = new PetriNetView("tmp/tmp.pnml");
+        PetriNetView sourceDataLayer = new PetriNetView(get_Current_JarPath() + "/tmp/tmp.pnml");
         String s = "<h2>Siphons and Traps</h2>";
 
         if (sourceDataLayer == null) {
@@ -534,16 +565,13 @@ public class SupervisionAction extends AbstractAction
             outw.writeUTF("quit");
             outw.flush();
             String Respuesta =inw.readUTF();
-            System.out.println ("Respuesta:");
-            System.out.println (Respuesta);
+            System.out.println ("Respuesta: " + Respuesta);
             outw.close();
             inw.close();
             server.close();
             //proceso.destroy();
         } catch (IOException e) {
             e.printStackTrace();
-            results.setText("");
-            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error closing python module", JOptionPane.ERROR_MESSAGE); 
             return 1;
         }
         //cierro sockets y streams
@@ -763,9 +791,8 @@ public class SupervisionAction extends AbstractAction
             try {
                 outw.writeUTF("S");
                 outw.flush();
-                Respuesta = inw.readUTF();
-                System.out.println("Respuesta:");
-                System.out.println(Respuesta);
+                Respuesta = catch_error();
+                if(Respuesta==null)return;
                 //PIDO ID
                 //String id = JOptionPane.showInputDialog("Indicar ID");
                 choices = Respuesta.split(" ");
@@ -780,9 +807,8 @@ public class SupervisionAction extends AbstractAction
                 }
                 outw.writeUTF(id);
                 outw.flush();
-                Respuesta = inw.readUTF();
-                System.out.println("Respuesta:");
-                System.out.println(Respuesta);
+                Respuesta = catch_error();
+                if(Respuesta==null)return;
                 //hasta aca
                 reSaveNet();
                 String[] treeInfo = new String[]{

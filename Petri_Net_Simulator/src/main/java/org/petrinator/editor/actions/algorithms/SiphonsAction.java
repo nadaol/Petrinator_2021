@@ -40,6 +40,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Date;
 import java.util.Vector;
+import java.net.URLDecoder;
 
 /**
  * MinimalSiphons computes minimal siphons and minimals traps of a Petri Net.
@@ -80,7 +81,7 @@ public class SiphonsAction extends AbstractAction
         chooser.setCurrentDirectory(root.getCurrentDirectory());
         chooser.setDialogTitle("Save as...");
 
-        File file = new File("tmp/" + "tmp" + "." + "pnml");
+        File file = new File(get_Current_JarPath() + "/tmp/" + "tmp" + "." + "pnml");
         FileType chosenFileType = (FileType) chooser.getFileFilter();
         try {
             chosenFileType.save(root.getDocument(), file);
@@ -103,12 +104,37 @@ public class SiphonsAction extends AbstractAction
         guiDialog.setVisible(true);
     }
 
+    
+    public String getOsName() {
+        return System.getProperty("os.name");
+    }
+
+    //Get actual absolute executed .jar path
+    public String get_Current_JarPath()
+    {
+        String pathNet = SupervisionAction.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        pathNet = pathNet.substring(0, pathNet.lastIndexOf("/"));
+        if (getOsName().startsWith("Windows") && pathNet.startsWith("/"))
+            pathNet = pathNet.substring(1, pathNet.length());
+        String decodedPath = null;
+        try {
+            decodedPath = URLDecoder.decode(pathNet, "UTF-8");
+        } catch (Exception e) {
+            results.setText("");
+            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error obtaining absolute jar path", JOptionPane.ERROR_MESSAGE); 
+            e.printStackTrace();
+            return null;
+        }
+        //System.out.println("Jar path : " + decodedPath);
+        return decodedPath;
+    }
+
     private final ActionListener analyseButtonClick = new ActionListener() {
         public void actionPerformed(ActionEvent arg0) {
             /*
              * Read tmp file
              */
-            PetriNetView sourceDataLayer = new PetriNetView("tmp/tmp.pnml");
+            PetriNetView sourceDataLayer = new PetriNetView(get_Current_JarPath() +"/tmp/tmp.pnml");
             String s = "<h2>Siphons and Traps</h2>";
 
             if (sourceDataLayer == null) {

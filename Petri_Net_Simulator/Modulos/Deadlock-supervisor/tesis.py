@@ -31,7 +31,7 @@ import socket as sk
 #Variable globales
 id=0
 #name_pflow= ""
-Plflow_path =""
+Pflow_path =""
 #respuesta =""
 #
 def siphones_traps(cantidad_plazas):
@@ -268,7 +268,7 @@ def path_conflict(t_idle,t_analizar,flag_idle,plazas_sifon_complemento,matriz_pr
                 if(matriz_pre[p_idle[ii]][mm]==1):
                     t_conflict.append(mm)             #Transiciones en conflicto sensibilizadas por esa plaza
             if(len(t_conflict)>1): #La plaza sensibiliza a mas de una transicion? Hay conflicto
-                file_t_conflict_orig = open('t_conflict_red_original.txt', 'w')
+                file_t_conflict_orig = open(Jar_path +  '/tmp/t_conflict_red_original.txt', 'w+')
                 for ij in range (0, len(t_conflict)):
                     file_t_conflict_orig.write(str(t_conflict[ij]) + ' ')
                 file_t_conflict_orig.close()
@@ -439,7 +439,7 @@ def closeSocket():
 
 def main():
 
-    #luego lo sacamos
+    
     #print("--------------------------------------------------------------------------")
     #print("Algoritmo para la solucion de deadlock para redes de petri tipo S3PR")
     #print("--------------------------------------------------------------------------")
@@ -447,237 +447,215 @@ def main():
     length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
     analisis = sCliente.recv(length_of_message).decode("UTF-8")
     #Conversion de archivos html a txt
-    hta.main()
+    error = False
+    try:
 
-    #Filtrado de archivos provenientes del Petrinator
-    (cantidad_estados, cantidad_plazas , cantidad_transiciones, matriz_es_tr, matriz_es_pl, state_deadlock) = filterdata.main()
+        hta.main()
 
-    #Matrices
-    (matriz_sifones,matriz_traps,cantidad_sifones,cantidad_traps)=siphones_traps(cantidad_plazas)
+        #Filtrado de archivos provenientes del Petrinator
+        (cantidad_estados, cantidad_plazas , cantidad_transiciones, matriz_es_tr, matriz_es_pl, state_deadlock) = filterdata.main()
 
-    (matriz_pos,matriz_pre)=matriz_pre_pos(cantidad_plazas,cantidad_transiciones)
+        #Matrices
+        (matriz_sifones,matriz_traps,cantidad_sifones,cantidad_traps)=siphones_traps(cantidad_plazas)
 
-    #T-invariantes
-    t_invariant=invariantes(cantidad_transiciones)
+        (matriz_pos,matriz_pre)=matriz_pre_pos(cantidad_plazas,cantidad_transiciones)
 
-    print("\nIngrese: ")
-    print("1 - Primer analisis de la red")
-    print("2 - Análisis de red con supervisores")
-    print("3 - Red con supervisores, tratamiento de conflicto y t_idle")
+        #T-invariantes
+        t_invariant=invariantes(cantidad_transiciones)
 
+        print("\nIngrese: ")
+        print("1 - Primer analisis de la red")
+        print("2 - Análisis de red con supervisores")
+        print("3 - Red con supervisores, tratamiento de conflicto y t_idle")
 
-
-    if (analisis == "quit"):
-        closeSocket()
-
-     #ENVIO INFO AL SOCKET
-    #respuesta = "recibi el 1 en la tesis pibe <br>-id:0<br>-id:1".encode("UTF-8")
-    #sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
-    #sCliente.send(respuesta)
-    #temporal
-    #sCliente.close()
-    #cleanTXTS()
-    #exit(0)
-    #TERMINO DE ENVIAR INFO
-
-    if(analisis=="1"):
-        #Obtenemos la cantidad de plazas de la red original
-        file_plazas = open('cantidad_plazas_red_original.txt', 'w')
-        file_plazas.write(str(len(matriz_es_pl[0])))
-        file_plazas.close()
-
-        #Guardamos los T-invariantes de la red original
-        file_t_inv_orig = open('invariante_red_original.txt', 'w')
-        for i in range (0, len(t_invariant)):
-            for j in range(0, len(t_invariant[0])):
-                file_t_inv_orig.write(str(t_invariant[i][j]) + ' ')
-            file_t_inv_orig.write("\n")
-        file_t_inv_orig.close()
-
-        #global name_pflow
-        #name_pflow = input("Ingrese el nombre de la red(.pflow): ")
-        #name_pflow = os.path.dirname(os.path.realpath(__file__))+"/tmp/net.pflow"
-        print("\n")
-
-        file_t_conflict_orig = open('t_conflict_red_original.txt', 'w')
-        file_t_conflict_orig.close()
-
-
-    if(analisis=="2" or analisis=="1"  or analisis == "S"):#entro en la opcion S para obtener: sifon_deadlock
-        sifon_idle=[] #Estado_idle sifon
-        sifon_deadlock=[] #Estado_deadlock-sifon-marcado
-
-        idle=1 #Sifones vacios estado inicial
-        fun_sifones_deadlock(0,matriz_sifones,matriz_es_pl,idle,cantidad_plazas,cantidad_sifones,sifon_idle,sifon_deadlock)
-        #print("Sifones vacios en idle",sifon_idle)
-
-        #Llamada recursiva a fun_deadlock en busqueda de caminos que dirigen al deadlock
-        idle=0 #Sifones en estado deadlock
-        for i in range (0, len(state_deadlock)):
-            fun_sifones_deadlock(state_deadlock[i],matriz_sifones,matriz_es_pl,idle,cantidad_plazas,cantidad_sifones,sifon_idle,sifon_deadlock)
-        print("Cantidad de estados con deadlock:", len(state_deadlock))
-        respuesta = "Cantidad de estados con deadlock: "+ str(len(state_deadlock)) +"<br>"
-        print("Cantidad de sifones vacios:", len(sifon_deadlock))
-        respuesta += "Cantidad de sifones vacios: "+ str(len(sifon_deadlock)) +"<br>"
-
-        lista_supervisores=[]
- 
-        for i in range(0, len(sifon_deadlock)):
-            #Nos quedamos con un solo sifon
-            sifon=np.copy(sifon_deadlock[i])
-            
-            #Agregamos el supervisor del bad-sifon
-            respuesta +=supervisor(cantidad_transiciones,cantidad_plazas,sifon,matriz_es_tr,matriz_pos,matriz_pre,matriz_sifones,t_invariant,lista_supervisores)
-
-        #Elimina archivo temporal
-        os.remove("filtrado_prueba.txt")
-        #respuesta
-    '''
-    if(analisis!="3"): #aca recibe la desicion S
-        length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
-        decision = sCliente.recv(length_of_message).decode("UTF-8")
-    '''
-    if(analisis=="S"):
-        respuesta = createString(len(sifon_deadlock))#le envio la cantidad de sifones
-        respuesta = respuesta.encode("UTF-8")
-        sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
-        sCliente.send(respuesta)
-        #espero un ID
-       
-        length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
-        recv=sCliente.recv(length_of_message).decode("UTF-8")
-        if(recv=="quit"):
+        if (analisis == "quit"):
             closeSocket()
-        id_int = int(recv)
-        #id_int= 0 #int(input("AGREGA EL ID: ")) 
-        new_red.main(lista_supervisores[id_int][0],lista_supervisores[id_int][1],lista_supervisores[id_int][2],lista_supervisores[id_int][3],Plflow_path)
-        #nuevo
-        respuesta = "Se agrego el supervisor id: " + recv
-       
+
+        if(analisis=="1"):
+            #Obtenemos la cantidad de plazas de la red original
+            file_plazas = open(Jar_path + '/tmp/cantidad_plazas_red_original.txt', 'w')
+            file_plazas.write(str(len(matriz_es_pl[0])))
+            file_plazas.close()
+
+            #Guardamos los T-invariantes de la red original
+            file_t_inv_orig = open(Jar_path +  '/tmp/invariante_red_original.txt', 'w')
+            for i in range (0, len(t_invariant)):
+                for j in range(0, len(t_invariant[0])):
+                    file_t_inv_orig.write(str(t_invariant[i][j]) + ' ')
+                file_t_inv_orig.write("\n")
+            file_t_inv_orig.close()
+
+            print("\n")
+            file_t_conflict_orig = open(Jar_path +  '/tmp/t_conflict_red_original.txt', 'w')
+            file_t_conflict_orig.close()
+
+
+        if(analisis=="2" or analisis=="1"  or analisis == "S"):#entro en la opcion S para obtener: sifon_deadlock
+            sifon_idle=[] #Estado_idle sifon
+            sifon_deadlock=[] #Estado_deadlock-sifon-marcado
+
+            idle=1 #Sifones vacios estado inicial
+            fun_sifones_deadlock(0,matriz_sifones,matriz_es_pl,idle,cantidad_plazas,cantidad_sifones,sifon_idle,sifon_deadlock)
+            #print("Sifones vacios en idle",sifon_idle)
+
+            #Llamada recursiva a fun_deadlock en busqueda de caminos que dirigen al deadlock
+            idle=0 #Sifones en estado deadlock
+            for i in range (0, len(state_deadlock)):
+                fun_sifones_deadlock(state_deadlock[i],matriz_sifones,matriz_es_pl,idle,cantidad_plazas,cantidad_sifones,sifon_idle,sifon_deadlock)
+            print("Cantidad de estados con deadlock:", len(state_deadlock))
+            respuesta = "Cantidad de estados con deadlock: "+ str(len(state_deadlock)) +"<br>"
+            print("Cantidad de sifones vacios:", len(sifon_deadlock))
+            respuesta += "Cantidad de sifones vacios: "+ str(len(sifon_deadlock)) +"<br>"
+
+            lista_supervisores=[]
     
-    if(analisis=="3"):   #se obtienen los supervisores (3) o Anular brazos de idle a supervisores (4)
+            for i in range(0, len(sifon_deadlock)):
+                #Nos quedamos con un solo sifon
+                sifon=np.copy(sifon_deadlock[i])
+                
+                #Agregamos el supervisor del bad-sifon
+                respuesta +=supervisor(cantidad_transiciones,cantidad_plazas,sifon,matriz_es_tr,matriz_pos,matriz_pre,matriz_sifones,t_invariant,lista_supervisores)
+
+            #Elimina archivo temporal
+            os.remove("filtrado_prueba.txt")
+            #respuesta
+        if(analisis=="S"):
+            respuesta = createString(len(sifon_deadlock))#le envio la cantidad de sifones
+            respuesta = respuesta.encode("UTF-8")
+            sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
+            sCliente.send(respuesta)
+            #espero un ID
         
-        file_plazas = open('cantidad_plazas_red_original.txt', 'r')
-        cantidad_plazas_red_original=int(file_plazas.read())
-        array_supervisor =[]
-        for i in range (cantidad_plazas_red_original,len(matriz_es_pl[0])):
-            array_supervisor.append(i)
-
-        trans_idle=[] #Transiciones habilitadas en el marcado inicial
-        #Transiciones que salen del estado idle
-        for ii in range(cantidad_transiciones):
-            if(matriz_es_tr[0][ii]!=-1):
-                trans_idle.append(ii)
-
-        #Guardamos los T-invariantes de la red original
-        file_t_invariant_red_original = open("./invariante_red_original.txt","r")
-
-        t_invariant_red_original = []
-        aux_t_inv = [] 
-
-        for line in file_t_invariant_red_original:
-            aux_t_inv.append(line)
-           
-        for i in range(len(aux_t_inv)):
-            t_invariant_red_original.append(str(aux_t_inv[i]).split())
-           
-        #Guardamos los conflictos de la red original
-        file_t_conflict_red_original = open("./t_conflict_red_original.txt","r")
-
-        t_conflict_red_original = []
-        t_conflict_red_original_aux = []
-        aux_conflic = [] 
-
-        for line in file_t_conflict_red_original:
-            aux_conflic.append(line)
-            
-        for i in range(len(aux_conflic)):
-            t_conflict_red_original_aux.append(str(aux_conflic[i]).split())
-            
-        if(len(t_conflict_red_original_aux)!=0):
-            t_conflict_red_original = t_conflict_red_original_aux[0]
-          
-
-        msjadd = []
-        msjdel = []
-        #Buscamos eliminar los arcos de las transiciones idle cuyo T-invariante al que pertenece no le devuelve token al supervisor. (i.e arcos innecesarios)
-        for i in range(len(trans_idle)): #Cantidad de trans_idle
-            for j in range(len(t_invariant_red_original)): #cantidad de t-invariantes
-                if(int(t_invariant_red_original[j][trans_idle[i]])==1): #La transicion idle forma parte del t-invariantes
-                    for m in range(len(array_supervisor)):
-                        cont_sup = 0
-                        for l in range(len(t_invariant_red_original[j])):
-                            if(int(t_invariant_red_original[j][l])==1):
-                                if(int(matriz_pos[array_supervisor[m]][l])==1): #El T-invariante de la transicion idle le devuelve token al supervisor?
-                                    cont_sup = 1 # si devuelve
-                        if(cont_sup==0): #no devuelve
-                            cont=0
-                            for k in range(len(t_conflict_red_original)):
-                                aux = int(t_conflict_red_original[k])
-                                if(int(t_invariant_red_original[j][aux])==1): #La transicion en conflicto forma parte del T-invariante por lo tanto debe devolver el token 
-                                    cont = cont + 1
-                                    print(f"La transicion en conflicto T{aux+1} le tiene que devolver un token al supervisor  P{array_supervisor[m]+1}")
-                                    msjadd.append('Se agrego un arco desde '+ str(f'T{aux+1}') + ' hasta ' + str(f'P{array_supervisor[m]+1}'))
-                                    #Se agrega el arco
-                                    arcosrdp.agregararco(Plflow_path,aux+1,array_supervisor[m]+1)
-
-                            if(cont == 0):
-                                if(int(matriz_pre[int(array_supervisor[m])][int(trans_idle[i])])==1):
-                                    print(f"Eliminar arco desde  P{array_supervisor[m]+1} hasta  T{trans_idle[i]+1}")
-                                    msjdel.append('Se elimino el arco desde '+ str(f'P{array_supervisor[m]+1}') + ' hasta ' + str(f'T{trans_idle[i]+1}'))
-                                    
-                                    #Se elimina el arco
-                                    arcosrdp.eliminararco(Plflow_path, array_supervisor[m]+1, trans_idle[i]+1)
-
-        respuesta=""
-        print("\n")
-        for i in range (len(msjadd)):
-            print(msjadd[i])
-            respuesta+=msjadd[i]+"<br>"
-        for i in range (len(msjdel)):
-            print(msjdel[i])
-            respuesta+=msjdel[i]+"<br>"
+            length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
+            recv=sCliente.recv(length_of_message).decode("UTF-8")
+            if(recv=="quit"):
+                closeSocket()
+            id_int = int(recv)
+            #id_int= 0 #int(input("AGREGA EL ID: ")) 
+            new_red.main(lista_supervisores[id_int][0],lista_supervisores[id_int][1],lista_supervisores[id_int][2],lista_supervisores[id_int][3],Pflow_path)
+            #nuevo
+            respuesta = "Se agrego el supervisor id: " + recv
         
-        if (respuesta==""):
-            respuesta="No hay conflictos<br>"
+        
+        if(analisis=="3"):   #se obtienen los supervisores (3) o Anular brazos de idle a supervisores (4)
+            
+            file_plazas = open(Jar_path + '/tmp/cantidad_plazas_red_original.txt', 'r')
+            cantidad_plazas_red_original=int(file_plazas.read())
+            array_supervisor =[]
+            for i in range (cantidad_plazas_red_original,len(matriz_es_pl[0])):
+                array_supervisor.append(i)
+
+            trans_idle=[] #Transiciones habilitadas en el marcado inicial
+            #Transiciones que salen del estado idle
+            for ii in range(cantidad_transiciones):
+                if(matriz_es_tr[0][ii]!=-1):
+                    trans_idle.append(ii)
+
+            #Guardamos los T-invariantes de la red original
+            file_t_invariant_red_original = open(Jar_path + "/tmp/invariante_red_original.txt","r")
+
+            t_invariant_red_original = []
+            aux_t_inv = [] 
+
+            for line in file_t_invariant_red_original:
+                aux_t_inv.append(line)
+            
+            for i in range(len(aux_t_inv)):
+                t_invariant_red_original.append(str(aux_t_inv[i]).split())
+            
+            #Guardamos los conflictos de la red original
+            file_t_conflict_red_original = open(Jar_path +  "/tmp/t_conflict_red_original.txt","r")
+
+            t_conflict_red_original = []
+            t_conflict_red_original_aux = []
+            aux_conflic = [] 
+
+            for line in file_t_conflict_red_original:
+                aux_conflic.append(line)
+                
+            for i in range(len(aux_conflic)):
+                t_conflict_red_original_aux.append(str(aux_conflic[i]).split())
+                
+            if(len(t_conflict_red_original_aux)!=0):
+                t_conflict_red_original = t_conflict_red_original_aux[0]
+            
+
+            msjadd = []
+            msjdel = []
+            #Buscamos eliminar los arcos de las transiciones idle cuyo T-invariante al que pertenece no le devuelve token al supervisor. (i.e arcos innecesarios)
+            for i in range(len(trans_idle)): #Cantidad de trans_idle
+                for j in range(len(t_invariant_red_original)): #cantidad de t-invariantes
+                    if(int(t_invariant_red_original[j][trans_idle[i]])==1): #La transicion idle forma parte del t-invariantes
+                        for m in range(len(array_supervisor)):
+                            cont_sup = 0
+                            for l in range(len(t_invariant_red_original[j])):
+                                if(int(t_invariant_red_original[j][l])==1):
+                                    if(int(matriz_pos[array_supervisor[m]][l])==1): #El T-invariante de la transicion idle le devuelve token al supervisor?
+                                        cont_sup = 1 # si devuelve
+                            if(cont_sup==0): #no devuelve
+                                cont=0
+                                for k in range(len(t_conflict_red_original)):
+                                    aux = int(t_conflict_red_original[k])
+                                    if(int(t_invariant_red_original[j][aux])==1): #La transicion en conflicto forma parte del T-invariante por lo tanto debe devolver el token 
+                                        cont = cont + 1
+                                        print(f"La transicion en conflicto T{aux+1} le tiene que devolver un token al supervisor  P{array_supervisor[m]+1}")
+                                        msjadd.append('Se agrego un arco desde '+ str(f'T{aux+1}') + ' hasta ' + str(f'P{array_supervisor[m]+1}'))
+                                        #Se agrega el arco
+                                        arcosrdp.agregararco(Pflow_path,aux+1,array_supervisor[m]+1)
+
+                                if(cont == 0):
+                                    if(int(matriz_pre[int(array_supervisor[m])][int(trans_idle[i])])==1):
+                                        print(f"Eliminar arco desde  P{array_supervisor[m]+1} hasta  T{trans_idle[i]+1}")
+                                        msjdel.append('Se elimino el arco desde '+ str(f'P{array_supervisor[m]+1}') + ' hasta ' + str(f'T{trans_idle[i]+1}'))
+                                        
+                                        #Se elimina el arco
+                                        arcosrdp.eliminararco(Pflow_path, array_supervisor[m]+1, trans_idle[i]+1)
+
+            respuesta=""
+            print("\n")
+            for i in range (len(msjadd)):
+                print(msjadd[i])
+                respuesta+=msjadd[i]+"<br>"
+            for i in range (len(msjdel)):
+                print(msjdel[i])
+                respuesta+=msjdel[i]+"<br>"
+            
+            if (respuesta==""):
+                respuesta="No hay conflictos<br>"
 
         
     #aca llegamos luego del addsupervisor en espera de saber si hay deadlock o no para continuar el analisis
 #    length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
 #    decision = sCliente.recv(length_of_message).decode("UTF-8")
+    
+    except Exception as e:
+        error = True
+        respuesta = "Error : " + str(e) + " occurred."
+        print(respuesta)
 
     #ENVIO INFO AL SOCKET
-    respuesta = respuesta.encode("UTF-8")
+
+    respuesta =respuesta.encode("UTF-8")
+    
     sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
     sCliente.send(respuesta)
-  
+    if(error):
+        cleanTXTS()
+        sCliente.close()
+        exit(0)
+    
 #creamos el socket
 host = "127.0.0.1"
 port = int(sys.argv[1])
 #print(port)
-Plflow_path=str(sys.argv[2])
-print(Plflow_path)
+Pflow_path=str(sys.argv[2])
+Jar_path = str(sys.argv[3])
+print(Pflow_path)
+print(Jar_path)
 #print(sys.argv[3])
 sCliente =  sk.socket()
 sCliente.connect((host, port))
 flag = 1
 
 while(1): #El algoritmo se ejecuta iterativamente hasta que se controla la red. De no ser así se dice que el algoritmo no converge
-    
-    id=0
     main()
-    
-    print("\n-------------------------------------------------------------")
-    print("Ingrese:")
-    print("1 - Deadlock = true  - Volver a ejecutar el Algoritmo")
-    print("0 - Deadlock = false - Finalizar ejecucion")
-    print("-------------------------------------------------------------")
-
-    if(flag=="0"):
-        respuesta = "me cerre"
-        respuesta = respuesta.encode("UTF-8")
-        sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
-        sCliente.send(respuesta)
-        cleanTXTS()
-        sCliente.close()
-        exit(0)

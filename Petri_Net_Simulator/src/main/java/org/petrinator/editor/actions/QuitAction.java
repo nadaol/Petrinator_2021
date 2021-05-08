@@ -41,9 +41,13 @@ public class QuitAction extends AbstractAction {
         putValue(SMALL_ICON, GraphicsTools.getIcon("pneditor/quit.png"));
         putValue(MNEMONIC_KEY, KeyEvent.VK_Q);
         putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl Q"));
+
     }
 
     public void actionPerformed(ActionEvent e) {
         root.quitApplication();
     }
+    
 }
+
+

@@ -32,6 +32,9 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.event.*;
+import org.apache.commons.io.FileUtils;
+import java.net.*;
+import java.lang.*;
 
 import org.petrinator.auxiliar.EventList;
 import org.petrinator.editor.actions.*;
@@ -97,6 +100,7 @@ public class Root implements WindowListener, ListSelectionListener, SelectionCha
         roleEditor.deleteButton.setToolTipText("Delete role");
         roleEditor.addListSelectionListener(this);
 
+
         setupMainFrame();
         mainFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         setupFrameIcons();
@@ -104,7 +108,7 @@ public class Root implements WindowListener, ListSelectionListener, SelectionCha
         /*
          * Create tmp directory if it doesn't exist
          */
-        File directory = new File("tmp");
+        File directory = new File(get_Current_JarPath() + "/tmp");
         if (!directory.exists())
         {
             directory.mkdir();
@@ -447,6 +451,29 @@ public class Root implements WindowListener, ListSelectionListener, SelectionCha
         quitApplication();
     }
 
+    
+    public String getOsName() {
+        return System.getProperty("os.name");
+    }
+    
+    //Get actual absolute executed .jar path
+    public String get_Current_JarPath()
+    {
+        String pathNet = Root.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        pathNet = pathNet.substring(0, pathNet.lastIndexOf("/"));
+        if (getOsName().startsWith("Windows") && pathNet.startsWith("/"))
+            pathNet = pathNet.substring(1, pathNet.length());
+        String decodedPath = null;
+        try {
+            decodedPath = URLDecoder.decode(pathNet, "UTF-8");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        //System.out.println("Jar path : " + decodedPath);
+        return decodedPath;
+    }
+
     /**
      * Terminates the application
      */
@@ -471,6 +498,14 @@ public class Root implements WindowListener, ListSelectionListener, SelectionCha
     }
 
     private void quitNow() {
+        try
+        {
+           FileUtils.deleteDirectory(new File(get_Current_JarPath()+"/tmp"));
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+        }
         savePreferences();
         System.exit(0);
     }
