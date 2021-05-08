@@ -79,6 +79,7 @@ public class SupervisionAction extends AbstractAction
         putValue(SMALL_ICON, GraphicsTools.getIcon("pneditor/deadlock.png"));
 
         guiDialog =  new JDialog(root.getParentFrame(), MODULE_NAME, true);
+        guiDialog.setModalityType(Dialog.ModalityType.MODELESS);
         Container contentPane = guiDialog.getContentPane();
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
 
@@ -126,17 +127,15 @@ public class SupervisionAction extends AbstractAction
         Exports all html analysis and pflow net for suprevision analysis
 
      */
-    public void Runanalysis(String message)
+    public int Runanalysis(String message)
     {
         //JOptionPane.showMessageDialog(null, "llego al run alanisis", "Error", JOptionPane.ERROR_MESSAGE, null);
-        invariantAnalysis();
-        matricesAnalysis();
-        coverabilityAnalysis();
-        sifonnalysis();
-        saveNet();
-        socketServer(message);//Supervision analysis
+        if( (invariantAnalysis()==1) || (matricesAnalysis()==1)|| (coverabilityAnalysis()==1)|| 
+            (sifonnalysis()==1) || (saveNet()==1) || (socketServer(message)==1) )
+            return 1;//Supervision analysis
+        return 0;
     }
-    public void execServer()
+    public int execServer()
     {
         int port=0;
         Socket cli = null;
@@ -146,10 +145,18 @@ public class SupervisionAction extends AbstractAction
             port = server.getLocalPort();
 
             //Get tesis python path and execute
-            String pathToPythonMain = get_Current_JarPath() +"/Modulos/Deadlock-supervisor/tesis.py";
-            String pathPythonExec = "python3 "+pathToPythonMain + " "+ port + " " + root.getCurrentFile().getPath();
-            System.out.println(pathPythonExec);
-            proceso=Runtime.getRuntime().exec(pathPythonExec);
+            String  jar_path = get_Current_JarPath();
+            String pathToPythonMain;
+            if(jar_path!= null)pathToPythonMain = jar_path +"/Modulos/Deadlock-supervisor/tesis.py";
+            else return 1;
+            //----------------- String pathPythonExec = "python3 \""+pathToPythonMain + "\" "+ port + " \"" + root.getCurrentFile().getPath() + "\"" ;
+            // -------------------System.out.println(pathPythonExec);
+            //----------------- proceso=Runtime.getRuntime().exec(pathPythonExec);
+
+            ProcessBuilder pb = new ProcessBuilder("python3", pathToPythonMain,String.valueOf(port), root.getCurrentFile().getPath());
+            pb.start();
+
+
             //Blocking accept executed python client
             cli = server.accept();
             //Instantiate input and output socket buffers
@@ -157,11 +164,15 @@ public class SupervisionAction extends AbstractAction
             inw = new DataInputStream(cli.getInputStream());
 
         } catch (IOException e) {
+            results.setText("");
             e.printStackTrace();
+            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error executing python module", JOptionPane.ERROR_MESSAGE); 
+            return 1;
         }
+        return 0;
     }
     // Executes tesis.py and get the response using sockets
-    public void socketServer(String message)
+    public int socketServer(String message)
     {
         /*
         ServerSocket server = null;
@@ -180,10 +191,16 @@ public class SupervisionAction extends AbstractAction
             port = server.getLocalPort();
 
             //Get tesis python path and execute
-            String pathToPythonMain = get_Current_JarPath() +"/Modulos/Deadlock-supervisor/tesis.py";
-            String pathPythonExec = "python3 "+pathToPythonMain + " "+ port + " " + root.getCurrentFile().getPath();
-            System.out.println(pathPythonExec);
-            proceso=Runtime.getRuntime().exec(pathPythonExec);
+            String  jar_path = get_Current_JarPath();
+            String pathToPythonMain ;
+            if(jar_path!=null)pathToPythonMain= jar_path +"/Modulos/Deadlock-supervisor/tesis.py";
+            else return 1;
+            // --------------------------------- String pathPythonExec = "python3 \""+pathToPythonMain + "\" "+ port + " \"" + root.getCurrentFile().getPath() + "\"";
+            // --------------------------------System.out.println(pathPythonExec);
+            // ---------------------------------- proceso=Runtime.getRuntime().exec(pathPythonExec);
+
+            ProcessBuilder pb = new ProcessBuilder("python3", pathToPythonMain,String.valueOf(port), root.getCurrentFile().getPath());
+            pb.start();
 
             //Blocking accept executed python client
             cli = server.accept();
@@ -192,7 +209,10 @@ public class SupervisionAction extends AbstractAction
             inw = new DataInputStream(cli.getInputStream());
 
         } catch (IOException e) {
+            results.setText("");
             e.printStackTrace();
+            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error executing python module", JOptionPane.ERROR_MESSAGE); 
+            return 1;
         }
 
         try {
@@ -210,32 +230,44 @@ public class SupervisionAction extends AbstractAction
             results.setEnabled(true);
 
         } catch (IOException e) {
+            results.setText("");
             e.printStackTrace();
+            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error in python module communication", JOptionPane.ERROR_MESSAGE); 
+            return 1;
         }
         superviseButton.setButtonsEnabled(true);
+        return 0;
     }
 
     //Function to save the current net in a temp.pflow file for later supervision analisys
-    public void saveNet() {
+    public int saveNet() {
 
         FileChooserDialog chooser = new FileChooserDialog();
         chooser.setVisible(false);
         chooser.setAcceptAllFileFilterUsed(false);
 
-        String Temp_net_path = get_Current_JarPath() + "/Modulos/Deadlock-supervisor/tmp/net.pflow";
+        
+        String Temp_net_path;
+        String jar_path = get_Current_JarPath();
+        if(jar_path != null)Temp_net_path = jar_path + "/Modulos/Deadlock-supervisor/tmp/net.pflow";
+        else return 1;
 
         File file = new File(Temp_net_path);
         FileType chosenFileType = (FileType) new PflowFileType();
         try {
             chosenFileType.save(root.getDocument(), file);
         } catch (FileTypeException ex) {
-            JOptionPane.showMessageDialog(root.getParentFrame(), ex.getMessage());
+            results.setText("");
+            JOptionPane.showMessageDialog(root.getParentFrame(),ex.getMessage(), "Error saving net", JOptionPane.ERROR_MESSAGE); 
+            ex.printStackTrace();
+            return 1;
         }
+        return 0;
     }
     /*
      Do Siphon's and trap's analisys and saves it in html extension
   */
-    public void sifonnalysis()
+    public int sifonnalysis()
     {
         /*
          * Create tmp.pnml file
@@ -256,7 +288,10 @@ public class SupervisionAction extends AbstractAction
         try {
             chosenFileType.save(root.getDocument(), file);
         } catch (FileTypeException e1) {
+            results.setText("");
+            JOptionPane.showMessageDialog(root.getParentFrame(),e1.getMessage(), "Error executing siphons analysis", JOptionPane.ERROR_MESSAGE); 
             e1.printStackTrace();
+            return 1;
         }
         /*
          * Read tmp file
@@ -265,7 +300,7 @@ public class SupervisionAction extends AbstractAction
         String s = "<h2>Siphons and Traps</h2>";
 
         if (sourceDataLayer == null) {
-            return;
+            return 1;
         }
         if(!root.getDocument().getPetriNet().getRootSubnet().hasPlaces() || !root.getDocument().getPetriNet().getRootSubnet().hasTransitions())
         {
@@ -287,26 +322,28 @@ public class SupervisionAction extends AbstractAction
                         + "<br>E.g., to use 512MB as heap size, the command line looks like this:"
                         + "<br>java -Xmx512m -classpath ...\n";
                 results.setText(s);
-                return;
+                return 1;
             } catch (Exception e) {
                 e.printStackTrace();
                 s = "<br>Error" + e.getMessage();
                 results.setText(s);
-                return;
+                return 1;
             }
         }
         results.setText(s);
-        SaveHTML("sif");
+        if(SaveHTML("sif") == 1)return 1;
+        return 0;
     }
     /*
        Do the coverability analisys and saves it in html extension
     */
-    public void coverabilityAnalysis()
+    public int coverabilityAnalysis()
     {
         // Checks if the net is valid
         if (!root.getDocument().getPetriNet().getRootSubnet().isValid()) {
-            JOptionPane.showMessageDialog(null, "Invalid Net!", "Error", JOptionPane.ERROR_MESSAGE, null);
-            return;
+            results.setText("");
+            JOptionPane.showMessageDialog(null, "Invalid Net!", "Error executing coverability analysis", JOptionPane.ERROR_MESSAGE, null);
+            return 1;
         }
 
         // Disables the calculate button
@@ -325,16 +362,17 @@ public class SupervisionAction extends AbstractAction
             results.setEnabled(false);
         } catch (StackOverflowError e) {
             log = "An error has occurred, the net might have too many states...";
+            return 1;
         }
 
         results.setText(log);
-        SaveHTML("cov");
-
+        if(SaveHTML("cov") == 1)return 1;
+        return 0;
     }
     /*
         Do the invariant analisys and saves it in html extension
      */
-    public void invariantAnalysis()
+    public int invariantAnalysis()
     {
         //PetriNetView sourceDataLayer = new PetriNetView("tmp/tmp.pnml");
         accion._incidenceMatrix = new Matrix(root.getDocument().getPetriNet().getIncidenceMatrix());;
@@ -361,28 +399,30 @@ public class SupervisionAction extends AbstractAction
 
                 s += "<br>Not enough memory. Please use a larger heap size." + "<br>" + "<br>Note:" + "<br>The Java heap size can be specified with the -Xmx option." + "<br>E.g., to use 512MB as heap size, the command line looks like this:" + "<br>java -Xmx512m -classpath ...\n";
                 results.setText(s);
-                return;
+                return 1;
             }
             catch(Exception e)
             {
                 e.printStackTrace();
                 s = "<br>Error" + e.getMessage();
                 results.setText(s);
-                return;
+                return 1;
             }
         }
         results.setText(s);
-        SaveHTML("inv");
+        if(SaveHTML("inv") == 1)return 1;
+        return 0;
     }
     /*
         Get matrices and saves it in html extension
      */
-    public void matricesAnalysis()
+    public int matricesAnalysis()
     {
         // Checks if the net is valid
         if(!root.getDocument().getPetriNet().getRootSubnet().isValid()) {
-            JOptionPane.showMessageDialog(null, "Invalid Net!", "Error", JOptionPane.ERROR_MESSAGE, null);
-            return;
+            results.setText("");
+            JOptionPane.showMessageDialog(null, "Invalid Net!", "Error executing matrices analysis", JOptionPane.ERROR_MESSAGE, null);
+            return 1;
         }
 
         /* Create HTML file with data */
@@ -434,39 +474,34 @@ public class SupervisionAction extends AbstractAction
 
             s += "<br>Not enough memory. Please use a larger heap size." + "<br>" + "<br>Note:" + "<br>The Java heap size can be specified with the -Xmx option." + "<br>E.g., to use 512MB as heap size, the command line looks like this:" + "<br>java -Xmx512m -classpath ...\n";
             results.setText(s);
-            return;
+            return 1;
         }
         catch(Exception e)
         {
             s = "<br>Invalid net";
             results.setText(s);
-            return;
+            return 1;
         }
 
         results.setText(s);
 
         // Enables the copy and save buttons
         results.setEnabled(false);
-        SaveHTML("mat");
+        if(SaveHTML("mat") == 1)return 1;
+        return 0;
     }
 
     /*
         SAVE AS HTML
      */
-    public void SaveHTML(String name)
+    public int SaveHTML(String name)
     {
         String save_path="";
         try
         {
-            /*
-            File defaultPath = new File(".");
-            FileBrowser fileBrowser = new FileBrowser("HTML file", "html", defaultPath.getPath());
-            String destFN = fileBrowser.saveFile();
-            if(!destFN.toLowerCase().endsWith(".html"))
-            {
-                destFN += ".html";
-            }*/
-            save_path= get_Current_JarPath() +"/Modulos/Deadlock-supervisor/tmp/"+ name +".html";
+            String  jar_path = get_Current_JarPath();
+            if(jar_path!= null) save_path= jar_path +"/Modulos/Deadlock-supervisor/tmp/"+ name +".html";
+            else return 1;
 
             FileWriter writer = new FileWriter(new File(save_path));
             String output = "<html><head><style type=\"text/css\">" +
@@ -485,11 +520,15 @@ public class SupervisionAction extends AbstractAction
         }
         catch(Exception e)
         {
-            System.out.println("Error saving HTML "+save_path);
+            results.setText("");
+            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(),  "Error saving temporary files", JOptionPane.ERROR_MESSAGE); 
+            e.printStackTrace();
+            return 1;
         }
+        return 0;
     }
 
-    public void close_socket()
+    public int close_socket()
     {
         try {
             outw.writeUTF("quit");
@@ -503,8 +542,12 @@ public class SupervisionAction extends AbstractAction
             //proceso.destroy();
         } catch (IOException e) {
             e.printStackTrace();
+            results.setText("");
+            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error closing python module", JOptionPane.ERROR_MESSAGE); 
+            return 1;
         }
         //cierro sockets y streams
+        return 0;
     }
     /**
      * Listener for analyse button
@@ -516,7 +559,10 @@ public class SupervisionAction extends AbstractAction
 
             // Checks if the net is valid
             if(!root.getDocument().getPetriNet().getRootSubnet().isValid()) {
-                JOptionPane.showMessageDialog(null, "Invalid Net!", "Error", JOptionPane.ERROR_MESSAGE, null);
+                results.setText("3");
+                JOptionPane.showMessageDialog(null, "Invalid Net!", "Error analysing net", JOptionPane.ERROR_MESSAGE, null);
+                guiDialog.setVisible(false);
+                close_socket();
                 return;
             }
 
@@ -557,8 +603,14 @@ public class SupervisionAction extends AbstractAction
                 };
                 sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
                 //results.setEnabled(false);
-                Runanalysis("1");
+                if(Runanalysis("1")==1 )
+                {
+                    guiDialog.setVisible(false);
+                    close_socket();
+                    return;
+                }
                 close_socket();
+                
             }
             catch(OutOfMemoryError e)
             {
@@ -587,6 +639,8 @@ public class SupervisionAction extends AbstractAction
 
         }
     };
+
+    // Analyse2 button (with supervisors)
     private class SecondClassifyListener implements ActionListener {
 
         public void actionPerformed(ActionEvent actionEvent)
@@ -594,7 +648,9 @@ public class SupervisionAction extends AbstractAction
 
             // Checks if the net is valid
             if(!root.getDocument().getPetriNet().getRootSubnet().isValid()) {
-                JOptionPane.showMessageDialog(null, "Invalid Net!", "Error", JOptionPane.ERROR_MESSAGE, null);
+                results.setText("");
+                JOptionPane.showMessageDialog(null, "Invalid Net!", "Error analysing net", JOptionPane.ERROR_MESSAGE, null);
+                guiDialog.setVisible(false);
                 return;
             }
             /*
@@ -647,8 +703,13 @@ public class SupervisionAction extends AbstractAction
                         "Deadlock", "" + S3PR
                 };
                 sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
-                //results.setEnabled(false);
-                Runanalysis("2");
+
+                if(Runanalysis("2")==1)
+                {
+                    guiDialog.setVisible(false);
+                    close_socket();
+                    return;
+                }
                 close_socket();
             }
             catch(OutOfMemoryError e)
@@ -663,59 +724,38 @@ public class SupervisionAction extends AbstractAction
                         "<br>E.g., to use 512MB as heap size, the command line looks like this:" +
                         "<br>java -Xmx512m -classpath ...\n";
                 results.setText(sPanel);
+                guiDialog.setVisible(false);
+                close_socket();
             }
             catch (StackOverflowError e){
                 results.setText("An error has occurred, the net might have too many states...");
+                guiDialog.setVisible(false);
+                close_socket();
             }
             catch(Exception e)
             {
                 e.printStackTrace();
                 sPanel = "<br>Error" + e.getMessage();
                 results.setText(sPanel);
+                guiDialog.setVisible(false);
+                close_socket();
             }
 
             results.setText(sPanel);
         }
     };
-    //Added supervisors end
-    public void EndSupervision()
-    {
-        superviseButton.setButtonsEnabled(false);
-        sPanel = "<h2>Added Supervisors</h2>";
-
-        String[] treeInfo = new String[]{
-                "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",       // ----------------------  ADD S3PR CLASSIFICATION
-                "Deadlock", "false"
-        };
-        sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
-        results.setEnabled(true);
-        results.setText(sPanel);
-        //System.out.println(root.getCurrentFile().getPath());
-        String Respuesta="";
-
-            try {
-                outw.writeUTF("quit");
-                outw.flush();
-                Respuesta =inw.readUTF();
-                System.out.println ("Respuesta:");
-                System.out.println (Respuesta);
-                outw.close();
-                inw.close();
-                server.close();
-                //proceso.destroy();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-    }
 
 
-    //Listener boton add supervisor
+    //Listener for add supervisor button
     private class AddSupervisorListener implements ActionListener {
 
         public void actionPerformed(ActionEvent actionEvent) {
             //Runanalysis("2");
-            execServer();
+            if(execServer()==1)
+            {
+                guiDialog.setVisible(false);
+                return;
+            }
             String[] choices;
             //sPanel = "<h2>Add Supervisors</h2>";
             //results.setText(sPanel);
@@ -757,18 +797,28 @@ public class SupervisionAction extends AbstractAction
                 fixConflictButton.setButtonsEnabled(false);
                 SecondAnalizeButton.setButtonsEnabled(true);
             } catch (IOException e) {
+                results.setText("");
                 e.printStackTrace();
+                JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error during net supervision", JOptionPane.ERROR_MESSAGE); 
+                guiDialog.setVisible(false);
+                close_socket();
+                return;
             }
+            return;
         }
 
     };
-    //Listener boton add supervisor
+    //Listener for fix conflict button
     private class FixConflictListener implements ActionListener {
 
         public void actionPerformed(ActionEvent actionEvent)
         {
             //Runanalysis("2");
-            execServer();
+            if(execServer()==1)
+            {
+                guiDialog.setVisible(false);
+                return;
+            }
             String Respuesta;
             try {
                 outw.writeUTF("3");
@@ -789,8 +839,14 @@ public class SupervisionAction extends AbstractAction
                 superviseButton.setButtonsEnabled(false);
                 SecondAnalizeButton.setButtonsEnabled(true);
             } catch (IOException e) {
+                results.setText("");
                 e.printStackTrace();
+                JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error resolving net conflicts", JOptionPane.ERROR_MESSAGE); 
+                guiDialog.setVisible(false);
+                close_socket();
+                return;
             }
+            return;
         }
 
     };
@@ -822,7 +878,10 @@ public class SupervisionAction extends AbstractAction
             try {
                 decodedPath = URLDecoder.decode(pathNet, "UTF-8");
             } catch (Exception e) {
+                results.setText("");
+                JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error obtaining absolute jar path", JOptionPane.ERROR_MESSAGE); 
                 e.printStackTrace();
+                return null;
             }
             //System.out.println("Jar path : " + decodedPath);
             return decodedPath;
