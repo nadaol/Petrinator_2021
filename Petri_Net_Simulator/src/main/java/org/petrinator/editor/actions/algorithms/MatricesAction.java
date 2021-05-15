@@ -340,4 +340,5 @@ public class MatricesAction extends AbstractAction
         return ResultsHTMLPane.makeTable(
                 result.toArray(), sortedNames.size() + 1, false, false, true, true);
     }
+
 }

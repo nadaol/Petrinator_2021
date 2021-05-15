@@ -605,7 +605,7 @@ public class SupervisionAction extends AbstractAction
                  */
                 CRTree statesTree = new CRTree(root, root.getCurrentMarking().getMarkingAsArray()[Marking.CURRENT]);
 
-                boolean S3PR = statesTree.hasDeadlock();
+                boolean S3PR = isS3PR();
                 boolean Deadlock = statesTree.hasDeadlock();
 
                 if(Deadlock ==false || S3PR==false)
@@ -613,21 +613,20 @@ public class SupervisionAction extends AbstractAction
                     sPanel+="The net is not compatible with a deadlock supervision ,the net has to be S3PR and have a deadlock";
                     String[] treeInfo = new String[]{
                             "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",
-                            "S3PR", "" + Deadlock,        // ----------------------  ADD S3PR CLASSIFICATION
-                            "Deadlock", "" + S3PR
+                            "S3PR", "" + S3PR,        // ----------------------  ADD S3PR CLASSIFICATION
+                            "Deadlock", "" + Deadlock
                     };
                     sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
                     results.setEnabled(true);
                     results.setText(sPanel);
-                    System.out.println("Soy falso");
                     return;
                 }
                 superviseButton.setButtonsEnabled(true);
                 fixConflictButton.setButtonsEnabled(true);
                 String[] treeInfo = new String[]{
                         "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",
-                        "S3PR", "" + Deadlock,        // ----------------------  ADD S3PR CLASSIFICATION
-                        "Deadlock", "" + S3PR
+                        "S3PR", "" + S3PR,        // ----------------------  ADD S3PR CLASSIFICATION
+                        "Deadlock", "" + Deadlock
                 };
                 sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
                 //results.setEnabled(false);
@@ -704,7 +703,7 @@ public class SupervisionAction extends AbstractAction
                  */
                 CRTree statesTree = new CRTree(root, root.getCurrentMarking().getMarkingAsArray()[Marking.CURRENT]);
 
-                boolean S3PR = statesTree.hasDeadlock();
+                boolean S3PR = isS3PR();
                 boolean Deadlock = statesTree.hasDeadlock();
 
                 if(Deadlock ==false || S3PR==false)
@@ -712,8 +711,8 @@ public class SupervisionAction extends AbstractAction
                     sPanel+="The net is not compatible with a deadlock supervision ,the net has to be S3PR and have a deadlock";
                     String[] treeInfo = new String[]{
                             "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",
-                            "S3PR", "" + Deadlock,        // ----------------------  ADD S3PR CLASSIFICATION
-                            "Deadlock", "" + S3PR
+                            "S3PR", "" + S3PR,        // ----------------------  ADD S3PR CLASSIFICATION
+                            "Deadlock", "" + Deadlock
                     };
                     sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
                     results.setEnabled(true);
@@ -727,8 +726,8 @@ public class SupervisionAction extends AbstractAction
                 SecondAnalizeButton.setButtonsEnabled(false);
                 String[] treeInfo = new String[]{
                         "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",
-                        "S3PR", "" + Deadlock,        // ----------------------  ADD S3PR CLASSIFICATION
-                        "Deadlock", "" + S3PR
+                        "S3PR", "" + S3PR,        // ----------------------  ADD S3PR CLASSIFICATION
+                        "Deadlock", "" + Deadlock
                 };
                 sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
 
@@ -876,41 +875,70 @@ public class SupervisionAction extends AbstractAction
         }
 
     };
-        //Function to save and reload net when the supervisor is added
-        public void reSaveNet() {
+    //Function to save and reload net when the supervisor is added
+    public void reSaveNet() {
 
-            FileType chosenFileType = (FileType) new PflowFileType();
-            List<FileType> fileTypes = new LinkedList<>();
-            fileTypes.add(chosenFileType);
-            SaveAction guardar = new SaveAction(this.root, fileTypes);
-            //guardar.actionPerformed(null);
-            ReloadFileAction reload = new ReloadFileAction(this.root, fileTypes);
-            reload.actionPerformed(null);
+        FileType chosenFileType = (FileType) new PflowFileType();
+        List<FileType> fileTypes = new LinkedList<>();
+        fileTypes.add(chosenFileType);
+        SaveAction guardar = new SaveAction(this.root, fileTypes);
+        //guardar.actionPerformed(null);
+        ReloadFileAction reload = new ReloadFileAction(this.root, fileTypes);
+        reload.actionPerformed(null);
 
+    }
+
+    public String getOsName() {
+        return System.getProperty("os.name");
+    }
+
+    //Get actual absolute executed .jar path
+    public String get_Current_JarPath()
+    {
+        String pathNet = SupervisionAction.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        pathNet = pathNet.substring(0, pathNet.lastIndexOf("/"));
+        if (getOsName().startsWith("Windows") && pathNet.startsWith("/"))
+            pathNet = pathNet.substring(1, pathNet.length());
+        String decodedPath = null;
+        try {
+            decodedPath = URLDecoder.decode(pathNet, "UTF-8");
+        } catch (Exception e) {
+            results.setText("");
+            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error obtaining absolute jar path", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return null;
         }
+        //System.out.println("Jar path : " + decodedPath);
+        return decodedPath;
+    }
 
-        public String getOsName() {
-            return System.getProperty("os.name");
-        }
-
-        //Get actual absolute executed .jar path
-        public String get_Current_JarPath()
+    //S3P3 classification
+    public boolean isS3PR()
+    {
+        int[][] IncidenceMatrix = root.getDocument().getPetriNet().getIncidenceMatrix();
+        Matrix TInvariants = accion.findVectors(new Matrix(root.getDocument().getPetriNet().getIncidenceMatrix()));
+        TInvariants.transpose();
+        System.out.println("Matriz de incidencia: \n");
+        for (int f=0; f < IncidenceMatrix.length; f++)
         {
-            String pathNet = SupervisionAction.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-            pathNet = pathNet.substring(0, pathNet.lastIndexOf("/"));
-            if (getOsName().startsWith("Windows") && pathNet.startsWith("/"))
-                pathNet = pathNet.substring(1, pathNet.length());
-            String decodedPath = null;
-            try {
-                decodedPath = URLDecoder.decode(pathNet, "UTF-8");
-            } catch (Exception e) {
-                results.setText("");
-                JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error obtaining absolute jar path", JOptionPane.ERROR_MESSAGE); 
-                e.printStackTrace();
-                return null;
+            for (int c=0; c < IncidenceMatrix[f].length; c++)
+            {
+                System.out.print(Integer.toString(IncidenceMatrix[f][c])+" ");
             }
-            //System.out.println("Jar path : " + decodedPath);
-            return decodedPath;
+            System.out.println();
         }
+        System.out.println("Existen "+ TInvariants.getColumnDimension()+ "T invariantes: \n");
+        System.out.println("Matriz de T invariantes: \n");
+        //la columna son los t invariantes
+        for (int f=0; f < TInvariants.getRowDimension(); f++)
+        {
+            for (int c=0; c < TInvariants.getColumnDimension(); c++)
+            {
+                System.out.print(Integer.toString(TInvariants.get(f,c))+" ");
+            }
+            System.out.println();
+        }
+        return true;
+    }
 
 }
