@@ -918,27 +918,93 @@ public class SupervisionAction extends AbstractAction
         int[][] IncidenceMatrix = root.getDocument().getPetriNet().getIncidenceMatrix();
         Matrix TInvariants = accion.findVectors(new Matrix(root.getDocument().getPetriNet().getIncidenceMatrix()));
         TInvariants.transpose();
-        System.out.println("Matriz de incidencia: \n");
-        for (int f=0; f < IncidenceMatrix.length; f++)
+        System.out.println("Existen "+ TInvariants.getColumnDimension()+ " T invariantes: \n");
+        if(TInvariants.getColumnDimension()<=1)
         {
-            for (int c=0; c < IncidenceMatrix[f].length; c++)
+            return false;//existe un solo t invariante
+        }
+        Map<String,ArrayList<Integer>> Tinvariants_trans = new LinkedHashMap<String,ArrayList<Integer>>();
+        Map<String,ArrayList<Integer>> Tinvariants_places = new LinkedHashMap<String,ArrayList<Integer>>();
+        //1° creo cant de hashmap por t invariantes
+        for(int i=0;i<TInvariants.getColumnDimension();i++)
+        {
+            Tinvariants_places.put(String.format("TInv%d (P)",(i+1)), new ArrayList<Integer>());
+            Tinvariants_trans.put(String.format("TInv%d (T)",(i+1)), new ArrayList<Integer>());
+        }
+
+        //2° genera los array list con las transiciones  de T invariantes
+        for (int c=0; c < TInvariants.getColumnDimension(); c++)
+        {
+            for (int f=0; f < TInvariants.getRowDimension(); f++)
+            {
+                if(TInvariants.get(f,c)==1)
+                {
+                    Tinvariants_trans.get(String.format("TInv%d (T)",(c+1))).add((Integer)(f+1));
+                }
+            }
+        }
+        //imprimo los t invariantes y verifico cada plaza
+        int suma,numarcos,iterador=0;
+        for (Map.Entry<String, ArrayList<Integer>> entry : Tinvariants_trans.entrySet())
+        {
+            System.out.println(entry.getKey()+" | ");
+            //recorro solo las plazas de la transicion dada
+            for (int f=0; f < IncidenceMatrix.length; f++)//plazas
+            {
+                System.out.print("P"+(f+1)+":");
+                suma=0;
+                numarcos=0;
+                for(int trans : entry.getValue())
+                {
+                    System.out.print(Integer.toString(IncidenceMatrix[f][trans-1])+" ");
+                    suma+=IncidenceMatrix[f][trans-1];
+                    if(IncidenceMatrix[f][trans-1] == 1 || IncidenceMatrix[f][trans-1] == -1)
+                        numarcos++;
+                }
+                if(numarcos>=2)
+                    Tinvariants_places.get(String.format("TInv%d (P)",(iterador+1))).add((Integer)(f+1));
+                System.out.println();
+                if(suma!=0)
+                {
+                    System.out.println("No cumple 1° Condicion T invariantes cerrados.\nTinv no cerrado: "+ entry.getKey());
+                    return false;
+                }
+            }
+            System.out.println();
+            iterador++;
+        }
+        //imprime momentaneamente las arraylist con las plazas de los t invariantes
+        for (Map.Entry<String, ArrayList<Integer>> entry : Tinvariants_places.entrySet())
+        {
+            System.out.print(entry.getKey()+" | ");
+            for(int tinv : entry.getValue()){
+                System.out.print(tinv+" ");
+            }
+            System.out.println();
+        }
+
+        return true;
+    }
+    /*
+        //imprimo los t invariantes
+        for (Map.Entry<String, ArrayList<Integer>> entry : ArraysTinvariantes.entrySet())
+        {
+            System.out.print(entry.getKey()+" | ");
+            for(int tinv : entry.getValue()){
+                System.out.print(tinv+" ");
+            }
+            System.out.println();
+        }
+     */
+    /*
+        System.out.println("Matriz de incidencia: \n");
+        for (int c=0; c < IncidenceMatrix[0].length; c++)//transiciones
+        {
+            for (int f=0; f < IncidenceMatrix.length; f++)//plazas
             {
                 System.out.print(Integer.toString(IncidenceMatrix[f][c])+" ");
             }
             System.out.println();
         }
-        System.out.println("Existen "+ TInvariants.getColumnDimension()+ "T invariantes: \n");
-        System.out.println("Matriz de T invariantes: \n");
-        //la columna son los t invariantes
-        for (int f=0; f < TInvariants.getRowDimension(); f++)
-        {
-            for (int c=0; c < TInvariants.getColumnDimension(); c++)
-            {
-                System.out.print(Integer.toString(TInvariants.get(f,c))+" ");
-            }
-            System.out.println();
-        }
-        return true;
-    }
-
+     */
 }
