@@ -915,6 +915,7 @@ public class SupervisionAction extends AbstractAction
     //S3P3 classification
     public boolean isS3PR()
     {
+
         int[][] IncidenceMatrix = root.getDocument().getPetriNet().getIncidenceMatrix();
         Matrix TInvariants = accion.findVectors(new Matrix(root.getDocument().getPetriNet().getIncidenceMatrix()));
         TInvariants.transpose();
@@ -923,9 +924,10 @@ public class SupervisionAction extends AbstractAction
         {
             return false;//existe un solo t invariante
         }
+        //creo un hashmap con las transiciones de los tinvariantes y las plazas de los t invariantes
         Map<String,ArrayList<Integer>> Tinvariants_trans = new LinkedHashMap<String,ArrayList<Integer>>();
         Map<String,ArrayList<Integer>> Tinvariants_places = new LinkedHashMap<String,ArrayList<Integer>>();
-        //1° creo cant de hashmap por t invariantes
+        //1° agrego a los hashmap la cant de array list segun la cant de t invariantes
         for(int i=0;i<TInvariants.getColumnDimension();i++)
         {
             Tinvariants_places.put(String.format("TInv%d (P)",(i+1)), new ArrayList<Integer>());
@@ -943,28 +945,33 @@ public class SupervisionAction extends AbstractAction
                 }
             }
         }
-        //imprimo los t invariantes y verifico cada plaza
+        //3°imprimo los t invariantes y verifico cada plaza (SERVIRIA PARA OBTENER LAS PLAZAS DE LOS T INVARIANTES)
         int suma,numarcos,iterador=0;
+        //1 recorro los arraylist de las transiciones por tivariante
         for (Map.Entry<String, ArrayList<Integer>> entry : Tinvariants_trans.entrySet())
         {
             System.out.println(entry.getKey()+" | ");
-            //recorro solo las plazas de la transicion dada
+            //2 recorro las plazas de la matriz de incidencia,
+            // pero al tener las Transiciones arriba voy a comparar esas
+            // recorro solo las plazas de la transicion dada
             for (int f=0; f < IncidenceMatrix.length; f++)//plazas
             {
                 System.out.print("P"+(f+1)+":");
                 suma=0;
                 numarcos=0;
-                for(int trans : entry.getValue())
+                for(int trans : entry.getValue()) //itera por columna
                 {
                     System.out.print(Integer.toString(IncidenceMatrix[f][trans-1])+" ");
-                    suma+=IncidenceMatrix[f][trans-1];
+                    suma+=IncidenceMatrix[f][trans-1];//parte para el camino cerrado (COMENTARIA)
+                    //verifico que sea un -1 o 1 para tener las plazas del t invariante
                     if(IncidenceMatrix[f][trans-1] == 1 || IncidenceMatrix[f][trans-1] == -1)
                         numarcos++;
                 }
+                //aca verificas que tenga 2 o mas 1 o -1 para saber q sea una plaza del t invariante
                 if(numarcos>=2)
                     Tinvariants_places.get(String.format("TInv%d (P)",(iterador+1))).add((Integer)(f+1));
                 System.out.println();
-                if(suma!=0)
+                if(suma!=0)//(COMENTARIA)
                 {
                     System.out.println("No cumple 1° Condicion T invariantes cerrados.\nTinv no cerrado: "+ entry.getKey());
                     return false;
@@ -982,7 +989,41 @@ public class SupervisionAction extends AbstractAction
             }
             System.out.println();
         }
+        int recursosPorT,comparacionPlaza;
+        List<Integer> recursos = new ArrayList<Integer>();
+        //encuento recursos y cuento si todos lo t invariantes comparten al menos 1 recurso
+        for (Map.Entry<String, ArrayList<Integer>> entry : Tinvariants_places.entrySet())
+        {
+            recursosPorT=0;
+            for(int tinv : entry.getValue())
+            {
+                comparacionPlaza=0;
+                for (Map.Entry<String, ArrayList<Integer>> entry2 : Tinvariants_places.entrySet())
+                {
+                    for(int tinv2 : entry2.getValue())
+                    {
+                        if(tinv==tinv2)
+                            comparacionPlaza++;
+                    }
+                }
+                if(comparacionPlaza>1)
+                {
+                    recursosPorT++;
+                    if(!recursos.contains(tinv))
+                    {
+                        recursos.add(tinv);
+                        System.out.println("Recurso "+recursos.size()+": "+tinv);
+                    }
 
+                }
+            }
+            if(recursosPorT<1)
+            {
+                System.out.println("El t invariante: "+entry.getKey() +" no comparte recursos");
+                return false;
+            }
+
+        }
         return true;
     }
     /*
