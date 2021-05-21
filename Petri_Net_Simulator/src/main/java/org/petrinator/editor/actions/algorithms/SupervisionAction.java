@@ -922,6 +922,7 @@ public class SupervisionAction extends AbstractAction
         System.out.println("Existen "+ TInvariants.getColumnDimension()+ " T invariantes: \n");
         if(TInvariants.getColumnDimension()<=1)
         {
+            System.out.println("La red no es S3PR debido a: Existe 1 solo T invariante\n");
             return false;//existe un solo t invariante
         }
         //creo un hashmap con las transiciones de los tinvariantes y las plazas de los t invariantes
@@ -1019,10 +1020,41 @@ public class SupervisionAction extends AbstractAction
             }
             if(recursosPorT<1)
             {
-                System.out.println("El t invariante: "+entry.getKey() +" no comparte recursos");
+                System.out.println("La red no es S3PR debido a: El t invariante: "+entry.getKey() +" no comparte recursos");
                 return false;
             }
 
+        }
+        System.out.println("matrices de incidencia de cada t invariante con sus plazas");
+        //4° Checheo de state machine cada T invariante
+        int iteradorPlazas=1;
+        int checkStateMachine=0;
+        for (Map.Entry<String, ArrayList<Integer>> entry : Tinvariants_trans.entrySet())
+        {
+            List<Integer> plazas = Tinvariants_places.get(String.format("TInv%d (P)",iteradorPlazas));
+            System.out.print(entry.getKey()+" | ");
+            for(int trans : entry.getValue())//itera por columna
+            {
+                checkStateMachine=0;
+                for (Integer plaza : plazas)//plazas de la mat de incidencia
+                {
+                    if(!recursos.contains(plaza))
+                    {
+                        System.out.print(Integer.toString(IncidenceMatrix[plaza - 1][trans - 1]) + " ");
+                        checkStateMachine += IncidenceMatrix[plaza - 1][trans - 1];
+                    }
+                }
+                System.out.println();
+                if(checkStateMachine!=0)
+                {
+                    System.out.println("La red no es S3PR debido a: El t invariante: "+entry.getKey() +" no es una State Machine");
+                    System.out.println("La transicion "+ trans +" le falta una arco de entrada o salida");
+                    return false;
+                }
+
+            }
+            System.out.println();
+            iteradorPlazas++;
         }
         return true;
     }
