@@ -17,11 +17,13 @@
 !*.xml
 !*.py
 
+
 out/artifacts/petrinator_jar/tmp/GSPN_Analysis.html
 !out/artifacts/petrinator_jar/petrinator.jar
 
 # Project exclude paths
 /out/
+*__pycache__*
 
 .idea/
 !pom.xml
