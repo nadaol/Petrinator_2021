@@ -915,82 +915,29 @@ public class SupervisionAction extends AbstractAction
     //S3P3 classification
     public boolean isS3PR()
     {
-
         int[][] IncidenceMatrix = root.getDocument().getPetriNet().getIncidenceMatrix();
         Matrix TInvariants = accion.findVectors(new Matrix(root.getDocument().getPetriNet().getIncidenceMatrix()));
         TInvariants.transpose();
         System.out.println("Existen "+ TInvariants.getColumnDimension()+ " T invariantes: \n");
-        if(TInvariants.getColumnDimension()<=1)
-        {
-            System.out.println("La red no es S3PR debido a: Existe 1 solo T invariante\n");
-            return false;//existe un solo t invariante
-        }
+
+        if(!check_closed_Tinvariants(TInvariants))return false;
+
         //creo un hashmap con las transiciones de los tinvariantes y las plazas de los t invariantes
         Map<String,ArrayList<Integer>> Tinvariants_trans = new LinkedHashMap<String,ArrayList<Integer>>();
         Map<String,ArrayList<Integer>> Tinvariants_places = new LinkedHashMap<String,ArrayList<Integer>>();
-        //1° agrego a los hashmap la cant de array list segun la cant de t invariantes
-        for(int i=0;i<TInvariants.getColumnDimension();i++)
-        {
-            Tinvariants_places.put(String.format("TInv%d (P)",(i+1)), new ArrayList<Integer>());
-            Tinvariants_trans.put(String.format("TInv%d (T)",(i+1)), new ArrayList<Integer>());
-        }
 
-        //2° genera los array list con las transiciones  de T invariantes
-        for (int c=0; c < TInvariants.getColumnDimension(); c++)
-        {
-            for (int f=0; f < TInvariants.getRowDimension(); f++)
-            {
-                if(TInvariants.get(f,c)==1)
-                {
-                    Tinvariants_trans.get(String.format("TInv%d (T)",(c+1))).add((Integer)(f+1));
-                }
-            }
-        }
-        //3°imprimo los t invariantes y verifico cada plaza (SERVIRIA PARA OBTENER LAS PLAZAS DE LOS T INVARIANTES)
-        int suma,numarcos,iterador=0;
-        //1 recorro los arraylist de las transiciones por tivariante
-        for (Map.Entry<String, ArrayList<Integer>> entry : Tinvariants_trans.entrySet())
-        {
-            System.out.println(entry.getKey()+" | ");
-            //2 recorro las plazas de la matriz de incidencia,
-            // pero al tener las Transiciones arriba voy a comparar esas
-            // recorro solo las plazas de la transicion dada
-            for (int f=0; f < IncidenceMatrix.length; f++)//plazas
-            {
-                System.out.print("P"+(f+1)+":");
-                suma=0;
-                numarcos=0;
-                for(int trans : entry.getValue()) //itera por columna
-                {
-                    System.out.print(Integer.toString(IncidenceMatrix[f][trans-1])+" ");
-                    suma+=IncidenceMatrix[f][trans-1];//parte para el camino cerrado (COMENTARIA)
-                    //verifico que sea un -1 o 1 para tener las plazas del t invariante
-                    if(IncidenceMatrix[f][trans-1] == 1 || IncidenceMatrix[f][trans-1] == -1)
-                        numarcos++;
-                }
-                //aca verificas que tenga 2 o mas 1 o -1 para saber q sea una plaza del t invariante
-                if(numarcos>=2)
-                    Tinvariants_places.get(String.format("TInv%d (P)",(iterador+1))).add((Integer)(f+1));
-                System.out.println();
-                if(suma!=0)//(COMENTARIA)
-                {
-                    System.out.println("No cumple 1° Condicion T invariantes cerrados.\nTinv no cerrado: "+ entry.getKey());
-                    return false;
-                }
-            }
-            System.out.println();
-            iterador++;
-        }
-        //imprime momentaneamente las arraylist con las plazas de los t invariantes
-        for (Map.Entry<String, ArrayList<Integer>> entry : Tinvariants_places.entrySet())
-        {
-            System.out.print(entry.getKey()+" | ");
-            for(int tinv : entry.getValue()){
-                System.out.print(tinv+" ");
-            }
-            System.out.println();
-        }
-        int recursosPorT,comparacionPlaza;
+        get_tinv_trans_and_places(IncidenceMatrix,TInvariants,Tinvariants_trans, Tinvariants_places);
+
+        print_hashmap(Tinvariants_trans);
+        print_hashmap(Tinvariants_places);
+
+        ArrayList<int[][]> Tinv_incidence_matrices = get_tinvariants_incidences_matrices(IncidenceMatrix, Tinvariants_trans, Tinvariants_places);
+
+        
+        print_matrix(Tinv_incidence_matrices.get(0),"Incidence matrix of Tinv 1");
+        print_matrix(Tinv_incidence_matrices.get(1),"Incidence matrix of Tinv 2");
+
+        /* int recursosPorT,comparacionPlaza;
         List<Integer> recursos = new ArrayList<Integer>();
         //encuento recursos y cuento si todos lo t invariantes comparten al menos 1 recurso
         for (Map.Entry<String, ArrayList<Integer>> entry : Tinvariants_places.entrySet())
@@ -1055,29 +1002,144 @@ public class SupervisionAction extends AbstractAction
             }
             System.out.println();
             iteradorPlazas++;
-        }
+        } */
         return true;
     }
-    /*
-        //imprimo los t invariantes
-        for (Map.Entry<String, ArrayList<Integer>> entry : ArraysTinvariantes.entrySet())
+
+// ----------  S3PR CLASSIFICATION FUNCTIONS  ----------
+
+// Verifies that there is more than one Closed Tinvariant, else return false
+public boolean check_closed_Tinvariants(Matrix TInvariants)
+{
+    if(TInvariants.getColumnDimension()<=1)
+    {
+        System.out.println("La red no es S3PR debido a: Existe 1 solo T invariante\n");
+        return false;//existe un solo t invariante
+    }
+    else return true;
+}
+
+public boolean check_shared_resources()
+{
+    return false;
+}
+
+// Other S3PR3 associated functions
+
+
+// Obtains Tinvariants transition numbers (TinvN (T) -> [2,3,4,5]) and Tinvariants places numbers (TinvN (P) -> [1,2,5,7]) including shared and own resources .
+public void get_tinv_trans_and_places(int [][]IncidenceMatrix,Matrix TInvariants,Map<String,ArrayList<Integer>> Tinvariants_trans,Map<String,ArrayList<Integer>> Tinvariants_places)
+{
+    //1° agrego a los hashmap la cant de array list segun la cant de t invariantes
+    for(int i=0;i<TInvariants.getColumnDimension();i++)
+    {
+        Tinvariants_places.put(String.format("TInv%d (P)",(i+1)), new ArrayList<Integer>());
+        Tinvariants_trans.put(String.format("TInv%d (T)",(i+1)), new ArrayList<Integer>());
+    }
+
+     // ----- Obtención de las transiciones que componen los Tinvariantes
+    for (int c=0; c < TInvariants.getColumnDimension(); c++)
+    {
+        for (int f=0; f < TInvariants.getRowDimension(); f++)
         {
-            System.out.print(entry.getKey()+" | ");
-            for(int tinv : entry.getValue()){
-                System.out.print(tinv+" ");
-            }
-            System.out.println();
-        }
-     */
-    /*
-        System.out.println("Matriz de incidencia: \n");
-        for (int c=0; c < IncidenceMatrix[0].length; c++)//transiciones
-        {
-            for (int f=0; f < IncidenceMatrix.length; f++)//plazas
+            if(TInvariants.get(f,c)==1)
             {
-                System.out.print(Integer.toString(IncidenceMatrix[f][c])+" ");
+                Tinvariants_trans.get(String.format("TInv%d (T)",(c+1))).add((Integer)(f+1));
             }
-            System.out.println();
         }
-     */
+    }
+
+    // ----- Obtención de las plazas de los Tinvariantes
+
+    int suma,numarcos,iterador=0;
+    //1 recorro los arraylist de las transiciones por tivariante
+    for (Map.Entry<String, ArrayList<Integer>> entry : Tinvariants_trans.entrySet())
+    {
+        //2 recorro las plazas de la matriz de incidencia
+        for (int f=0; f < IncidenceMatrix.length; f++)//plazas
+        {
+            suma=0;
+            numarcos=0;
+            for(int trans : entry.getValue()) //itera por columna
+            {
+                //verifico que sea un -1 o 1 para tener las plazas del t invariante
+                if(IncidenceMatrix[f][trans-1] == 1 || IncidenceMatrix[f][trans-1] == -1)
+                    numarcos++;
+                suma += IncidenceMatrix[f][trans-1];
+            }
+            //aca verificas que tenga 2 o mas arcos opuestos para saber q sea una plaza del t invariante
+            if((numarcos>=2) && (suma ==0))
+                Tinvariants_places.get(String.format("TInv%d (P)",(iterador+1))).add((Integer)(f+1));
+        }
+        iterador++;
+    }
+}
+
+public ArrayList<int[][]> get_tinvariants_incidences_matrices(int [][]IncidenceMatrix,Map<String,ArrayList<Integer>> Tinvariants_trans,Map<String,ArrayList<Integer>> Tinvariants_places)
+{
+        ArrayList<int[][]> Tinv_incidences = new ArrayList<int[][]>();
+        for (int Tinv =0;Tinv<Tinvariants_trans.size();Tinv++)
+        {
+            // Get places and transitions of Tinvariant i .
+            ArrayList<Integer> Tinv_trans = Tinvariants_trans.get(String.format("TInv%d (T)",(Tinv+1)));
+            ArrayList<Integer> Tinv_places = Tinvariants_places.get(String.format("TInv%d (P)",(Tinv+1)));
+
+            int [][] Tinv_incidence = new int[Tinv_places.size()][Tinv_trans.size()];
+
+            for(int place_index=0;place_index<Tinv_places.size();place_index++) 
+            {
+                int place = Tinv_places.get(place_index);
+
+                for(int trans_index=0;trans_index<Tinv_trans.size();trans_index++) 
+                {
+                    int transition = Tinv_trans.get(trans_index);
+                    Tinv_incidence[place_index][trans_index] = IncidenceMatrix[place-1][transition-1];
+                }
+            }
+            Tinv_incidences.add(Tinv_incidence);
+        }
+        return Tinv_incidences;
+
+}
+
+// ----- Print funcitons -----
+
+public void print_matrix(int[][] matrix,String Title)
+{
+    System.out.println(Title);
+    for (int f=0; f < matrix.length; f++)
+    {
+        for (int c=0; c < matrix[f].length; c++)
+        {
+            System.out.print(Integer.toString(matrix[f][c])+" ");
+        }
+        System.out.println();
+    }
+}
+
+public void print_arraylist(ArrayList<Integer> list)
+{
+    for(int list_element : list)
+    {
+        System.out.print(list_element+" ");
+    }
+}
+
+public void print_hashmap(Map<String,ArrayList<Integer>> hashmap)
+{
+    //iterate over the linked hashmap
+    for (Map.Entry<String, ArrayList<Integer>> entry : hashmap.entrySet())
+    {
+        //Print key
+        System.out.print(entry.getKey()+" : ");
+        //Print value (arraylist)
+        for(int list_element : entry.getValue()){
+            System.out.print(list_element+" ");
+        }
+        System.out.println();
+    }
+    System.out.println();
+}
+
+
 }
