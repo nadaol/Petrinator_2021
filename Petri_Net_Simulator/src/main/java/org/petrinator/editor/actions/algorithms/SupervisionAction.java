@@ -120,7 +120,7 @@ public class SupervisionAction extends AbstractAction
             return null;
         }
 
-        System.out.println ("Respuesta:" + Respuesta);
+        //System.out.println ("Respuesta:" + Respuesta);
         if(Respuesta.startsWith("Error"))
         {
             try {
@@ -131,7 +131,7 @@ public class SupervisionAction extends AbstractAction
             } 
             catch (IOException e) 
             {
-                //e.printStackTrace();
+                e.printStackTrace();
                 results.setText("");
                 JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error in python module", JOptionPane.ERROR_MESSAGE); 
                 guiDialog.setVisible(false);
@@ -196,7 +196,7 @@ public class SupervisionAction extends AbstractAction
 
             ProcessBuilder pb = new ProcessBuilder("python3", pathToPythonMain,String.valueOf(port), root.getCurrentFile().getPath(),jar_path);
             pb.start();
-            System.out.println("python3 '" + pathToPythonMain + "' "+ String.valueOf(port) + " '" + root.getCurrentFile().getPath() + "'");
+            //System.out.println("python3 '" + pathToPythonMain + "' "+ String.valueOf(port) + " '" + root.getCurrentFile().getPath() + "'");
 
             //Blocking accept executed python client
             cli = server.accept();
@@ -232,7 +232,7 @@ public class SupervisionAction extends AbstractAction
 
             ProcessBuilder pb = new ProcessBuilder("python3", pathToPythonMain,String.valueOf(port), root.getCurrentFile().getPath(),jar_path);
             pb.start();
-            System.out.println("python3 '" + pathToPythonMain + "' "+ String.valueOf(port) + " '" + root.getCurrentFile().getPath() + "'");
+            //System.out.println("python3 '" + pathToPythonMain + "' "+ String.valueOf(port) + " '" + root.getCurrentFile().getPath() + "'");
 
             //Blocking accept executed python client
             cli = server.accept();
@@ -584,7 +584,7 @@ public class SupervisionAction extends AbstractAction
 
         public void actionPerformed(ActionEvent actionEvent)
         {
-
+            System.out.println("----- Running Supervision Analysis -----");
             // Checks if the net is valid
             if(!root.getDocument().getPetriNet().getRootSubnet().isValid()) {
                 results.setText("3");
@@ -673,6 +673,7 @@ public class SupervisionAction extends AbstractAction
         public void actionPerformed(ActionEvent actionEvent)
         {
 
+            System.out.println("----- Running Supervision Analysis (w/supervisors) -----");
             // Checks if the net is valid
             if(!root.getDocument().getPetriNet().getRootSubnet().isValid()) {
                 results.setText("");
@@ -778,6 +779,7 @@ public class SupervisionAction extends AbstractAction
 
         public void actionPerformed(ActionEvent actionEvent) {
             //Runanalysis("2");
+            System.out.println("----- Running Add Supervisor Analysis ------\n");
             if(execServer()==1)
             {
                 guiDialog.setVisible(false);
@@ -839,6 +841,7 @@ public class SupervisionAction extends AbstractAction
         public void actionPerformed(ActionEvent actionEvent)
         {
             //Runanalysis("2");
+            System.out.println("----- Running Fix Conflict Analysis ------\n");
             if(execServer()==1)
             {
                 guiDialog.setVisible(false);
@@ -849,8 +852,8 @@ public class SupervisionAction extends AbstractAction
                 outw.writeUTF("3");
                 outw.flush();
                 Respuesta =inw.readUTF();
-                System.out.println ("Respuesta:");
-                System.out.println (Respuesta);
+                //System.out.println ("Respuesta:");
+                //System.out.println (Respuesta);
                 String[] treeInfo = new String[]{
                         Respuesta
                 };
@@ -912,13 +915,14 @@ public class SupervisionAction extends AbstractAction
         return decodedPath;
     }
 
-    //S3P3 classification
+    //S3PR classification
     public boolean isS3PR()
     {
+        System.out.println("----- Running S3PR Analysis -----\n");
         int[][] IncidenceMatrix = root.getDocument().getPetriNet().getIncidenceMatrix();
         Matrix TInvariants = accion.findVectors(new Matrix(root.getDocument().getPetriNet().getIncidenceMatrix()));
         TInvariants.transpose();
-        System.out.println("Existen "+ TInvariants.getColumnDimension()+ " T invariantes: \n");
+        System.out.println("There are "+ TInvariants.getColumnDimension()+ " T-invariants\n");
 
         if(!check_closed_Tinvariants(TInvariants))return false;
 
@@ -935,9 +939,10 @@ public class SupervisionAction extends AbstractAction
 
         Map<String,ArrayList<Integer>> Tinvariants_shared_places = get_shared_places(Tinvariants_places);
 
-        print_hashmap(Tinvariants_trans);
-        print_hashmap(Tinvariants_places);
-        print_hashmap(Tinvariants_shared_places);
+        print_hashmap(Tinvariants_trans,"T-Invariants Transitions");
+        print_hashmap(Tinvariants_places,"T-Invariants Places");
+        print_hashmap(Tinvariants_shared_places,"T-Invariants Shared Places");
+        print_arraylist(getEnabledTransitions(),"Enabled transitions");
 
         return true;
     }
@@ -1062,6 +1067,19 @@ public ArrayList<int[][]> get_tinvariants_incidences_matrices(int [][]IncidenceM
 
 }
 
+public ArrayList<Integer> getEnabledTransitions()
+{
+    root.getDocument().getPetriNet().getInitialMarking().resetMarking();
+    ArrayList<Transition> enabledArray = new ArrayList<Transition>(root.getDocument().getPetriNet().getInitialMarking().getAllEnabledTransitions());
+    ArrayList<Integer> enabledNames= new ArrayList<Integer>();
+
+    for (Transition transition : enabledArray)
+    {
+        enabledNames.add(Integer.valueOf(transition.getLabel().substring(1)));
+    }
+    return enabledNames;
+}
+
 // ----- Print funcitons -----
 
 public void print_matrix(int[][] matrix,String Title)
@@ -1077,16 +1095,19 @@ public void print_matrix(int[][] matrix,String Title)
     }
 }
 
-public void print_arraylist(ArrayList<Integer> list)
+
+public void print_arraylist(ArrayList<Integer> list,String Title)
 {
+    System.out.println(Title);
     for(int list_element : list)
     {
         System.out.print(list_element+" ");
     }
 }
 
-public void print_hashmap(Map<String,ArrayList<Integer>> hashmap)
+public void print_hashmap(Map<String,ArrayList<Integer>> hashmap,String Title)
 {
+    System.out.println(Title);
     //iterate over the linked hashmap
     for (Map.Entry<String, ArrayList<Integer>> entry : hashmap.entrySet())
     {

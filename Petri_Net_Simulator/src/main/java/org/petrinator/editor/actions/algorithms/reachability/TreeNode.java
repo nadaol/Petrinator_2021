@@ -95,7 +95,7 @@ public class TreeNode {
             }
 
             for (TreeNode child : children) {
-                System.out.println();
+                //System.out.println();
                 if(reachabilityMatrix[id][child.id] == null){
                     reachabilityMatrix[id][child.id] = new ArrayList<>();
                 }
