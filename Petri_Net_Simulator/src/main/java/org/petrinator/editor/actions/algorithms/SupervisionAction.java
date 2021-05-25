@@ -924,33 +924,114 @@ public class SupervisionAction extends AbstractAction
         TInvariants.transpose();
         System.out.println("There are "+ TInvariants.getColumnDimension()+ " T-invariants\n");
 
-        if(!check_closed_Tinvariants(TInvariants))return false;
+        if(!check_num_Tinvariants(TInvariants))return false;
 
         //creo un hashmap con las transiciones de los tinvariantes y las plazas de los t invariantes
         Map<String,ArrayList<Integer>> Tinvariants_trans = new LinkedHashMap<String,ArrayList<Integer>>();
         Map<String,ArrayList<Integer>> Tinvariants_places = new LinkedHashMap<String,ArrayList<Integer>>();
+        Map<String,ArrayList<Integer>> Tinvariants_SM_places = new LinkedHashMap<String,ArrayList<Integer>>();
 
         get_tinv_trans_and_places(IncidenceMatrix,TInvariants,Tinvariants_trans, Tinvariants_places);
 
         ArrayList<int[][]> Tinv_incidence_matrices = get_tinvariants_incidences_matrices(IncidenceMatrix, Tinvariants_trans, Tinvariants_places);
 
+        print_hashmap(Tinvariants_trans,"T-Invariants Transitions");
+        print_hashmap(Tinvariants_places,"T-Invariants Places");
+        if(!check_closed_Tinvariants(Tinv_incidence_matrices,Tinvariants_trans,Tinvariants_places,Tinvariants_SM_places))return false;
+        //System.out.flush();
         //print_matrix(Tinv_incidence_matrices.get(0),"Incidence matrix of Tinv 1");
         //print_matrix(Tinv_incidence_matrices.get(1),"Incidence matrix of Tinv 2");
 
         Map<String,ArrayList<Integer>> Tinvariants_shared_places = get_shared_places(Tinvariants_places);
-
-        print_hashmap(Tinvariants_trans,"T-Invariants Transitions");
-        print_hashmap(Tinvariants_places,"T-Invariants Places");
         print_hashmap(Tinvariants_shared_places,"T-Invariants Shared Places");
         print_arraylist(getEnabledTransitions(),"Enabled transitions");
+        print_hashmap(Tinvariants_SM_places,"T-Invariants SM Places");
 
         return true;
     }
 
 // ----------  S3PR CLASSIFICATION FUNCTIONS  ----------
-
+public boolean check_closed_Tinvariants(ArrayList<int[][]> Tinv_incidence_matrices,Map<String,ArrayList<Integer>> Tinvariants_trans,Map<String,ArrayList<Integer>> Tinvariants_places,Map<String,ArrayList<Integer>> Tinvariants_SM_place)
+{
+    System.out.println("----- Running T-Invariants SM Analysis -----\n");
+    int cont = 1;
+    ArrayList<Integer> Trans_Auxiliar = new ArrayList<Integer>();
+    ArrayList<Integer> Places_Auxiliar = new ArrayList<Integer>();;
+    int[][] Incidence_Auxiliar;
+    for(int[][] matrices : Tinv_incidence_matrices)//recorremos las matrices de incidencia de los Tinvariantes
+    {
+        Trans_Auxiliar.clear();
+        Places_Auxiliar.clear();
+        Incidence_Auxiliar = matrices.clone();
+        //print_matrix(Incidence_Auxiliar,"Incidence matrix of Tinv " + cont);
+        int t,p,pAnterior;
+        t=0;
+        p=0;
+        pAnterior=0;
+        while (true) //p,t = f,c -> recorro Transiciones
+        {
+            p=0;
+            while (Incidence_Auxiliar[p][t]!=1) //recorro las plazas de 1 transicion
+            {
+                p++;
+                if(p==Incidence_Auxiliar.length)
+                {
+                    System.out.println("El TInv "+ cont + "No es un State Machine\n");
+                    return false;
+                }
+            }
+            if(!Trans_Auxiliar.contains(Tinvariants_trans.get(String.format("TInv%d (T)",cont)).get(t)))
+            {
+                Trans_Auxiliar.add(Tinvariants_trans.get(String.format("TInv%d (T)",cont)).get(t));// guardo la transicion que ya se recorrio
+                System.out.println("Agrego al TInv "+cont +" La transicion: "+ Tinvariants_trans.get(String.format("TInv%d (T)",cont)).get(t));
+            }
+            else
+            {
+                if((Trans_Auxiliar.get(0) == Tinvariants_trans.get(String.format("TInv%d (T)",cont)).get(t)) && (Trans_Auxiliar.containsAll(Tinvariants_trans.get(String.format("TInv%d (T)",cont)))))//si el bucle contiene todas las transiciones de t invariante
+                {
+                    Tinvariants_SM_place.put(String.format("TInv%d (SMP)",(cont)), new ArrayList<Integer>(Places_Auxiliar));
+                    System.out.println("El TInv "+ cont +" cumple las condiciones de SM\n");
+                    break;//ya se cumplio las condiciones
+                }
+                else
+                {
+                    if(!(Trans_Auxiliar.get(0) == Tinvariants_trans.get(String.format("TInv%d (T)",cont)).get(t)))
+                        System.out.println("La transicion que se repitio no fue la primera");
+                    if(!(Trans_Auxiliar.containsAll(Tinvariants_trans.get(String.format("TInv%d (T)",cont)))))
+                        System.out.println("El bucle no paso por todas las Trasn del T invariante");
+                    delete_place_arcs(Incidence_Auxiliar,pAnterior);//elimino los arcos de la plaza q me hizo el ciclo
+                    t=0;
+                    p=0;
+                    pAnterior=0;
+                    Trans_Auxiliar.clear();
+                    Places_Auxiliar.clear();
+                    System.out.println("Se encontro un recurso, Todavia no se determina si el TInv "+cont+" es un SM\n");
+                    continue;
+                }
+            }
+                t=0;
+            while (Incidence_Auxiliar[p][t]!=-1) //recorro las transiciones de plazas
+            {
+                t++;
+                if(t==Incidence_Auxiliar[0].length)
+                {
+                    System.out.println("el T invariante"+ String.format("TInv%d (T)",cont) + "Tiene una P que no tiene salida");
+                    return false;
+                }
+            }
+            if(!Places_Auxiliar.contains(Tinvariants_places.get(String.format("TInv%d (P)",cont)).get(p)))
+            {
+                Places_Auxiliar.add(Tinvariants_places.get(String.format("TInv%d (P)",cont)).get(p));//guardo la plaza que ya se recorrio
+                System.out.println("Agrego al TInv "+cont +" La plaza: "+Tinvariants_places.get(String.format("TInv%d (P)",cont)).get(p));
+            }
+            pAnterior=p;
+        }
+        cont++;
+    }
+    return true;
+}
 // Verifies that there is more than one Closed Tinvariant, else return false (falta chequear q sean cerrados)
-public boolean check_closed_Tinvariants(Matrix TInvariants)
+public boolean check_num_Tinvariants(Matrix TInvariants)
 {
     if(TInvariants.getColumnDimension()<=1)
     {
@@ -1079,7 +1160,14 @@ public ArrayList<Integer> getEnabledTransitions()
     }
     return enabledNames;
 }
+public void delete_place_arcs(int[][] matrix,Integer row)
+{
+     for (int c=0; c < matrix[0].length; c++)
+    {
+        matrix[row][c]=0;
+    }
 
+}
 // ----- Print funcitons -----
 
 public void print_matrix(int[][] matrix,String Title)
@@ -1103,6 +1191,7 @@ public void print_arraylist(ArrayList<Integer> list,String Title)
     {
         System.out.print(list_element+" ");
     }
+    System.out.println();
 }
 
 public void print_hashmap(Map<String,ArrayList<Integer>> hashmap,String Title)
