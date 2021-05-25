@@ -965,9 +965,10 @@ public boolean check_closed_Tinvariants(ArrayList<int[][]> Tinv_incidence_matric
         Incidence_Auxiliar = matrices.clone();
         //print_matrix(Incidence_Auxiliar,"Incidence matrix of Tinv " + cont);
         int t,p,pAnterior;
-        t=0;
+        t=find_first_Tinvariants_enable_transition(Tinvariants_trans.get(String.format("TInv%d (T)",cont)));//aca iria la primer T sencibilizada sino 0;
         p=0;
         pAnterior=0;
+        System.out.println("---------- Analyzing Tinv "+cont+" ----------");
         while (true) //p,t = f,c -> recorro Transiciones
         {
             p=0;
@@ -1000,7 +1001,7 @@ public boolean check_closed_Tinvariants(ArrayList<int[][]> Tinv_incidence_matric
                     if(!(Trans_Auxiliar.containsAll(Tinvariants_trans.get(String.format("TInv%d (T)",cont)))))
                         System.out.println("El bucle no paso por todas las Trasn del T invariante");
                     delete_place_arcs(Incidence_Auxiliar,pAnterior);//elimino los arcos de la plaza q me hizo el ciclo
-                    t=0;
+                    t=find_first_Tinvariants_enable_transition(Tinvariants_trans.get(String.format("TInv%d (T)",cont)));//para q comience desde la t sencibilizada, sino 0
                     p=0;
                     pAnterior=0;
                     Trans_Auxiliar.clear();
@@ -1029,6 +1030,21 @@ public boolean check_closed_Tinvariants(ArrayList<int[][]> Tinv_incidence_matric
         cont++;
     }
     return true;
+}
+//find the index of the first enabled transition of a Tinvariant
+public int find_first_Tinvariants_enable_transition(ArrayList<Integer> Tinvariant_trans)
+{
+    int index = 0;
+    for(Integer trans : Tinvariant_trans)
+    {
+        if(getEnabledTransitions().contains(trans))
+        {
+            return index;
+        }
+        else
+            index++;
+    }
+    return index;
 }
 // Verifies that there is more than one Closed Tinvariant, else return false (falta chequear q sean cerrados)
 public boolean check_num_Tinvariants(Matrix TInvariants)
