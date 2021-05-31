@@ -33,7 +33,7 @@ import pipe.gui.widgets.ResultsHTMLPane;
 import pipe.modules.minimalSiphons.MinimalSiphons;
 import pipe.utilities.math.Matrix;
 import pipe.views.PetriNetView;
-
+import scala.Array;
 
 import javax.swing.*;
 import java.awt.*;
@@ -930,6 +930,8 @@ public class SupervisionAction extends AbstractAction
         Map<String,ArrayList<Integer>> Tinvariants_places = new LinkedHashMap<String,ArrayList<Integer>>();
         Map<String,ArrayList<Integer>> Tinvariants_SM_places = new LinkedHashMap<String,ArrayList<Integer>>();
         Map<String,ArrayList<Integer>> Tinvariants_SM_trans = new LinkedHashMap<String,ArrayList<Integer>>();
+        Map<String,ArrayList<Integer>> Tinvariants_resources = new LinkedHashMap<String,ArrayList<Integer>>();
+        Map<String,ArrayList<Integer>> Tinvariants_shared_resoruces = new LinkedHashMap<String,ArrayList<Integer>>();
 
         get_tinv_trans_and_places(IncidenceMatrix,TInvariants,Tinvariants_trans, Tinvariants_places);
 
@@ -937,17 +939,21 @@ public class SupervisionAction extends AbstractAction
 
         print_hashmap(Tinvariants_trans,"T-Invariants Transitions");
         print_hashmap(Tinvariants_places,"T-Invariants Places");
-        if(!check_closed_Tinvariants(Tinv_incidence_matrices,Tinvariants_trans,Tinvariants_places,Tinvariants_SM_places,Tinvariants_SM_trans))return false;
-    
-        //System.out.flush();
-        //print_matrix(Tinv_incidence_matrices.get(0),"Incidence matrix of Tinv 1");
-        //print_matrix(Tinv_incidence_matrices.get(1),"Incidence matrix of Tinv 2");
 
-        Map<String,ArrayList<Integer>> Tinvariants_shared_places = get_shared_places(Tinvariants_places);
-        print_hashmap(Tinvariants_shared_places,"T-Invariants Shared Places");
-        print_arraylist(getEnabledTransitions(),"Enabled transitions");
+        print_matrix(Tinv_incidence_matrices.get(0),"Incidence matrix of Tinv 1");
+        print_matrix(Tinv_incidence_matrices.get(1),"Incidence matrix of Tinv 2");
+
+        if(!check_closed_Tinvariants(Tinv_incidence_matrices,Tinvariants_trans,Tinvariants_places,Tinvariants_SM_places,Tinvariants_SM_trans))return false;
         print_hashmap(Tinvariants_SM_places,"T-Invariants loop Places");
         print_hashmap(Tinvariants_SM_trans,"T-invariant loop Transitions");
+    
+        if(!check_Tinvariants_SM(Tinv_incidence_matrices,Tinvariants_places,Tinvariants_SM_places,Tinvariants_trans,Tinvariants_SM_trans,Tinvariants_resources))return false;
+        print_hashmap(Tinvariants_resources,"T-invariant resources");
+
+        if(!get_shared_places(Tinvariants_resources,Tinvariants_shared_resoruces))return false;
+        print_hashmap(Tinvariants_shared_resoruces,"T-Invariants Shared Resources");
+        print_arraylist(getEnabledTransitions(),"Enabled transitions");
+
         return true;
     }
 
@@ -960,12 +966,20 @@ Map<String,ArrayList<Integer>> Tinvariants_SM_place,Map<String,ArrayList<Integer
     ArrayList<Integer> Trans_Auxiliar = new ArrayList<Integer>();
     ArrayList<Integer> Places_Auxiliar = new ArrayList<Integer>();
 
-    int[][] Incidence_Auxiliar;
     for(int[][] matrices : Tinv_incidence_matrices)//recorremos las matrices de incidencia de los Tinvariantes
     {
+        int[][] Incidence_Auxiliar = new int [matrices.length][matrices[0].length];
         Trans_Auxiliar.clear();
         Places_Auxiliar.clear();
-        Incidence_Auxiliar = matrices.clone();
+
+        for(int row=0; row<matrices.length;row++)
+        {
+            for (int column = 0; column < matrices[row].length; column++) 
+            {
+                Incidence_Auxiliar[row][column] = matrices[row][column];
+            }
+        }
+
         //print_matrix(Incidence_Auxiliar,"Incidence matrix of Tinv " + cont);
         int t,p,pAnterior;
         t=find_first_Tinvariants_enable_transition(Tinvariants_trans.get(String.format("TInv%d (T)",cont)));//aca iria la primer T sencibilizada sino 0;
@@ -1038,19 +1052,24 @@ Map<String,ArrayList<Integer>> Tinvariants_SM_place,Map<String,ArrayList<Integer
 
 // Chequea los recursos del tinvarante (en contra del flujo), si existe una plaza que no cumple esto y no esta incluida en el bucle principal , la misma no es una SM.
 public boolean check_Tinvariants_SM(ArrayList<int[][]> Tinv_incidence_matrices,Map<String,ArrayList<Integer>> Tinvariants_places,
-Map<String,ArrayList<Integer>>  Tinvariants_SM_place,Map<String,ArrayList<Integer>>  Tinvariants_trans,Map<String,ArrayList<Integer>>  Tinvariants_SM_trans)
+Map<String,ArrayList<Integer>>  Tinvariants_SM_places,Map<String,ArrayList<Integer>>  Tinvariants_trans,Map<String,ArrayList<Integer>>  Tinvariants_SM_trans,Map<String,ArrayList<Integer>> Tinvariants_Shared_resources)
 {
     // Recorro los tinvariantes
     int Ntinv =1;
-    ArrayList<Integer> Places_Auxiliar = new ArrayList<Integer>();
+    int Initial_marking[] = get_initial_marking();
+    
     for (Map.Entry<String, ArrayList<Integer>> TinvSM_trans : Tinvariants_SM_trans.entrySet())
     {
+        ArrayList<Integer> Places_leftOvers = new ArrayList<Integer>();
         //Restar las plazas totales del tinvariante con las plazas del bucle principal
-        get_leftOvers(Tinvariants_places.get(String.format("TInv%d (P)",Ntinv)), Tinvariants_SM_place.get(String.format("TInv%d (P-Loop)",(Ntinv))),Places_Auxiliar);
+        get_leftOvers(Tinvariants_places.get(String.format("TInv%d (P)",Ntinv)), Tinvariants_SM_places.get(String.format("TInv%d (P-Loop)",(Ntinv))),Places_leftOvers);
+        print_arraylist(Places_leftOvers, String.format("Tinv %d places left overs",Ntinv));
         
         //Checkear que esas plazas esten en contra del flujo del bucle principal, de lo contrario no es una SM
-        check_Tinvariant_resources(Tinv_incidence_matrices.get(Ntinv-1),Tinvariants_places.get(String.format("TInv%d (P)",Ntinv)),Tinvariants_SM_place.get(String.format("TInv%d (P-Loop)",(Ntinv)))
-        ,Tinvariants_trans.get(String.format("TInv%d (T)",Ntinv)),Tinvariants_SM_trans.get(String.format("TInv%d (T-loop)",Ntinv)),Places_Auxiliar);
+        if(!check_Tinvariant_resources(Tinv_incidence_matrices.get(Ntinv-1),Tinvariants_places.get(String.format("TInv%d (P)",Ntinv)),Tinvariants_SM_places.get(String.format("TInv%d (P-Loop)",(Ntinv)))
+        ,Tinvariants_trans.get(String.format("TInv%d (T)",Ntinv)),Tinvariants_SM_trans.get(String.format("TInv%d (T-Loop)",Ntinv)),Places_leftOvers,Ntinv,Initial_marking))return false;
+        Tinvariants_Shared_resources.put(String.format("TInv%d (R)",Ntinv),Places_leftOvers);
+        Ntinv ++ ;
 
     }
     return true;
@@ -1058,11 +1077,49 @@ Map<String,ArrayList<Integer>>  Tinvariants_SM_place,Map<String,ArrayList<Intege
 
 //Checkear que esas plazas esten en contra del flujo del bucle principal, de lo contrario no es una SM
 public boolean check_Tinvariant_resources(int[][] Tinv_incidence_matrices,ArrayList<Integer> Tinvariants_places,
-ArrayList<Integer>  Tinvariants_SM_place,ArrayList<Integer> Tinvariants_trans,ArrayList<Integer>  Tinvariants_SM_trans,ArrayList<Integer> Places_Auxiliar)
+ArrayList<Integer>  Tinvariants_SM_place,ArrayList<Integer> Tinvariants_trans,ArrayList<Integer>  Tinvariants_SM_trans,ArrayList<Integer> Places_leftOvers,int Ntinv,int[] Initial_marking)
 {
-
-    for (Integer element : list1_original)
+    int place_row_index;
+    for (Integer leftOver_place : Places_leftOvers)
     {
+        //Ir a la fila de la plaza 'leftOver_place'
+        place_row_index = Tinvariants_places.indexOf(leftOver_place);
+        System.out.println(String.format("Plaza leftover %d (indice (%d) ) del T-invariant %d",leftOver_place,place_row_index,Ntinv));
+        //get_index(Tinvariants_places,leftOver_place);
+        int trans_entrada=0;
+        int trans_salida=0;
+
+        for(int column=0;column<Tinv_incidence_matrices[0].length;column++)
+        {
+           if(Tinv_incidence_matrices[place_row_index][column]==1)
+           {
+             trans_entrada = Tinvariants_trans.get(column);
+           }
+
+           if(Tinv_incidence_matrices[place_row_index][column]==-1)
+           {
+             trans_salida = Tinvariants_trans.get(column);
+           }
+
+        }
+
+
+          if(Tinvariants_SM_trans.indexOf(trans_entrada) <= Tinvariants_SM_trans.indexOf(trans_salida))
+        {
+            System.out.println(String.format("Plaza leftover %d  del T-invariant %d tiene de transicion de salida %d (indice %d) y entrada %d (indice %d)"
+            ,leftOver_place,Ntinv,trans_salida,Tinvariants_SM_trans.indexOf(trans_salida),trans_entrada,Tinvariants_SM_trans.indexOf(trans_entrada)));
+            System.out.println(String.format("The place %d (index %d) isn't a resource of T-invariant %d",leftOver_place,place_row_index,Ntinv));
+            print_matrix(Tinv_incidence_matrices, "Matriz incidencia del tinvariante");
+            return false;
+        }
+
+        // Checkear que el marcado de la plaza sea uno
+        
+        if(Initial_marking[leftOver_place-1] == 0)
+        {
+            System.out.println(String.format("The place %d of T-invariant %d is a resource but the marking is zero",leftOver_place,Ntinv));
+            return false;
+        }
 
     }
 
@@ -1108,24 +1165,33 @@ public boolean check_num_Tinvariants(Matrix TInvariants)
 }
 
 // Returns a hashmap of shared places between Tinvariants. (String Tinv -> arraylist of shared places )
-public Map<String,ArrayList<Integer>> get_shared_places(Map<String,ArrayList<Integer>> Tinvariants_places)
+public boolean get_shared_places(Map<String,ArrayList<Integer>> Tinvariants_resources,Map<String,ArrayList<Integer>> Tinvariants_shared_resources)
 {
-    Map<String,ArrayList<Integer>> Tinvariants_shared_places = new LinkedHashMap<String,ArrayList<Integer>>();
-
     int Tinv_number = 1;
-    for (ArrayList<Integer> places : Tinvariants_places.values())
+    for (ArrayList<Integer> places : Tinvariants_resources.values())
     {
-        Tinvariants_shared_places.put(String.format("TInv%d (SP)",(Tinv_number)), new ArrayList<Integer>());
-        for (ArrayList<Integer> places_others : Tinvariants_places.values())
+        if(places.isEmpty())
+        {
+            System.out.println(String.format("Tinv %d doesn't have any resources\n",Tinv_number));
+            return false;
+        }
+
+        Tinvariants_shared_resources.put(String.format("TInv%d (SR)",(Tinv_number)), new ArrayList<Integer>());
+        for (ArrayList<Integer> places_others : Tinvariants_resources.values())
         {
             if(places.equals(places_others))
                 continue;
             
-            add_intersection(places,places_others,Tinvariants_shared_places.get(String.format("TInv%d (SP)",(Tinv_number))));
+            add_intersection(places,places_others,Tinvariants_shared_resources.get(String.format("TInv%d (SR)",(Tinv_number))));
+            if(places.isEmpty())
+            {
+                System.out.println(String.format("Tinv %d doesn't share any resources\n",Tinv_number));
+                return false;
+            }
         }
         Tinv_number ++ ;
     }
-    return Tinvariants_shared_places;
+    return true;
 }
 
 // Adds the intersection elements between list1 and list2 to list_dest
@@ -1223,9 +1289,15 @@ public ArrayList<int[][]> get_tinvariants_incidences_matrices(int [][]IncidenceM
 
 }
 
+public int[] get_initial_marking()
+{
+    Marking mark = root.getDocument().getPetriNet().getInitialMarking();
+    return mark.getMarkingAsArray()[1];
+}
+
 public ArrayList<Integer> getEnabledTransitions()
 {
-    root.getDocument().getPetriNet().getInitialMarking().resetMarking();// da error si no se guarda el marcado <--
+    //root.getDocument().getPetriNet().getInitialMarking().resetMarking();// da error si no se guarda el marcado <--
     ArrayList<Transition> enabledArray = new ArrayList<Transition>(root.getDocument().getPetriNet().getInitialMarking().getAllEnabledTransitions());
     ArrayList<Integer> enabledNames= new ArrayList<Integer>();
 
@@ -1254,7 +1326,7 @@ public void print_matrix(int[][] matrix,String Title)
         {
             System.out.print(Integer.toString(matrix[f][c])+" ");
         }
-        System.out.println();
+        System.out.println("\n");
     }
 }
 
@@ -1266,7 +1338,7 @@ public void print_arraylist(ArrayList<Integer> list,String Title)
     {
         System.out.print(list_element+" ");
     }
-    System.out.println();
+    System.out.println("\n");
 }
 
 public void print_hashmap(Map<String,ArrayList<Integer>> hashmap,String Title)
