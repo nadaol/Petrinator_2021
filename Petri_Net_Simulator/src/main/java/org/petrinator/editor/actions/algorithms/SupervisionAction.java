@@ -923,8 +923,9 @@ public class SupervisionAction extends AbstractAction
         TInvariants.transpose();
         System.out.println("There are "+ TInvariants.getColumnDimension()+ " T-invariants\n");
 
+        //1°Checheo que haya mas de 1 T-invariante
         if(!check_num_Tinvariants(TInvariants))return false;
-
+        System.out.println("1° CHECK: there is more than one T-Invariants");
         //creo un hashmap con las transiciones de los tinvariantes y las plazas de los t invariantes
         Map<String,ArrayList<Integer>> Tinvariants_trans = new LinkedHashMap<String,ArrayList<Integer>>();
         Map<String,ArrayList<Integer>> Tinvariants_places = new LinkedHashMap<String,ArrayList<Integer>>();
@@ -940,24 +941,59 @@ public class SupervisionAction extends AbstractAction
         print_hashmap(Tinvariants_trans,"T-Invariants Transitions");
         print_hashmap(Tinvariants_places,"T-Invariants Places");
 
-        print_matrix(Tinv_incidence_matrices.get(0),"Incidence matrix of Tinv 1");
-        print_matrix(Tinv_incidence_matrices.get(1),"Incidence matrix of Tinv 2");
+        //print_matrix(Tinv_incidence_matrices.get(0),"Incidence matrix of Tinv 1");
+        //print_matrix(Tinv_incidence_matrices.get(1),"Incidence matrix of Tinv 2");
 
         if(!check_closed_Tinvariants(Tinv_incidence_matrices,Tinvariants_trans,Tinvariants_places,Tinvariants_SM_places,Tinvariants_SM_trans))return false;
+        System.out.println("2° CHECK: All T-Invariants are closed paths, potential State Machines");
         print_hashmap(Tinvariants_SM_places,"T-Invariants loop Places");
         print_hashmap(Tinvariants_SM_trans,"T-invariant loop Transitions");
     
         if(!check_Tinvariants_SM(Tinv_incidence_matrices,Tinvariants_places,Tinvariants_SM_places,Tinvariants_trans,Tinvariants_SM_trans,Tinvariants_resources))return false;
+        System.out.println("3° CHECK: All T-Invariants are State Machines");
+        System.out.println("4° CHECK: All Resources have marking greater than or equal to one");
         print_hashmap(Tinvariants_resources,"T-invariant resources");
 
         if(!get_shared_places(Tinvariants_resources,Tinvariants_shared_resoruces))return false;
+        System.out.println("5° CHECK: All T-Invariants have Shared Resources");
         print_hashmap(Tinvariants_shared_resoruces,"T-Invariants Shared Resources");
-        print_arraylist(getEnabledTransitions(),"Enabled transitions");
-
+        //print_arraylist(getEnabledTransitions(),"Enabled transitions");
+        //aca verifica el marcado de las plazas del state machine y las plazas IDLE
+        if(!check_SM_places_and_pidle_marking(Tinvariants_SM_places))return false;
+        System.out.println("6° CHECK: All State Machine places have marking zero");
+        System.out.println("7° CHECK: All Idles Places have marking greater than or equal to one");
         return true;
     }
 
 // ----------  S3PR CLASSIFICATION FUNCTIONS  ----------
+
+public boolean check_SM_places_and_pidle_marking(Map<String,ArrayList<Integer>> Tinvariants_SM_places)
+{
+    int Initial_marking[] = get_initial_marking();
+    int Tinv_number = 1;
+    int numPlaces;
+    for (ArrayList<Integer> tinv : Tinvariants_SM_places.values())
+    {
+        numPlaces=0;
+        for (Integer places : tinv)
+        {
+            if(Initial_marking[places-1]>0 && !(numPlaces==tinv.size()-1))
+            {
+                System.out.println("The place "+ places + " of de Tinv " + Tinv_number+" have marking and isn´t the idle");
+                return false;
+            }
+            if( numPlaces==tinv.size()-1 && Initial_marking[places-1]==0)
+            {
+                System.out.println("The place idle "+ places + " of de Tinv " + Tinv_number+" must have marking");
+                return false;
+            }
+            numPlaces++;
+        }
+        Tinv_number++;
+    }
+
+    return true;
+}
 public boolean check_closed_Tinvariants(ArrayList<int[][]> Tinv_incidence_matrices,Map<String,ArrayList<Integer>> Tinvariants_trans,Map<String,ArrayList<Integer>> Tinvariants_places,
 Map<String,ArrayList<Integer>> Tinvariants_SM_place,Map<String,ArrayList<Integer>> Tinvariants_SM_trans)
 {
@@ -983,6 +1019,11 @@ Map<String,ArrayList<Integer>> Tinvariants_SM_place,Map<String,ArrayList<Integer
         //print_matrix(Incidence_Auxiliar,"Incidence matrix of Tinv " + cont);
         int t,p,pAnterior;
         t=find_first_Tinvariants_enable_transition(Tinvariants_trans.get(String.format("TInv%d (T)",cont)));//aca iria la primer T sencibilizada sino 0;
+        if(t==-1)
+        {
+            System.out.println("T inv " + cont + " has not idle place or is not marking");
+            return false;
+        }
         p=0;
         pAnterior=0;
         System.out.println("---------- Analyzing Tinv "+cont+" ----------");
@@ -1151,7 +1192,10 @@ public int find_first_Tinvariants_enable_transition(ArrayList<Integer> Tinvarian
         else
             index++;
     }
-    return index;
+    if(index==Tinvariant_trans.size())
+        return -1;
+    else
+        return index;
 }
 // Verifies that there is more than one Closed Tinvariant, else return false (falta chequear q sean cerrados)
 public boolean check_num_Tinvariants(Matrix TInvariants)
@@ -1298,6 +1342,7 @@ public int[] get_initial_marking()
 public ArrayList<Integer> getEnabledTransitions()
 {
     //root.getDocument().getPetriNet().getInitialMarking().resetMarking();// da error si no se guarda el marcado <--
+    //root.getDocument().getPetriNet().setInitialMarking(get_initial_marking());
     ArrayList<Transition> enabledArray = new ArrayList<Transition>(root.getDocument().getPetriNet().getInitialMarking().getAllEnabledTransitions());
     ArrayList<Integer> enabledNames= new ArrayList<Integer>();
 
