@@ -55,6 +55,7 @@ public class SupervisionAction extends AbstractAction
     private static final String MODULE_NAME = "Deadlock Supervisor";
     private ResultsHTMLPane results;
     private String sPanel;
+    private String S3PRresults;
     private Root root;
     private JDialog guiDialog;
     private ButtonBar FirstAnalizeButton;
@@ -85,6 +86,7 @@ public class SupervisionAction extends AbstractAction
 
         results = new ResultsHTMLPane("");
         sPanel = new String();//new
+        S3PRresults = new String();
         contentPane.add(results);
         FirstAnalizeButton = new ButtonBar("First Analysis", new ClassifyListener(), guiDialog.getRootPane());
         SecondAnalizeButton = new ButtonBar("Net Analysis (with supervisors)", new SecondClassifyListener(), guiDialog.getRootPane());
@@ -616,6 +618,8 @@ public class SupervisionAction extends AbstractAction
                             "Deadlock", "" + Deadlock
                     };
                     sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
+                    if(!S3PR)
+                        sPanel+= S3PRresults;
                     results.setEnabled(true);
                     results.setText(sPanel);
                     return;
@@ -695,7 +699,7 @@ public class SupervisionAction extends AbstractAction
             FirstAnalizeButton.setButtonsEnabled(false);
 
 
-            sPanel = "<h2>Deadlock and S3PR analysis</h2>";
+            sPanel = "<h2>Deadlock analysis</h2>";
 
             try {
                 /*
@@ -703,7 +707,7 @@ public class SupervisionAction extends AbstractAction
                  */
                 CRTree statesTree = new CRTree(root, root.getCurrentMarking().getMarkingAsArray()[Marking.CURRENT]);
 
-                boolean S3PR = isS3PR();
+                boolean S3PR = true;//isS3PR();
                 boolean Deadlock = statesTree.hasDeadlock();
 
                 if(Deadlock ==false || S3PR==false)
@@ -711,7 +715,7 @@ public class SupervisionAction extends AbstractAction
                     sPanel+="The net is not compatible with a deadlock supervision ,the net has to be S3PR and have a deadlock";
                     String[] treeInfo = new String[]{
                             "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",
-                            "S3PR", "" + S3PR,        // ----------------------  ADD S3PR CLASSIFICATION
+                            //"S3PR", "" + S3PR,        // ----------------------  ADD S3PR CLASSIFICATION
                             "Deadlock", "" + Deadlock
                     };
                     sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
@@ -726,7 +730,7 @@ public class SupervisionAction extends AbstractAction
                 SecondAnalizeButton.setButtonsEnabled(false);
                 String[] treeInfo = new String[]{
                         "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",
-                        "S3PR", "" + S3PR,        // ----------------------  ADD S3PR CLASSIFICATION
+                        //"S3PR", "" + S3PR,        // ----------------------  ADD S3PR CLASSIFICATION
                         "Deadlock", "" + Deadlock
                 };
                 sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
@@ -948,7 +952,7 @@ public class SupervisionAction extends AbstractAction
         System.out.println("2° CHECK: All T-Invariants are closed paths, potential State Machines");
         print_hashmap(Tinvariants_SM_places,"T-Invariants loop Places");
         print_hashmap(Tinvariants_SM_trans,"T-invariant loop Transitions");
-    
+
         if(!check_Tinvariants_SM(Tinv_incidence_matrices,Tinvariants_places,Tinvariants_SM_places,Tinvariants_trans,Tinvariants_SM_trans,Tinvariants_resources))return false;
         System.out.println("3° CHECK: All T-Invariants are State Machines");
         System.out.println("4° CHECK: All Resources have marking greater than or equal to one");
@@ -980,11 +984,13 @@ public boolean check_SM_places_and_pidle_marking(Map<String,ArrayList<Integer>> 
             if(Initial_marking[places-1]>0 && !(numPlaces==tinv.size()-1))
             {
                 System.out.println("The place "+ places + " of de Tinv " + Tinv_number+" have marking and isn´t the idle");
+                S3PRresults="<br>The net isn't S3PR because: The place "+ places + " of de Tinv " + Tinv_number+" is marked but isn´t the idle place";
                 return false;
             }
             if( numPlaces==tinv.size()-1 && Initial_marking[places-1]==0)
             {
-                System.out.println("The place idle "+ places + " of de Tinv " + Tinv_number+" must have marking");
+                System.out.println("The place idle "+ places + " of de Tinv " + Tinv_number+" must have marked");
+                S3PRresults="<br>The net isn't S3PR because: The place idle"+ places + " of de Tinv " + Tinv_number+" needs to be marked";
                 return false;
             }
             numPlaces++;
@@ -1010,7 +1016,7 @@ Map<String,ArrayList<Integer>> Tinvariants_SM_place,Map<String,ArrayList<Integer
 
         for(int row=0; row<matrices.length;row++)
         {
-            for (int column = 0; column < matrices[row].length; column++) 
+            for (int column = 0; column < matrices[row].length; column++)
             {
                 Incidence_Auxiliar[row][column] = matrices[row][column];
             }
@@ -1021,7 +1027,8 @@ Map<String,ArrayList<Integer>> Tinvariants_SM_place,Map<String,ArrayList<Integer
         t=find_first_Tinvariants_enable_transition(Tinvariants_trans.get(String.format("TInv%d (T)",cont)));//aca iria la primer T sencibilizada sino 0;
         if(t==-1)
         {
-            System.out.println("T inv " + cont + " has not idle place or is not marking");
+            System.out.println("T-Invariant " + cont + " doesn't have an idle place or isn't marked");
+            S3PRresults="<br>The net isn't S3PR because: T inv " + cont + " has not idle place or isn't marked";
             return false;
         }
         p=0;
@@ -1035,14 +1042,16 @@ Map<String,ArrayList<Integer>> Tinvariants_SM_place,Map<String,ArrayList<Integer
                 p++;
                 if(p==Incidence_Auxiliar.length)
                 {
-                    System.out.println("El TInv "+ cont + " no continene un bucle cerrado\n");
+                    System.out.println("The T-invariant "+ cont + " dosn't have a closed loop\n");
+                    S3PRresults="<br>The net isn't S3PR because: The T Invariant "+cont+ " isn't closed";
                     return false;
                 }
             }
             if(!Trans_Auxiliar.contains(Tinvariants_trans.get(String.format("TInv%d (T)",cont)).get(t)))
             {
                 Trans_Auxiliar.add(Tinvariants_trans.get(String.format("TInv%d (T)",cont)).get(t));// guardo la transicion que ya se recorrio
-                System.out.println("Agrego al TInv "+cont +" La transicion: "+ Tinvariants_trans.get(String.format("TInv%d (T)",cont)).get(t));
+                //System.out.println("Agrego al TInv "+cont +" La transicion: "+ Tinvariants_trans.get(String.format("TInv%d (T)",cont)).get(t));
+                System.out.println("Transition "+Tinvariants_trans.get(String.format("TInv%d (T)",cont)).get(t) +" added to T-invariant "+ cont);
             }
             else
             {
@@ -1050,7 +1059,8 @@ Map<String,ArrayList<Integer>> Tinvariants_SM_place,Map<String,ArrayList<Integer
                 {
                     Tinvariants_SM_place.put(String.format("TInv%d (P-Loop)",(cont)), new ArrayList<Integer>(Places_Auxiliar));
                     Tinvariants_SM_trans.put(String.format("TInv%d (T-Loop)",(cont)), new ArrayList<Integer>(Trans_Auxiliar));
-                    System.out.println("El TInv "+ cont +" posee un ciclo cerrado\n");
+                    //System.out.println("El TInv "+ cont +" posee un ciclo cerrado\n");
+                    System.out.println("The T-invariant "+ cont +" contains a closed loop\n");
                     break;//ya se cumplio las condiciones
                 }
                 else
@@ -1058,14 +1068,15 @@ Map<String,ArrayList<Integer>> Tinvariants_SM_place,Map<String,ArrayList<Integer
                     if(!(Trans_Auxiliar.get(0) == Tinvariants_trans.get(String.format("TInv%d (T)",cont)).get(t)))
                         System.out.println("La transicion que se repitio no fue la primera");
                     if(!(Trans_Auxiliar.containsAll(Tinvariants_trans.get(String.format("TInv%d (T)",cont)))))
-                        System.out.println("El bucle no paso por todas las Trasn del T invariante");
+                        System.out.println("Encountered a loop that doesn't contain all T-invariant transitions");
                     delete_place_arcs(Incidence_Auxiliar,pAnterior);//elimino los arcos de la plaza q me hizo el ciclo
                     t=find_first_Tinvariants_enable_transition(Tinvariants_trans.get(String.format("TInv%d (T)",cont)));//para q comience desde la t sencibilizada, sino 0
                     p=0;
                     pAnterior=0;
                     Trans_Auxiliar.clear();
                     Places_Auxiliar.clear();
-                    System.out.println("Se encontro un recurso, Todavia no se determina si el TInv "+cont+" es un SM\n");
+                    //System.out.println("Se encontro un recurso, Todavia no se determina si el TInv "+cont+" es un SM\n");
+                    System.out.println("A resource of T-Invariant " + cont + " has been found\n");
                     continue;
                 }
             }
@@ -1075,14 +1086,17 @@ Map<String,ArrayList<Integer>> Tinvariants_SM_place,Map<String,ArrayList<Integer
                 t++;
                 if(t==Incidence_Auxiliar[0].length)
                 {
-                    System.out.println("el T invariante"+ String.format("TInv%d (T)",cont) + "Tiene una P que no tiene salida");
+                    //System.out.println("el T invariante"+ String.format("TInv%d (T)",cont) + "Tiene una P que no tiene salida");
+                    System.out.println("The T-Invariant "+ cont + "has a place that doesn't have an exit arc");
+                    S3PRresults="<br>The net isn't S3PR because: The T Invariant "+cont+ " isn't closed";
                     return false;
                 }
             }
             if(!Places_Auxiliar.contains(Tinvariants_places.get(String.format("TInv%d (P)",cont)).get(p)))
             {
                 Places_Auxiliar.add(Tinvariants_places.get(String.format("TInv%d (P)",cont)).get(p));//guardo la plaza que ya se recorrio
-                System.out.println("Agrego al TInv "+cont +" La plaza: "+Tinvariants_places.get(String.format("TInv%d (P)",cont)).get(p));
+                //System.out.println("Agrego al TInv "+cont +" La plaza: "+Tinvariants_places.get(String.format("TInv%d (P)",cont)).get(p));
+                System.out.println("Place "+Tinvariants_places.get(String.format("TInv%d (P)",cont)).get(p) +" Added to T-Invariant "+ cont);
             }
             pAnterior=p;
         }
@@ -1098,14 +1112,15 @@ Map<String,ArrayList<Integer>>  Tinvariants_SM_places,Map<String,ArrayList<Integ
     // Recorro los tinvariantes
     int Ntinv =1;
     int Initial_marking[] = get_initial_marking();
-    
+
     for (Map.Entry<String, ArrayList<Integer>> TinvSM_trans : Tinvariants_SM_trans.entrySet())
     {
         ArrayList<Integer> Places_leftOvers = new ArrayList<Integer>();
         //Restar las plazas totales del tinvariante con las plazas del bucle principal
         get_leftOvers(Tinvariants_places.get(String.format("TInv%d (P)",Ntinv)), Tinvariants_SM_places.get(String.format("TInv%d (P-Loop)",(Ntinv))),Places_leftOvers);
-        print_arraylist(Places_leftOvers, String.format("Tinv %d places left overs",Ntinv));
-        
+        //print_arraylist(Places_leftOvers, String.format("Tinv %d places left overs",Ntinv));
+        print_arraylist(Places_leftOvers, String.format("T-Invariant %d not operational places",Ntinv));
+
         //Checkear que esas plazas esten en contra del flujo del bucle principal, de lo contrario no es una SM
         if(!check_Tinvariant_resources(Tinv_incidence_matrices.get(Ntinv-1),Tinvariants_places.get(String.format("TInv%d (P)",Ntinv)),Tinvariants_SM_places.get(String.format("TInv%d (P-Loop)",(Ntinv)))
         ,Tinvariants_trans.get(String.format("TInv%d (T)",Ntinv)),Tinvariants_SM_trans.get(String.format("TInv%d (T-Loop)",Ntinv)),Places_leftOvers,Ntinv,Initial_marking))return false;
@@ -1125,7 +1140,8 @@ ArrayList<Integer>  Tinvariants_SM_place,ArrayList<Integer> Tinvariants_trans,Ar
     {
         //Ir a la fila de la plaza 'leftOver_place'
         place_row_index = Tinvariants_places.indexOf(leftOver_place);
-        System.out.println(String.format("Plaza leftover %d (indice (%d) ) del T-invariant %d",leftOver_place,place_row_index,Ntinv));
+        //System.out.println(String.format("Plaza leftover %d (indice (%d) ) del T-invariant %d",leftOver_place,place_row_index,Ntinv));
+        System.out.println(String.format("Founded a not operational place %d (indice (%d) ) in T-invariant %d",leftOver_place,place_row_index,Ntinv));
         //get_index(Tinvariants_places,leftOver_place);
         int trans_entrada=0;
         int trans_salida=0;
@@ -1147,15 +1163,21 @@ ArrayList<Integer>  Tinvariants_SM_place,ArrayList<Integer> Tinvariants_trans,Ar
 
           if(Tinvariants_SM_trans.indexOf(trans_entrada) <= Tinvariants_SM_trans.indexOf(trans_salida))
         {
+            /*
             System.out.println(String.format("Plaza leftover %d  del T-invariant %d tiene de transicion de salida %d (indice %d) y entrada %d (indice %d)"
             ,leftOver_place,Ntinv,trans_salida,Tinvariants_SM_trans.indexOf(trans_salida),trans_entrada,Tinvariants_SM_trans.indexOf(trans_entrada)));
             System.out.println(String.format("The place %d (index %d) isn't a resource of T-invariant %d",leftOver_place,place_row_index,Ntinv));
-            print_matrix(Tinv_incidence_matrices, "Matriz incidencia del tinvariante");
+            */
+            System.out.println(String.format("Not operational place %d  of T-Invariant %d has an output transition %d (index %d) and input %d (index %d)"
+                    ,leftOver_place,Ntinv,trans_salida,Tinvariants_SM_trans.indexOf(trans_salida),trans_entrada,Tinvariants_SM_trans.indexOf(trans_entrada)));
+            System.out.println(String.format("The place %d (index %d) isn't a resource of T-invariant %d",leftOver_place,place_row_index,Ntinv));
+            S3PRresults=String.format("<br>The net isn't S3PR because: The place %d (index %d) isn't a resource of T-invariant %d",leftOver_place,place_row_index,Ntinv);
+            //print_matrix(Tinv_incidence_matrices, "Matriz incidencia del tinvariante");
             return false;
         }
 
         // Checkear que el marcado de la plaza sea uno
-        
+
         if(Initial_marking[leftOver_place-1] == 0)
         {
             System.out.println(String.format("The place %d of T-invariant %d is a resource but the marking is zero",leftOver_place,Ntinv));
@@ -1202,7 +1224,8 @@ public boolean check_num_Tinvariants(Matrix TInvariants)
 {
     if(TInvariants.getColumnDimension()<=1)
     {
-        System.out.println("La red no es S3PR debido a: Existe 1 solo T invariante\n");
+        System.out.println("The net can't be S3PR because there is only one T-Invariant \n");
+        S3PRresults="<br>The net isn't S3PR because there is only one T Invariant<br>";
         return false;//existe un solo t invariante
     }
     else return true;
@@ -1212,24 +1235,33 @@ public boolean check_num_Tinvariants(Matrix TInvariants)
 public boolean get_shared_places(Map<String,ArrayList<Integer>> Tinvariants_resources,Map<String,ArrayList<Integer>> Tinvariants_shared_resources)
 {
     int Tinv_number = 1;
+    boolean paso =false;
     for (ArrayList<Integer> places : Tinvariants_resources.values())
     {
         if(places.isEmpty())
         {
-            System.out.println(String.format("Tinv %d doesn't have any resources\n",Tinv_number));
+            //System.out.println(String.format("Tinv %d doesn't have any resources\n",Tinv_number));
+            System.out.println(String.format("The T-Invariant %d can't be S3PR beacause it doesn't have any resources\n",Tinv_number));
+            S3PRresults="<br>The net isn't S3PR because: The T Invariant "+Tinv_number+ "doesn't have any resources";
             return false;
         }
 
         Tinvariants_shared_resources.put(String.format("TInv%d (SR)",(Tinv_number)), new ArrayList<Integer>());
+        paso = false;
         for (ArrayList<Integer> places_others : Tinvariants_resources.values())
         {
-            if(places.equals(places_others))
+            if(places.equals(places_others)&&!paso)
+            {
+                paso=true;
                 continue;
-            
+            }
+
             add_intersection(places,places_others,Tinvariants_shared_resources.get(String.format("TInv%d (SR)",(Tinv_number))));
             if(places.isEmpty())
             {
-                System.out.println(String.format("Tinv %d doesn't share any resources\n",Tinv_number));
+                //System.out.println(String.format("Tinv %d doesn't share any resources\n",Tinv_number));
+                System.out.println(String.format("The T-Invariant %d can't be S3PR because it doesn't share any resources\n",Tinv_number));
+                S3PRresults="<br>The net isn't S3PR because: The T Invariant "+Tinv_number+ "doesn't have any resources";
                 return false;
             }
         }
@@ -1239,7 +1271,7 @@ public boolean get_shared_places(Map<String,ArrayList<Integer>> Tinvariants_reso
 }
 
 // Adds the intersection elements between list1 and list2 to list_dest
-public void add_intersection(ArrayList<Integer> list1,ArrayList<Integer> list2,ArrayList<Integer> list_dest) 
+public void add_intersection(ArrayList<Integer> list1,ArrayList<Integer> list2,ArrayList<Integer> list_dest)
 {
     for (Integer element : list1)
         if ( (list2.contains(element)) && (!list_dest.contains(element)))
@@ -1247,7 +1279,7 @@ public void add_intersection(ArrayList<Integer> list1,ArrayList<Integer> list2,A
 }
 
 // Get the not shared elements between list1 and list2 to list_dest
-public void get_leftOvers(ArrayList<Integer> list1_original,ArrayList<Integer> list2,ArrayList<Integer> list_dest) 
+public void get_leftOvers(ArrayList<Integer> list1_original,ArrayList<Integer> list2,ArrayList<Integer> list_dest)
 {
     list_dest.clear();
     for (Integer element : list1_original)
@@ -1317,11 +1349,11 @@ public ArrayList<int[][]> get_tinvariants_incidences_matrices(int [][]IncidenceM
 
             int [][] Tinv_incidence = new int[Tinv_places.size()][Tinv_trans.size()];
 
-            for(int place_index=0;place_index<Tinv_places.size();place_index++) 
+            for(int place_index=0;place_index<Tinv_places.size();place_index++)
             {
                 int place = Tinv_places.get(place_index);
 
-                for(int trans_index=0;trans_index<Tinv_trans.size();trans_index++) 
+                for(int trans_index=0;trans_index<Tinv_trans.size();trans_index++)
                 {
                     int transition = Tinv_trans.get(trans_index);
                     Tinv_incidence[place_index][trans_index] = IncidenceMatrix[place-1][transition-1];
