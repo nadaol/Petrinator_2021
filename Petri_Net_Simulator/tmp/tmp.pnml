@@ -18,43 +18,9 @@
                 <value>0</value>
             </capacity>
         </place>
-        <place id="P24">
-            <graphics>
-                <position x="108" y="486"/>
-            </graphics>
-            <name>
-                <value>P24</value>
-                <graphics>
-                    <offset x="5" y="33"/>
-                </graphics>
-            </name>
-            <initialMarking>
-                <value>Default,1</value>
-            </initialMarking>
-            <capacity>
-                <value>0</value>
-            </capacity>
-        </place>
-        <place id="P23">
-            <graphics>
-                <position x="360" y="252"/>
-            </graphics>
-            <name>
-                <value>P23</value>
-                <graphics>
-                    <offset x="5" y="33"/>
-                </graphics>
-            </name>
-            <initialMarking>
-                <value>Default,2</value>
-            </initialMarking>
-            <capacity>
-                <value>0</value>
-            </capacity>
-        </place>
         <place id="P22">
             <graphics>
-                <position x="162" y="528"/>
+                <position x="110" y="68"/>
             </graphics>
             <name>
                 <value>P22</value>
@@ -71,7 +37,7 @@
         </place>
         <place id="P21">
             <graphics>
-                <position x="191" y="580"/>
+                <position x="602" y="232"/>
             </graphics>
             <name>
                 <value>P21</value>
@@ -88,7 +54,7 @@
         </place>
         <place id="P2">
             <graphics>
-                <position x="16" y="339"/>
+                <position x="16" y="336"/>
             </graphics>
             <name>
                 <value>P2</value>
@@ -309,7 +275,7 @@
         </place>
         <place id="P15">
             <graphics>
-                <position x="396" y="193"/>
+                <position x="403" y="211"/>
             </graphics>
             <name>
                 <value>P15</value>
@@ -1292,54 +1258,6 @@
             <exported>true</exported>
         </arc>
         <arc id="A" source="T13" target="P22">
-            <inscription>
-                <value>Default,1</value>
-                <graphics/>
-            </inscription>
-            <type value="regular"/>
-            <exported>true</exported>
-        </arc>
-        <arc id="A" source="P23" target="T12">
-            <inscription>
-                <value>Default,1</value>
-                <graphics/>
-            </inscription>
-            <type value="regular"/>
-            <exported>true</exported>
-        </arc>
-        <arc id="A" source="P23" target="T1">
-            <inscription>
-                <value>Default,1</value>
-                <graphics/>
-            </inscription>
-            <type value="regular"/>
-            <exported>true</exported>
-        </arc>
-        <arc id="A" source="T10" target="P23">
-            <inscription>
-                <value>Default,1</value>
-                <graphics/>
-            </inscription>
-            <type value="regular"/>
-            <exported>true</exported>
-        </arc>
-        <arc id="A" source="T4" target="P23">
-            <inscription>
-                <value>Default,1</value>
-                <graphics/>
-            </inscription>
-            <type value="regular"/>
-            <exported>true</exported>
-        </arc>
-        <arc id="A" source="P24" target="T12">
-            <inscription>
-                <value>Default,1</value>
-                <graphics/>
-            </inscription>
-            <type value="regular"/>
-            <exported>true</exported>
-        </arc>
-        <arc id="A" source="P24" target="T1">
             <inscription>
                 <value>Default,1</value>
                 <graphics/>

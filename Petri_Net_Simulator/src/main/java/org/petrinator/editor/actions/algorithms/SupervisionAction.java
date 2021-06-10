@@ -1141,7 +1141,7 @@ ArrayList<Integer>  Tinvariants_SM_place,ArrayList<Integer> Tinvariants_trans,Ar
         //Ir a la fila de la plaza 'leftOver_place'
         place_row_index = Tinvariants_places.indexOf(leftOver_place);
         //System.out.println(String.format("Plaza leftover %d (indice (%d) ) del T-invariant %d",leftOver_place,place_row_index,Ntinv));
-        System.out.println(String.format("Founded a not operational place %d (indice (%d) ) in T-invariant %d",leftOver_place,place_row_index,Ntinv));
+        System.out.println(String.format("The not operational place %d is a resource in T-invariant %d",leftOver_place,Ntinv));
         //get_index(Tinvariants_places,leftOver_place);
         int trans_entrada=0;
         int trans_salida=0;
@@ -1161,17 +1161,17 @@ ArrayList<Integer>  Tinvariants_SM_place,ArrayList<Integer> Tinvariants_trans,Ar
         }
 
 
-          if(Tinvariants_SM_trans.indexOf(trans_entrada) <= Tinvariants_SM_trans.indexOf(trans_salida))
+        if(Tinvariants_SM_trans.indexOf(trans_entrada) <= Tinvariants_SM_trans.indexOf(trans_salida))
         {
             /*
             System.out.println(String.format("Plaza leftover %d  del T-invariant %d tiene de transicion de salida %d (indice %d) y entrada %d (indice %d)"
             ,leftOver_place,Ntinv,trans_salida,Tinvariants_SM_trans.indexOf(trans_salida),trans_entrada,Tinvariants_SM_trans.indexOf(trans_entrada)));
             System.out.println(String.format("The place %d (index %d) isn't a resource of T-invariant %d",leftOver_place,place_row_index,Ntinv));
             */
-            System.out.println(String.format("Not operational place %d  of T-Invariant %d has an output transition %d (index %d) and input %d (index %d)"
-                    ,leftOver_place,Ntinv,trans_salida,Tinvariants_SM_trans.indexOf(trans_salida),trans_entrada,Tinvariants_SM_trans.indexOf(trans_entrada)));
-            System.out.println(String.format("The place %d (index %d) isn't a resource of T-invariant %d",leftOver_place,place_row_index,Ntinv));
-            S3PRresults=String.format("<br>The net isn't S3PR because: The place %d (index %d) isn't a resource of T-invariant %d",leftOver_place,place_row_index,Ntinv);
+            System.out.println(String.format("Not operational place %d of T-Invariant %d has an output transition %d and input %d"
+                    ,leftOver_place,Ntinv,trans_salida,trans_entrada));
+            System.out.println(String.format("The place %d isn't a resource of T-invariant %d",leftOver_place,Ntinv));
+            S3PRresults=String.format("<br>The net isn't S3PR because: The place %d isn't a resource of T-invariant %d",leftOver_place,Ntinv);
             //print_matrix(Tinv_incidence_matrices, "Matriz incidencia del tinvariante");
             return false;
         }
