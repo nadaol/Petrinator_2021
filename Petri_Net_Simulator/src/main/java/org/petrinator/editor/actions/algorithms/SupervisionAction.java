@@ -1066,7 +1066,7 @@ Map<String,ArrayList<Integer>> Tinvariants_SM_place,Map<String,ArrayList<Integer
                 else
                 {
                     if(!(Trans_Auxiliar.get(0) == Tinvariants_trans.get(String.format("TInv%d (T)",cont)).get(t)))
-                        System.out.println("La transicion que se repitio no fue la primera");
+                        System.out.println("The transition that was repeated was not the first");
                     if(!(Trans_Auxiliar.containsAll(Tinvariants_trans.get(String.format("TInv%d (T)",cont)))))
                         System.out.println("Encountered a loop that doesn't contain all T-invariant transitions");
                     delete_place_arcs(Incidence_Auxiliar,pAnterior);//elimino los arcos de la plaza q me hizo el ciclo

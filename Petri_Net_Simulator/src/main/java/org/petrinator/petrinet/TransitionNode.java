@@ -41,6 +41,8 @@ public abstract class TransitionNode extends Node implements Cloneable
     private String label_var1 = "Rate (λ)";
     private String label_var2 = " ";
     private int time = 0;
+    //test para costo
+    private int cost =0;
 
     public Set<PlaceNode> getConnectedPlaceNodes()
     {
@@ -50,7 +52,24 @@ public abstract class TransitionNode extends Node implements Cloneable
         }
         return connectedPlaceNodes;
     }
-
+    /**
+     * Sets a new cost.
+     *
+     * @param cost - state to set.
+     */
+    public void setCost(int cost)
+    {
+        this.cost = cost;
+    }
+    /**
+     * Returns the cost.
+     *
+     * @return the cost.
+     */
+    public int getCost()
+    {
+        return cost;
+    }
     /**
      * Returns the behavior.
      *

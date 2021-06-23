@@ -123,6 +123,8 @@ public class MatricesAction extends AbstractAction
             matrices.put("Incidencia", root.getDocument().getPetriNet().getIncidenceMatrix());
             matrices.put("Inhibicion", root.getDocument().getPetriNet().getInhibitionMatrix());
             matrices.put("Marcado", root.getDocument().getPetriNet().getInitialMarking().getMarkingAsArray()[Marking.CURRENT]);
+            matrices.put("Costos", root.getDocument().getPetriNet().getCostArray());
+
 
             String json = gson.toJson(matrices);
 

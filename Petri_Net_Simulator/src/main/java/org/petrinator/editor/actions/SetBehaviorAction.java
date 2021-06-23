@@ -64,7 +64,11 @@ public class SetBehaviorAction extends AbstractAction{
 			double var2;
 			String label_var1;
 			String label_var2;
-                             
+			//agrego variables costo
+			int var3;
+			String label_var3;
+			//hasta aca
+
             JTextField field_guard = new JTextField(8);
             JTextField field_label = new JTextField(8);
 			//JTextField field_rate = new JTextField(8);
@@ -78,7 +82,10 @@ public class SetBehaviorAction extends AbstractAction{
             JCheckBox checkBoxTimed = new JCheckBox();
             JPanel myPanel = new JPanel();
 			JComboBox<String> comboBoxDistribution;
-
+			//agrego para modificar costo
+			JLabel Jlabel_var3 = new JLabel("Cost:  ");
+			JTextField value_var3 = new JTextField(4);
+			//hasta aca
 
             myPanel.setLayout(new MigLayout());
 			myPanel.add(new JLabel("Label:  "));
@@ -125,6 +132,13 @@ public class SetBehaviorAction extends AbstractAction{
 			myPanel.add(new JLabel(" "));
 			myPanel.add(value_var2);
 			myPanel.add(new JLabel("seg."),"wrap, grow");
+			//agrego para costos
+			myPanel.add(new JSeparator(), "span, growx, wrap");
+			myPanel.add(Jlabel_var3);
+			myPanel.add(new JLabel(" "));
+			myPanel.add(value_var3,"al left, span, grow");
+			//hasta aca
+
 
 			//set in the panel the behavior of the transition.
 			field_label.setText(clickedTransition.getLabel());
@@ -140,6 +154,10 @@ public class SetBehaviorAction extends AbstractAction{
 			Jlabel_var1.setText(clickedTransition.getLabelVar1());
 			Jlabel_var2.setText(clickedTransition.getLabelVar2());
 			comboBoxDistribution.setSelectedIndex(clickedTransition.getIndexDistribution());
+			//agrego para costos
+			value_var3.setText(Integer.toString(clickedTransition.getCost()));
+			//hasta aca
+
 
 			if(clickedTransition.isTimed())
 			{
@@ -257,6 +275,14 @@ public class SetBehaviorAction extends AbstractAction{
                	clickedTransition.setInformed(informed);
                	clickedTransition.setEnableWhenTrue(enablewhentrue);
                	clickedTransition.setTime(timed);
+				try{
+					clickedTransition.setCost(Integer.valueOf(value_var3.getText()));//para costos
+				}
+				catch (NumberFormatException n)
+				{
+					JOptionPane.showMessageDialog(null, "Invalid cost.");
+				}
+
 
                	//Check if the rate number is a valid number
                	//try {

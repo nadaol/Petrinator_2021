@@ -375,6 +375,34 @@ public class PetriNet {
         MergeSort merge = new MergeSort();
         return merge.mergeSort(transitions);
     }
+    public ArrayList<Transition> getSortedTransitions2(){
+
+        Set<Transition>  allTransitions = getRootSubnet().getTransitions();
+        ArrayList<Transition> transitions = new ArrayList<Transition>();
+
+        for(Transition t : allTransitions)
+        {
+            transitions.add(t);
+        }
+
+        Collections.sort(transitions);
+        return transitions;
+    }
+    /*
+     * Obtener vector de costos
+     */
+    public int[] getCostArray(){
+
+        ArrayList<Transition> transitions = getSortedTransitions2(); //TODO
+        int arrayCostos[] = new int[transitions.size()];
+
+        for(int i=0; i<transitions.size(); i++)
+        {
+            arrayCostos[i]=transitions.get(i).getCost();
+        }
+
+        return arrayCostos;
+    }
     /*
      * Reconstruye el grafo con elementos Plaza y Transiciones a partir de las matrices I+ e I-.
      * Falta agregar inhibici�n y reset.
