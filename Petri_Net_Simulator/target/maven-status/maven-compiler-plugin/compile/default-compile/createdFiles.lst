@@ -94,6 +94,7 @@ org/petrinator/editor/commands/AddTokenCommand.class
 org/petrinator/petrinet/ReferencePlace.class
 org/petrinator/editor/actions/algorithms/ClassificationAction.class
 org/petrinator/editor/actions/algorithms/SiphonsAction$1.class
+org/petrinator/editor/actions/algorithms/AutomaticPolitics$1.class
 org/petrinator/petrinet/NodeSimpleIdGenerator.class
 org/petrinator/editor/commands/SetEdgeZigzagPointCommand.class
 org/petrinator/editor/actions/algorithms/ResponseTimeAction.class
@@ -192,6 +193,7 @@ org/petrinator/editor/commands/AddPlaceCommand.class
 org/petrinator/util/Point.class
 org/petrinator/util/CachedGraphics2D.class
 org/petrinator/editor/commands/MoveElementCommand.class
+org/petrinator/editor/actions/algorithms/AutomaticPolitics$RunListener.class
 org/petrinator/editor/commands/AddReferenceArcCommand.class
 org/petrinator/editor/commands/SetUnsetPlaceStaticCommand.class
 org/petrinator/editor/canvas/EdgeZigzagFeature.class
@@ -212,6 +214,7 @@ org/petrinator/editor/commands/ReplaceSubnetCommand.class
 org/petrinator/editor/actions/TokenSelectToolAction.class
 org/petrinator/editor/canvas/ClickFeature.class
 org/petrinator/editor/actions/algorithms/MatricesAction$1.class
+org/petrinator/editor/actions/algorithms/AutomaticPolitics.class
 org/petrinator/petrinet/xml/XmlPlace.class
 org/petrinator/util/CachedGraphics2D$3.class
 org/petrinator/util/CollectionTools.class

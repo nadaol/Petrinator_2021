@@ -1,0 +1,5 @@
+## -r indicates number of times it's run, -n the number of transitions fired, -t if simple cost or invariant cost is used and -l is used when net is modified manually.
+#Running panama net requires the following command:
+python3 main.py ./Examples/panama.json -n 10000 -t simp -r 3
+#Running guanjun net requires the following command:
+python3 main.py ./Examples/guanjun-mod.json -n 10000 -t simp -r 3 -l

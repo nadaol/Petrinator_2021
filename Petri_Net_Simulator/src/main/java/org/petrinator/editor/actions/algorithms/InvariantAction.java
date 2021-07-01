@@ -195,7 +195,6 @@ public class InvariantAction extends AbstractAction
         }
         return result + "<br>" + findPEquations(M);
     }
-
     /**
      * Reports on the T invariants.
      *

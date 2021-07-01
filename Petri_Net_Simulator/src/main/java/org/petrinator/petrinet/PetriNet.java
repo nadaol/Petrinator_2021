@@ -375,30 +375,20 @@ public class PetriNet {
         MergeSort merge = new MergeSort();
         return merge.mergeSort(transitions);
     }
-    public ArrayList<Transition> getSortedTransitions2(){
-
-        Set<Transition>  allTransitions = getRootSubnet().getTransitions();
-        ArrayList<Transition> transitions = new ArrayList<Transition>();
-
-        for(Transition t : allTransitions)
-        {
-            transitions.add(t);
-        }
-
-        Collections.sort(transitions);
-        return transitions;
-    }
     /*
      * Obtener vector de costos
      */
     public int[] getCostArray(){
 
-        ArrayList<Transition> transitions = getSortedTransitions2(); //TODO
+        ArrayList<Node> transitions = getSortedTransitions(); //TODO
+        Transition castTransitions;
+
         int arrayCostos[] = new int[transitions.size()];
 
         for(int i=0; i<transitions.size(); i++)
         {
-            arrayCostos[i]=transitions.get(i).getCost();
+            castTransitions = (Transition)transitions.get(i);
+            arrayCostos[i]=castTransitions.getCost();
         }
 
         return arrayCostos;
