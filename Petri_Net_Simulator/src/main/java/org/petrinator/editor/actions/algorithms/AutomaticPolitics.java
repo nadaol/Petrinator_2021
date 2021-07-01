@@ -30,6 +30,7 @@ import org.petrinator.editor.filechooser.*;
 import org.petrinator.petrinet.*;
 import org.petrinator.util.GraphicsTools;
 import pipe.gui.widgets.ButtonBar;
+import pipe.gui.widgets.EscapableDialog;
 import pipe.gui.widgets.FileBrowser;
 import pipe.gui.widgets.ResultsHTMLPane;
 import pipe.modules.minimalSiphons.MinimalSiphons;
@@ -63,8 +64,11 @@ public class AutomaticPolitics extends AbstractAction
     private Root root;
     private JDialog guiDialog;
     private ButtonBar FirstAnalizeButton;
+    private ButtonBar HelpButton;
     String[] cost = {"simp", "inv"};
     JComboBox tipoCosto = new JComboBox(cost);
+    JTextField firenumbers = new JTextField(0);
+    JTextField repeats = new JTextField(0);
     InvariantAction accion;
     MatricesAction matrices;
     //test
@@ -89,22 +93,23 @@ public class AutomaticPolitics extends AbstractAction
         S3PRresults = new String();
         contentPane.add(results);
         FirstAnalizeButton = new ButtonBar("Run Politics Analysis", new RunListener(), guiDialog.getRootPane());
+        HelpButton = new ButtonBar("Help", new HelpListener(), guiDialog.getRootPane());
         JPanel checkPanel = new JPanel(new GridLayout(3,3));
         //agrego al nuevo panel
         //String[] cost = {"simp", "inv"};
         //JComboBox tipoCosto = new JComboBox(cost);
         checkPanel.add(new JLabel("Firenumber:"),BorderLayout.PAGE_START);
-        checkPanel.add(new JTextField(0),BorderLayout.PAGE_START);
+        checkPanel.add(firenumbers,BorderLayout.PAGE_START);
         checkPanel.add(new JCheckBox("NET with Supervisors" ));
         checkPanel.add(new JLabel("Repeat:"));
-        checkPanel.add(new JTextField(0));
+        checkPanel.add(repeats);
         checkPanel.add(new JCheckBox("Modify NET" ));
         checkPanel.add(new JLabel("Cost type:"));
         checkPanel.add(tipoCosto);
-
         //termino de agregar al nuevo panel
         contentPane.add(checkPanel, BorderLayout.CENTER);
         contentPane.add(FirstAnalizeButton);
+        contentPane.add(HelpButton);
         //creo un objeto de invariantes
         accion = new InvariantAction(this.root);
         matrices = new MatricesAction(this.root);
@@ -200,10 +205,28 @@ public class AutomaticPolitics extends AbstractAction
             String pathToPythonMain;
             if(jar_path!= null)pathToPythonMain = jar_path +"/Modulos/Automatic-politics/main.py";
             else return 1;
+            try
+            {
+                //Integer.valueOf(firenumbers.getText());
+                //Integer.valueOf(repeats.getText());
+                if(0 >= Integer.valueOf(firenumbers.getText()) || Integer.valueOf(firenumbers.getText())>100000)
+                {
+                    JOptionPane.showMessageDialog(null, "Invalid range of firenumbers");
+                    return 1;
+                }
+                if(0 >= Integer.valueOf(repeats.getText()) || Integer.valueOf(repeats.getText())>10)
+                {
+                    JOptionPane.showMessageDialog(null, "Invalid range of repeats");
+                    return 1;
+                }
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(null, "Invalid firenumber or repeats");
+                return 1;
+            }
 
             ProcessBuilder pb = new ProcessBuilder("python3",pathToPythonMain,
                     "./Modulos/Automatic-politics/tmp/jsonmat.json",
-                    "-n","10000","-t",tipoCosto.getSelectedItem().toString(),"-r","3");
+                    "-n",firenumbers.getText(),"-t",tipoCosto.getSelectedItem().toString(),"-r",repeats.getText());
             //python3 /Modulos/Automatic-politics/main.py ./tmp/jsonmat.json -n10000 -t simp -r 3
             pb.redirectErrorStream(true);
             sPanel+= getInputAsString(pb.start().getInputStream());
@@ -371,7 +394,36 @@ public class AutomaticPolitics extends AbstractAction
 
         }
     };
+    private class HelpListener implements ActionListener {
+        public void actionPerformed(ActionEvent e)
+        {
+            /*
+             * Create the dialog
+             */
+            EscapableDialog guiDialog = new EscapableDialog(root.getParentFrame(), "Help: Automatics Politics", false);
+            Container contentPane = guiDialog.getContentPane();
+            org.petrinator.auxiliar.ResultsHTMLPane results = new org.petrinator.auxiliar.ResultsHTMLPane("");
+            contentPane.add(results);
+            guiDialog.pack();
+            guiDialog.setAlwaysOnTop(true);
+            guiDialog.setLocationRelativeTo(root.getParentFrame());
+            guiDialog.setVisible(true);
 
+            /*
+             * Read the about.html file
+             */
+            InputStream aboutFile = getClass().getResourceAsStream("/AutomaticPoliticsHelp.html");
+            Scanner scanner = null;
+            scanner = new Scanner(aboutFile, "UTF-8");
+            String s = scanner.useDelimiter("\\Z").next();
+            scanner.close();
+
+            /*
+             * Show the text on dialog
+             */
+            results.setText(s);
+        }
+    };
     public void reSaveNet() {
 
         FileType chosenFileType = (FileType) new PflowFileType();

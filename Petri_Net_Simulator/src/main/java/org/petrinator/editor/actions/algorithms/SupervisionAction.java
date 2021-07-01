@@ -29,6 +29,7 @@ import org.petrinator.editor.filechooser.*;
 import org.petrinator.petrinet.*;
 import org.petrinator.util.GraphicsTools;
 import pipe.gui.widgets.ButtonBar;
+import pipe.gui.widgets.EscapableDialog;
 import pipe.gui.widgets.ResultsHTMLPane;
 import pipe.modules.minimalSiphons.MinimalSiphons;
 import pipe.utilities.math.Matrix;
@@ -62,6 +63,7 @@ public class SupervisionAction extends AbstractAction
     private ButtonBar SecondAnalizeButton;
     private ButtonBar superviseButton;
     private ButtonBar fixConflictButton;
+    private ButtonBar HelpButton;
     InvariantAction accion;
     MatricesAction matrices;
     ReachabilityAction states;
@@ -92,10 +94,20 @@ public class SupervisionAction extends AbstractAction
         SecondAnalizeButton = new ButtonBar("Net Analysis (with supervisors)", new SecondClassifyListener(), guiDialog.getRootPane());
         superviseButton = new ButtonBar("Add Supervisor/s", new AddSupervisorListener(), guiDialog.getRootPane());
         fixConflictButton = new ButtonBar("Fix Conflict/s", new FixConflictListener(), guiDialog.getRootPane());
-        contentPane.add(FirstAnalizeButton);
-        contentPane.add(SecondAnalizeButton);
-        contentPane.add(superviseButton);
-        contentPane.add(fixConflictButton);
+        HelpButton = new ButtonBar("Help", new HelpListener(), guiDialog.getRootPane());
+        JPanel checkPanel = new JPanel(new GridLayout(2,2));
+        //agrego al nuevo panel
+        checkPanel.add(FirstAnalizeButton);
+        checkPanel.add(superviseButton);
+        checkPanel.add(SecondAnalizeButton);
+        checkPanel.add(fixConflictButton);
+        //termino de agregar al nuevo panel
+        contentPane.add(checkPanel);
+        //contentPane.add(FirstAnalizeButton);
+        //contentPane.add(SecondAnalizeButton);
+        //contentPane.add(superviseButton);
+        //contentPane.add(fixConflictButton);
+        contentPane.add(HelpButton);
         //creo un objeto de invariantes
         accion = new InvariantAction(this.root);
         matrices = new MatricesAction(this.root);
@@ -882,6 +894,37 @@ public class SupervisionAction extends AbstractAction
 
     };
     //Function to save and reload net when the supervisor is added
+
+    private class HelpListener implements ActionListener {
+        public void actionPerformed(ActionEvent e)
+        {
+            /*
+             * Create the dialog
+             */
+            EscapableDialog guiDialog = new EscapableDialog(root.getParentFrame(), "Help: Deadlock Supervisor", false);
+            Container contentPane = guiDialog.getContentPane();
+            org.petrinator.auxiliar.ResultsHTMLPane results = new org.petrinator.auxiliar.ResultsHTMLPane("");
+            contentPane.add(results);
+            guiDialog.pack();
+            guiDialog.setAlwaysOnTop(true);
+            guiDialog.setLocationRelativeTo(root.getParentFrame());
+            guiDialog.setVisible(true);
+
+            /*
+             * Read the about.html file
+             */
+            InputStream aboutFile = getClass().getResourceAsStream("/DeadlockSupervisorHelp.html");
+            Scanner scanner = null;
+            scanner = new Scanner(aboutFile, "UTF-8");
+            String s = scanner.useDelimiter("\\Z").next();
+            scanner.close();
+
+            /*
+             * Show the text on dialog
+             */
+            results.setText(s);
+        }
+    };
     public void reSaveNet() {
 
         FileType chosenFileType = (FileType) new PflowFileType();

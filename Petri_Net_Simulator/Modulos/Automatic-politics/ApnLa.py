@@ -38,14 +38,14 @@ class ApnLa:
         print(self.rdp.costVector)
 
     def printClusters(self):
-        print("\nCLUSTERS:\n")
-        print("\tRegular clusters")
+        print("<br>CLUSTERS:<br>")
+        print("&emspRegular clusters")
         for cluster in self.clusterManager.clusters:
-            print('\t\t*', cluster.transitionList)
+            print('&emsp*', cluster.transitionList)
         if len(self.clusterManager.controlClusters) > 0:
-            print("\tControl clusters")
+            print("&emspControl clusters")
             for cluster in self.clusterManager.controlClusters:
-                print('\t\t*', cluster.transitionList)
+                print('&emsp&emsp*', cluster.transitionList)
 
     def getClusterProbs(self):
         probs = []

@@ -18,6 +18,7 @@ org/petrinator/editor/commands/SetArcResetCommand.class
 org/petrinator/editor/actions/algorithms/MatricesAction$ExportListener.class
 org/petrinator/editor/actions/SetArcInhibitoryAction.class
 org/petrinator/editor/commands/SeeBehaviorCommand.class
+org/petrinator/editor/actions/algorithms/AutomaticPolitics$HelpListener.class
 org/petrinator/editor/actions/algorithms/GSPNAction$1.class
 org/petrinator/LabelToTransition.class
 org/petrinator/util/ListModel.class
@@ -30,6 +31,7 @@ org/petrinator/editor/canvas/Canvas.class
 org/petrinator/editor/canvas/VisualSelection.class
 org/petrinator/editor/commands/ConvertTransitionToSubnetCommand.class
 org/petrinator/editor/filechooser/Preview.class
+org/petrinator/editor/actions/algorithms/SupervisionAction$HelpListener.class
 org/petrinator/auxiliar/EventList$1.class
 org/petrinator/editor/filechooser/TinaPnmlFileType.class
 org/petrinator/editor/Root.class
