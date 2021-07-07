@@ -75,7 +75,7 @@ def modify_net(netName, newPlaces, newTransitions, newArcs):
 
     # tree.write('test.pflow')
     formated_xml = prettify(tree.getroot())
-    fileName = "out.pflow"
+    fileName = netName #"out.pflow"
     with open(fileName, 'w') as f:
         f.write(formated_xml)
     print('Red modificada exitosamente en', fileName)

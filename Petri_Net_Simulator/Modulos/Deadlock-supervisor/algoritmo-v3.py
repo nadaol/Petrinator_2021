@@ -216,8 +216,11 @@ def path_conflict(t_idle,t_analizar,flag_idle,plazas_sifon_complemento):
          #       print(t_conflict)
                 conflict_t_invariante(t_conflict,t_invariant,matriz_pre_pos,plazas_sifon_complemento)
             else: #no hay conflicto
-                path_conflict(t_idle,t_conflict[0],flag_idle,plazas_sifon_complemento)    
-    
+                #path_conflict(t_idle,t_conflict[0],flag_idle,plazas_sifon_complemento)    
+                if (t_conflict[0] < t_analizar):
+                    continue
+                else:
+                    path_conflict(t_idle, t_conflict[0], flag_idle, plazas_sifon_complemento)
 def supervisor(cantidad_transiciones,cantidad_plazas,sifon,matriz_es_tr,matriz_pos,matriz_pre,matriz_sifones,t_invariant):
     """ 
     Define el supervisor que va a controlar el bad-siphon. Esta funcion define el marcado de la plaza supervisor y las transiciones de entrada y salida del mismo. \n

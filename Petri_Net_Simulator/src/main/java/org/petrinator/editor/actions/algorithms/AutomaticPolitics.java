@@ -69,6 +69,8 @@ public class AutomaticPolitics extends AbstractAction
     JComboBox tipoCosto = new JComboBox(cost);
     JTextField firenumbers = new JTextField(0);
     JTextField repeats = new JTextField(0);
+    JCheckBox netWithSup = new JCheckBox("NET with Supervisors" );
+    JCheckBox modifyNetButton = new JCheckBox("Modify NET" );
     InvariantAction accion;
     MatricesAction matrices;
     //test
@@ -100,10 +102,10 @@ public class AutomaticPolitics extends AbstractAction
         //JComboBox tipoCosto = new JComboBox(cost);
         checkPanel.add(new JLabel("Firenumber:"),BorderLayout.PAGE_START);
         checkPanel.add(firenumbers,BorderLayout.PAGE_START);
-        checkPanel.add(new JCheckBox("NET with Supervisors" ));
+        checkPanel.add(netWithSup);
         checkPanel.add(new JLabel("Repeat:"));
         checkPanel.add(repeats);
-        checkPanel.add(new JCheckBox("Modify NET" ));
+        checkPanel.add(modifyNetButton);
         checkPanel.add(new JLabel("Cost type:"));
         checkPanel.add(tipoCosto);
         //termino de agregar al nuevo panel
@@ -197,42 +199,55 @@ public class AutomaticPolitics extends AbstractAction
     public int execPolitics()
     {
         sPanel = "<h2>Run Automatic Politics Analisys</h2>";
-        String resultado;
-        //String parametros = "./tmp/jsonmat.json -n 10000 -t simp -r 3";
+        List<String> comandos = new ArrayList<String>();
         try {
+            comandos.add("python3");//1°comand
             //Get tesis python path and execute
             String  jar_path = get_Current_JarPath();
             String pathToPythonMain;
             if(jar_path!= null)pathToPythonMain = jar_path +"/Modulos/Automatic-politics/main.py";
             else return 1;
+            comandos.add(pathToPythonMain);//2°comand
+            comandos.add("./Modulos/Automatic-politics/tmp/jsonmat.json");//3°comand
             try
             {
-                //Integer.valueOf(firenumbers.getText());
-                //Integer.valueOf(repeats.getText());
                 if(0 >= Integer.valueOf(firenumbers.getText()) || Integer.valueOf(firenumbers.getText())>100000)
                 {
                     JOptionPane.showMessageDialog(null, "Invalid range of firenumbers");
                     return 1;
                 }
+                comandos.add("-n");//4°comand
+                comandos.add(firenumbers.getText());//5°comand
                 if(0 >= Integer.valueOf(repeats.getText()) || Integer.valueOf(repeats.getText())>10)
                 {
                     JOptionPane.showMessageDialog(null, "Invalid range of repeats");
                     return 1;
                 }
+                comandos.add("-r");//6°comand
+                comandos.add(repeats.getText());//7°comand
+                comandos.add("-t");//8°comand
+                comandos.add(tipoCosto.getSelectedItem().toString());//9°comand
+                if(netWithSup.isSelected())
+                {
+                    comandos.add("-l");
+
+                }
+                if(modifyNetButton.isSelected())
+                {
+                    comandos.add("-m");
+                    comandos.add(root.getCurrentFile().getPath());
+                }
+
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(null, "Invalid firenumber or repeats");
                 return 1;
             }
-
-            ProcessBuilder pb = new ProcessBuilder("python3",pathToPythonMain,
-                    "./Modulos/Automatic-politics/tmp/jsonmat.json",
-                    "-n",firenumbers.getText(),"-t",tipoCosto.getSelectedItem().toString(),"-r",repeats.getText());
-            //python3 /Modulos/Automatic-politics/main.py ./tmp/jsonmat.json -n10000 -t simp -r 3
+            print_arraylistStringonly((ArrayList<String>) comandos,"comando");
+            ProcessBuilder pb = new ProcessBuilder(comandos);
             pb.redirectErrorStream(true);
             sPanel+= getInputAsString(pb.start().getInputStream());
-
             results.setText(sPanel);
-            
+            reSaveNet();
 
         } catch (IOException e) {
             results.setText("");
@@ -284,7 +299,19 @@ public class AutomaticPolitics extends AbstractAction
         }
         System.out.println("\n");
     }
-
+    public void print_arraylistStringonly(ArrayList<String> list,String Title)
+    {
+        System.out.println(Title);
+        for(String string_array : list)
+        {
+                System.out.print(string_array+" ");
+        }
+        System.out.println("\n");
+    }
+    /**
+     * hace el analisis de t invariantes
+     * @return Array list con T invariantes de a forma [T1,T2,T3]
+     */
     public ArrayList<String[]> invariantAnalysis()
     {
         ArrayList<String> TinvariantsLabels_aux=new ArrayList<String>();
@@ -307,6 +334,11 @@ public class AutomaticPolitics extends AbstractAction
         return TinvariantsLabels;
     }
 
+    /**
+     * exporta los json files que utilitizara el agortimo .json (todas las matrices) y cfg.json
+     * (costos estaticos y T-Invariantes)
+     * @return 1 en caso de error , 0 caso exitoso
+     */
     public int exportJsonsFiles()
     {
         Map<String, Object> matrices = new HashMap<>();
