@@ -64,12 +64,17 @@ public class AutomaticPolitics extends AbstractAction
     private Root root;
     private JDialog guiDialog;
     private ButtonBar FirstAnalizeButton;
+    private ButtonBar showPlotButton;
     private ButtonBar HelpButton;
     String[] cost = {"simp", "inv"};
     JComboBox tipoCosto = new JComboBox(cost);
     JTextField firenumbers = new JTextField(0);
     JTextField repeats = new JTextField(0);
-    JCheckBox netWithSup = new JCheckBox("NET with Supervisors" );
+    JCheckBox netWithMod = new JCheckBox("NET with Modifications" );
+    JCheckBox netWithControlPlaces = new JCheckBox("NET with Control Places");
+    //
+    ArrayList<String> ControlPlacesString = new ArrayList<String>();
+    //
     JCheckBox modifyNetButton = new JCheckBox("Modify NET" );
     InvariantAction accion;
     MatricesAction matrices;
@@ -95,22 +100,30 @@ public class AutomaticPolitics extends AbstractAction
         S3PRresults = new String();
         contentPane.add(results);
         FirstAnalizeButton = new ButtonBar("Run Politics Analysis", new RunListener(), guiDialog.getRootPane());
+        showPlotButton = new ButtonBar("Show Plot", new showPlotListener(), guiDialog.getRootPane());
         HelpButton = new ButtonBar("Help", new HelpListener(), guiDialog.getRootPane());
+        //action listener del plazas de control
+        netWithControlPlaces.addActionListener(new PlaceControlListener());
+        //
         JPanel checkPanel = new JPanel(new GridLayout(3,3));
         //agrego al nuevo panel
         //String[] cost = {"simp", "inv"};
         //JComboBox tipoCosto = new JComboBox(cost);
         checkPanel.add(new JLabel("Firenumber:"),BorderLayout.PAGE_START);
         checkPanel.add(firenumbers,BorderLayout.PAGE_START);
-        checkPanel.add(netWithSup);
+        checkPanel.add(netWithControlPlaces);
         checkPanel.add(new JLabel("Repeat:"));
         checkPanel.add(repeats);
         checkPanel.add(modifyNetButton);
         checkPanel.add(new JLabel("Cost type:"));
         checkPanel.add(tipoCosto);
+        checkPanel.add(netWithMod);
         //termino de agregar al nuevo panel
         contentPane.add(checkPanel, BorderLayout.CENTER);
-        contentPane.add(FirstAnalizeButton);
+        JPanel checkPanel2 = new JPanel(new GridLayout(1,2));
+        checkPanel2.add(FirstAnalizeButton);
+        checkPanel2.add(showPlotButton);
+        contentPane.add(checkPanel2, BorderLayout.CENTER);
         contentPane.add(HelpButton);
         //creo un objeto de invariantes
         accion = new InvariantAction(this.root);
@@ -173,7 +186,8 @@ public class AutomaticPolitics extends AbstractAction
         // Enables classify button
         FirstAnalizeButton.setButtonsEnabled(true);
         FirstAnalizeButton.setEnabled(true);//para luego chequear
-
+        showPlotButton.setButtonsEnabled(false);
+        netWithControlPlaces.setSelected(false);
         // Shows initial pane
         guiDialog.pack();
         guiDialog.setLocationRelativeTo(root.getParentFrame());
@@ -200,6 +214,7 @@ public class AutomaticPolitics extends AbstractAction
     {
         sPanel = "<h2>Run Automatic Politics Analisys</h2>";
         List<String> comandos = new ArrayList<String>();
+
         try {
             comandos.add("python3");//1°comand
             //Get tesis python path and execute
@@ -227,7 +242,7 @@ public class AutomaticPolitics extends AbstractAction
                 comandos.add(repeats.getText());//7°comand
                 comandos.add("-t");//8°comand
                 comandos.add(tipoCosto.getSelectedItem().toString());//9°comand
-                if(netWithSup.isSelected())
+                if(netWithMod.isSelected())
                 {
                     comandos.add("-l");
 
@@ -248,6 +263,7 @@ public class AutomaticPolitics extends AbstractAction
             sPanel+= getInputAsString(pb.start().getInputStream());
             results.setText(sPanel);
             reSaveNet();
+            //showPlot();
 
         } catch (IOException e) {
             results.setText("");
@@ -346,7 +362,10 @@ public class AutomaticPolitics extends AbstractAction
         Gson gson = new Gson();
         matrices.put("Costos", root.getDocument().getPetriNet().getCostArray());
         matrices.put("Invariantes",invariantAnalysis());
-
+        if(netWithControlPlaces.isSelected())
+        {
+            matrices.put("ControlPlaces",ControlPlacesString);
+        }
         String json = gson.toJson(matrices);
 
         String destFNcfg,destFN;
@@ -384,7 +403,36 @@ public class AutomaticPolitics extends AbstractAction
         }
         return 0;
     }
+    private class showPlotListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            /*
+             * Create the dialog
+             */
+            EscapableDialog guiDialog = new EscapableDialog(root.getParentFrame(), "Plot results", false);
+            Container contentPane = guiDialog.getContentPane();
+            //org.petrinator.auxiliar.ResultsHTMLPane results = new org.petrinator.auxiliar.ResultsHTMLPane("");
+            //contentPane.add(results);
+            //
+            File fichero=new File(get_Current_JarPath() + "/plot.png");
+            ImageIcon books = new ImageIcon(fichero.getPath());
+            JLabel imgLabel = new JLabel();
+            imgLabel.setIcon(books);
+            imgLabel.setMaximumSize(new Dimension(books.getIconWidth(), books.getIconHeight()));
+            imgLabel.setAutoscrolls(true);
+            imgLabel.grabFocus();
+            contentPane.add(imgLabel);
+            //
+            guiDialog.pack();
+            guiDialog.setAlwaysOnTop(true);
+            guiDialog.setLocationRelativeTo(root.getParentFrame());
+            guiDialog.setVisible(true);
 
+            //String s = "<img src='"+get_Current_JarPath()+"/plotonly.png"+"' class='img-responsive' height='1000' width='1200' alt=''>";
+
+            System.out.println(fichero.getPath());
+            books.getImage().flush();
+        }
+    }
     public int close_socket()
     {
         try {
@@ -423,6 +471,7 @@ public class AutomaticPolitics extends AbstractAction
             exportJsonsFiles();
             execPolitics();
             results.setVisible(true);
+            showPlotButton.setButtonsEnabled(true);
 
         }
     };
@@ -456,6 +505,40 @@ public class AutomaticPolitics extends AbstractAction
             results.setText(s);
         }
     };
+    private class PlaceControlListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+
+            if(netWithControlPlaces.isSelected())
+            {
+                String returnValue="";
+                boolean isNumeric;
+                int place=0;
+                ControlPlacesString.clear();
+                while(returnValue!= null)
+                {
+                    returnValue = (String) JOptionPane.showInputDialog(null,
+                            "Plazas de control (Cancelar para finalizar)",
+                            "Indicar N° de Plaza de control:", JOptionPane.QUESTION_MESSAGE, null,
+                            null, // Array of choices
+                            null);
+                    try {
+                        place=Integer.valueOf(returnValue);
+                        isNumeric = true;
+                    } catch (NumberFormatException excepcion) {
+                        isNumeric = false;
+                    }
+
+                    if(isNumeric && returnValue!= null && place > 0 && place <=root.getDocument().getPetriNet().getSortedPlacesNames().size())
+                    {
+                        ControlPlacesString.add("P"+returnValue);
+                    }
+                    else if(returnValue!= null)
+                        JOptionPane.showMessageDialog(root.getParentFrame(),"Place is not numeric or not in the range", "Place number error", JOptionPane.ERROR_MESSAGE);
+
+                }
+            }
+        }
+    }
     public void reSaveNet() {
 
         FileType chosenFileType = (FileType) new PflowFileType();

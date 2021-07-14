@@ -99,7 +99,7 @@ def printClustersProbabilities(apn):
 def printCluster(cluster):
     str_vector = ''
     for i in cluster.transitionList:
-        str_vector += '{:>6}, '.format(i)
+        str_vector += '{:>6}, '.format(i+1)#str_vector += '{:>6}, '.format(i)
     str_vector = str_vector[:-2]
     print('&emsp[{}]'.format(str_vector))
 
@@ -156,7 +156,7 @@ def showPlots(cantDisparos, probabilidades, labels):
         axs.flat[l].legend()
     if len(probabilidades) % 2 != 0:
         axs.flat[-1].set_visible(False)
-    fig.savefig('plot.png', dpi=300)
+    fig.savefig('plot.png', dpi=60)#300
 
 
 if __name__ == "__main__":
