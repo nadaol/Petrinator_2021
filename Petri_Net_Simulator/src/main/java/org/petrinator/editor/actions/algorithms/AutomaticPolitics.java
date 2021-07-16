@@ -513,28 +513,48 @@ public class AutomaticPolitics extends AbstractAction
                 String returnValue="";
                 boolean isNumeric;
                 int place=0;
+                int result=0;
                 ControlPlacesString.clear();
-                while(returnValue!= null)
+                while(result==0)//while(returnValue!= null)
                 {
+                    /*
                     returnValue = (String) JOptionPane.showInputDialog(null,
-                            "Plazas de control (Cancelar para finalizar)",
-                            "Indicar N° de Plaza de control:", JOptionPane.QUESTION_MESSAGE, null,
+                            "Plazas de control: "+ControlPlacesString.toString(),
+                            "(Cancelar para finalizar)", JOptionPane.QUESTION_MESSAGE, null,
                             null, // Array of choices
-                            null);
+                            null);*/
+                    //nuevo formato
+                    Object[] options1 = { "Aceptar","Finalizar"};
+                    JPanel panel = new JPanel();
+                    panel.add(new JLabel("Plazas de control: "+ ControlPlacesString.toString()));
+                    JTextField textField = new JTextField(10);
+                    textField.setText("");
+                    panel.add(textField);
+                    panel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    result = JOptionPane.showOptionDialog(null, panel, "Agregar plaza de control",
+                            JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE,
+                            null, options1, null);
+                    //System.out.println("Resultado : "+result);
+                    //termina nuevo formaato
                     try {
-                        place=Integer.valueOf(returnValue);
+                        place=Integer.valueOf(textField.getText());
                         isNumeric = true;
                     } catch (NumberFormatException excepcion) {
                         isNumeric = false;
                     }
 
-                    if(isNumeric && returnValue!= null && place > 0 && place <=root.getDocument().getPetriNet().getSortedPlacesNames().size())
+                    if(isNumeric && textField.getText()!= "" && !ControlPlacesString.contains("P"+textField.getText()) && place > 0 && place <=root.getDocument().getPetriNet().getSortedPlacesNames().size() && result==0)
                     {
-                        ControlPlacesString.add("P"+returnValue);
+                        ControlPlacesString.add("P"+textField.getText());
                     }
-                    else if(returnValue!= null)
-                        JOptionPane.showMessageDialog(root.getParentFrame(),"Place is not numeric or not in the range", "Place number error", JOptionPane.ERROR_MESSAGE);
+                    else if(textField.getText()!= "" && result==0)
+                        JOptionPane.showMessageDialog(root.getParentFrame(),"Place is not numeric, is not in the range or is repeat", "Place number error", JOptionPane.ERROR_MESSAGE);
 
+                }
+                if(ControlPlacesString.isEmpty())
+                {
+                    JOptionPane.showMessageDialog(root.getParentFrame(),"There is not control places added", "Control Places Error", JOptionPane.ERROR_MESSAGE);
+                    netWithControlPlaces.setSelected(false);
                 }
             }
         }

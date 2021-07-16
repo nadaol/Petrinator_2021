@@ -55,6 +55,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 <informed><xsl:value-of select="informed"/></informed>
                 <enableWhenTrue><xsl:value-of select="enableWhenTrue"/></enableWhenTrue>
                 <guard><xsl:value-of select="guard"/></guard>
+                <cost><xsl:value-of select="cost"/></cost>
                 <stochasticProperties>
                     <xsl:attribute name="distribution"><xsl:value-of select="distribution"/></xsl:attribute>
                     <xsl:attribute name="labelVar1"><xsl:value-of select="labelVar1"/></xsl:attribute>

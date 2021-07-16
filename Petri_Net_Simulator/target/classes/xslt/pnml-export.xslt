@@ -104,6 +104,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             <informed><xsl:value-of select="informed"/></informed>
             <enableWhenTrue><xsl:value-of select="enableWhenTrue"/></enableWhenTrue>
             <guard><xsl:value-of select="guard"/></guard>
+            <cost><xsl:value-of select="cost"/></cost>
             <graphics>
                 <position>
                     <xsl:attribute name="x"><xsl:value-of select="x+$x"/></xsl:attribute>

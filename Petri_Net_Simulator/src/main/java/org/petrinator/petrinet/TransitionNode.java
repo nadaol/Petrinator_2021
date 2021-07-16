@@ -42,7 +42,7 @@ public abstract class TransitionNode extends Node implements Cloneable
     private String label_var2 = " ";
     private int time = 0;
     //test para costo
-    private int cost =0;
+    private int cost = 0 ;
 
     public Set<PlaceNode> getConnectedPlaceNodes()
     {
