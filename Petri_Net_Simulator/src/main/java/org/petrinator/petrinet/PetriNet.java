@@ -393,6 +393,23 @@ public class PetriNet {
 
         return arrayCostos;
     }
+    public ArrayList<String> getControlPlaces()
+    {
+        ArrayList<String> controlPlaces = new ArrayList<String>();
+        ArrayList<Node> sortedPlaces = getSortedPlaces();
+        Place castPlace;
+        for(Node places : sortedPlaces)
+        {
+
+            castPlace = (Place) places;
+            if(castPlace.getType().equals("controlPlace"))
+            {
+                controlPlaces.add(castPlace.getLabel());
+            }
+            //System.out.println(castPlace.getType());
+        }
+        return controlPlaces;
+    }
     /*
      * Reconstruye el grafo con elementos Plaza y Transiciones a partir de las matrices I+ e I-.
      * Falta agregar inhibici�n y reset.

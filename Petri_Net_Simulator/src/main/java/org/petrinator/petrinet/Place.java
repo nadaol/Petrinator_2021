@@ -28,6 +28,8 @@ public class Place extends PlaceNode implements Cloneable {
 
     private boolean isStatic = false;
     List<Double> values = new ArrayList<Double>();
+    //nuevo para agregarle un atributo tipo a la plaza
+    private String type = "regular";
 
     @Override
     public boolean isStatic() {
@@ -37,6 +39,15 @@ public class Place extends PlaceNode implements Cloneable {
     @Override
     public void setStatic(boolean isStatic) {
         this.isStatic = isStatic;
+    }
+
+    //get y set types
+    @Override
+    public String getType(){return type;}
+
+    @Override
+    public void setType(String type){
+        this.type=type;
     }
 
     public void addValue(int value)

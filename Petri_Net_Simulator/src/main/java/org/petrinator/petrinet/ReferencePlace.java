@@ -29,7 +29,10 @@ public class ReferencePlace extends PlaceNode {
     private PlaceNode connectedPlaceNode;
 
     public ReferencePlace(PlaceNode connectedPlaceNode) {
+
         this.connectedPlaceNode = connectedPlaceNode;
+        //nuevo
+        this.connectedPlaceNode.setType("regular");
     }
 
     public ReferenceArc getReferenceArc() {
@@ -103,6 +106,16 @@ public class ReferencePlace extends PlaceNode {
     @Override
     public void setStatic(boolean isStatic) {
         connectedPlaceNode.setStatic(isStatic);
+    }
+
+    @Override
+    public String getType() {
+        return connectedPlaceNode.getType();
+    }
+
+    @Override
+    public void setType(String type) {
+        connectedPlaceNode.setType(type);
     }
 
     @Override

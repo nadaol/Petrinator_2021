@@ -192,6 +192,8 @@ public class DocumentImporter {
         place.setLabel(xmlPlace.label);
         place.setStatic(xmlPlace.isStatic);
         place.setCenter(xmlPlace.x, xmlPlace.y);
+        //new for place type
+        place.setType(xmlPlace.type);
         return place;
     }
 
@@ -230,6 +232,8 @@ public class DocumentImporter {
         ReferencePlace referencePlace = new ReferencePlace(connectedPlaceNode);
         referencePlace.setId(xmlReference.id);
         referencePlace.setCenter(xmlReference.x, xmlReference.y);
+        //nuevo
+        referencePlace.setType(xmlReference.type);
         return referencePlace;
     }
 

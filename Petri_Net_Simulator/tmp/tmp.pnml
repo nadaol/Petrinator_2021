@@ -18,26 +18,9 @@
                 <value>0</value>
             </capacity>
         </place>
-        <place id="P23">
-            <graphics>
-                <position x="355" y="290"/>
-            </graphics>
-            <name>
-                <value>P23</value>
-                <graphics>
-                    <offset x="5" y="33"/>
-                </graphics>
-            </name>
-            <initialMarking>
-                <value>Default,3</value>
-            </initialMarking>
-            <capacity>
-                <value>0</value>
-            </capacity>
-        </place>
         <place id="P22">
             <graphics>
-                <position x="743" y="295"/>
+                <position x="238" y="400"/>
             </graphics>
             <name>
                 <value>P22</value>
@@ -764,38 +747,6 @@
             <type value="regular"/>
             <exported>true</exported>
         </arc>
-        <arc id="A" source="T5" target="P22">
-            <inscription>
-                <value>Default,1</value>
-                <graphics/>
-            </inscription>
-            <type value="regular"/>
-            <exported>true</exported>
-        </arc>
-        <arc id="A" source="T11" target="P22">
-            <inscription>
-                <value>Default,1</value>
-                <graphics/>
-            </inscription>
-            <type value="regular"/>
-            <exported>true</exported>
-        </arc>
-        <arc id="A" source="P22" target="T1">
-            <inscription>
-                <value>Default,1</value>
-                <graphics/>
-            </inscription>
-            <type value="regular"/>
-            <exported>true</exported>
-        </arc>
-        <arc id="A" source="P22" target="T13">
-            <inscription>
-                <value>Default,1</value>
-                <graphics/>
-            </inscription>
-            <type value="regular"/>
-            <exported>true</exported>
-        </arc>
         <arc id="A" source="T12" target="P21">
             <inscription>
                 <value>Default,1</value>
@@ -1168,7 +1119,7 @@
             <type value="regular"/>
             <exported>true</exported>
         </arc>
-        <arc id="A" source="P23" target="T13">
+        <arc id="A" source="P22" target="T13">
             <inscription>
                 <value>Default,1</value>
                 <graphics/>
@@ -1176,7 +1127,7 @@
             <type value="regular"/>
             <exported>true</exported>
         </arc>
-        <arc id="A" source="P23" target="T1">
+        <arc id="A" source="P22" target="T1">
             <inscription>
                 <value>Default,1</value>
                 <graphics/>
@@ -1184,7 +1135,7 @@
             <type value="regular"/>
             <exported>true</exported>
         </arc>
-        <arc id="A" source="T9" target="P23">
+        <arc id="A" source="T11" target="P22">
             <inscription>
                 <value>Default,1</value>
                 <graphics/>
@@ -1192,7 +1143,7 @@
             <type value="regular"/>
             <exported>true</exported>
         </arc>
-        <arc id="A" source="T3" target="P23">
+        <arc id="A" source="T5" target="P22">
             <inscription>
                 <value>Default,1</value>
                 <graphics/>

@@ -29,7 +29,6 @@ import org.petrinator.util.GraphicsTools.VerticalAlignment;
  * @author Martin Riesz <riesz.martin at gmail.com>
  */
 public abstract class PlaceNode extends Node implements Cloneable {
-
     public Arc getConnectedArc(Transition transition, boolean placeToTransition) {
         for (Arc arc : getConnectedArcs()) { // TODO: !!! what if the arc is hidden behind ReferenceArc inside Subnet?
             if (arc.getTransition() == transition && arc.isPlaceToTransition() == placeToTransition) {
@@ -62,6 +61,10 @@ public abstract class PlaceNode extends Node implements Cloneable {
     abstract public boolean isStatic();
 
     abstract public void setStatic(boolean isStatic);
+    // metodos abstractos
+    abstract public String getType();
+
+    abstract public void setType(String type);
 
     @Override
     public void draw(Graphics g, DrawingOptions drawingOptions) {

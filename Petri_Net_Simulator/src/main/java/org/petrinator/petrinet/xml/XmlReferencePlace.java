@@ -27,4 +27,7 @@ public class XmlReferencePlace extends XmlNode {
     @XmlElement(name = "connectedPlaceId")
     public String connectedPlaceId;
 
+    @XmlElement(name = "type")
+    public String type;
+
 }

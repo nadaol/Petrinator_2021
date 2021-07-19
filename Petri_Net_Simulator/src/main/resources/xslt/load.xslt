@@ -39,6 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 <label><xsl:value-of select="label"/></label>
                 <tokens><xsl:value-of select="tokens"/></tokens>
                 <isStatic><xsl:value-of select="isStatic"/></isStatic>
+                <type><xsl:value-of select="type"/></type>
             </place>
         </xsl:for-each>
         <xsl:for-each select="transition">
@@ -92,6 +93,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 <x><xsl:value-of select="x"/></x>
                 <y><xsl:value-of select="y"/></y>
                 <connectedPlaceId><xsl:value-of select="connectedPlaceId"/></connectedPlaceId>
+                <type><xsl:value-of select="type"/></type>
             </referencePlace>
         </xsl:for-each>
         <xsl:for-each select="referenceArc">

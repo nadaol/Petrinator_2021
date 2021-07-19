@@ -102,6 +102,10 @@ def addPlace(tree, placeID, marking):
     place_tokens.text = str(marking)
     place_isStatic = SubElement(place, 'isStatic')
     place_isStatic.text = 'false'
+    #nuevo para agregarle tipo regular a las plazas
+    place_type = SubElement(place, 'type')
+    place_type.text = 'regular'
+    #
     x += 20
     y += 20
     # mod = prettify(tree.getroot())

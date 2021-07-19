@@ -103,7 +103,7 @@ public class AutomaticPolitics extends AbstractAction
         showPlotButton = new ButtonBar("Show Plot", new showPlotListener(), guiDialog.getRootPane());
         HelpButton = new ButtonBar("Help", new HelpListener(), guiDialog.getRootPane());
         //action listener del plazas de control
-        netWithControlPlaces.addActionListener(new PlaceControlListener());
+        //netWithControlPlaces.addActionListener(new PlaceControlListener());
         //
         JPanel checkPanel = new JPanel(new GridLayout(3,3));
         //agrego al nuevo panel
@@ -177,7 +177,14 @@ public class AutomaticPolitics extends AbstractAction
 
     public void actionPerformed(ActionEvent e)
     {
-
+        if(!root.getDocument().getPetriNet().getRootSubnet().isValid())
+        {
+            results.setText("Invalid Net");
+            JOptionPane.showMessageDialog(null, "Invalid Net!", "Error analysing net", JOptionPane.ERROR_MESSAGE, null);
+            guiDialog.setVisible(false);
+            //close_socket();
+            return;
+        }
         results.setText("");
 
         // Disables the copy and save buttons
@@ -187,7 +194,17 @@ public class AutomaticPolitics extends AbstractAction
         FirstAnalizeButton.setButtonsEnabled(true);
         FirstAnalizeButton.setEnabled(true);//para luego chequear
         showPlotButton.setButtonsEnabled(false);
-        netWithControlPlaces.setSelected(false);
+        ArrayList<String> controlPlaces = root.getDocument().getPetriNet().getControlPlaces();
+        if(controlPlaces.isEmpty())
+        {
+            netWithControlPlaces.setSelected(false);
+        }
+        else
+        {
+            netWithControlPlaces.setSelected(true);
+        }
+        //print_arraylistStringonly(controlPlaces,"plazas de control");
+        netWithControlPlaces.setEnabled(false);
         // Shows initial pane
         guiDialog.pack();
         guiDialog.setLocationRelativeTo(root.getParentFrame());
@@ -357,16 +374,16 @@ public class AutomaticPolitics extends AbstractAction
      */
     public int exportJsonsFiles()
     {
-        Map<String, Object> matrices = new HashMap<>();
-
+        Map<String, Object> extraAttributes = new HashMap<>();
+        ArrayList<String> controlPlaces = root.getDocument().getPetriNet().getControlPlaces();
         Gson gson = new Gson();
-        matrices.put("Costos", root.getDocument().getPetriNet().getCostArray());
-        matrices.put("Invariantes",invariantAnalysis());
-        if(netWithControlPlaces.isSelected())
+        extraAttributes.put("Costos", root.getDocument().getPetriNet().getCostArray());
+        extraAttributes.put("Invariantes",invariantAnalysis());
+        if(!controlPlaces.isEmpty())
         {
-            matrices.put("ControlPlaces",ControlPlacesString);
+            extraAttributes.put("ControlPlaces",controlPlaces);
         }
-        String json = gson.toJson(matrices);
+        String json = gson.toJson(extraAttributes);
 
         String destFNcfg,destFN;
         String jar_path = get_Current_JarPath();

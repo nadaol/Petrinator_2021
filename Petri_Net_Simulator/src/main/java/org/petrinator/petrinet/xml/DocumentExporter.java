@@ -134,6 +134,8 @@ public class DocumentExporter {
         xmlPlace.isStatic = place.isStatic();
         xmlPlace.label = place.getLabel();
         xmlPlace.tokens = initialMarking.getTokens(place);
+        //nuevo
+        xmlPlace.type = place.getType();
         return xmlPlace;
     }
 
@@ -197,6 +199,8 @@ public class DocumentExporter {
         xmlReferencePlace.x = referencePlace.getCenter().x;
         xmlReferencePlace.y = referencePlace.getCenter().y;
         xmlReferencePlace.connectedPlaceId = referencePlace.getConnectedPlaceNode().getId();
+        //nuevo
+        xmlReferencePlace.type = referencePlace.getType();
         return xmlReferencePlace;
     }
 
