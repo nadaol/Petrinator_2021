@@ -63,9 +63,14 @@ public class XmlTransition extends XmlNode {
     @XmlElement(name = "distribution")
     public String distribution;
 
-    //test
+    //addded
     @XmlElement(name = "cost")
     public int cost;
+
+    //added
+    @XmlElement(name = "type")
+    public int type;
+    
 
 
 }

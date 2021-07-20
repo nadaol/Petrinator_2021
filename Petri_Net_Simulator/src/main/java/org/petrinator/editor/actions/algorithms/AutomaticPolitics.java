@@ -193,6 +193,8 @@ public class AutomaticPolitics extends AbstractAction
         FirstAnalizeButton.setEnabled(true);//para luego chequear
         showPlotButton.setButtonsEnabled(false);
         ArrayList<String> controlPlaces = root.getDocument().getPetriNet().getControlPlaces();
+        ArrayList<String> Update_transitions = root.getDocument().getPetriNet().getUpdateTArray();
+
         if(controlPlaces.isEmpty())
         {
             netWithControlPlaces.setSelected(false);
@@ -202,8 +204,21 @@ public class AutomaticPolitics extends AbstractAction
             netWithControlPlaces.setToolTipText(controlPlaces.toString());
             netWithControlPlaces.setSelected(true);
         }
+
+
+        if(Update_transitions.isEmpty())
+        {
+            netWithMod.setSelected(false);
+        }
+        else
+        {
+            netWithMod.setToolTipText(Update_transitions.toString());
+            netWithMod.setSelected(true);
+        }
+
         //print_arraylistStringonly(controlPlaces,"plazas de control");
         netWithControlPlaces.setEnabled(false);
+        netWithMod.setEnabled(false);
         // Shows initial pane
         guiDialog.pack();
         guiDialog.setLocationRelativeTo(root.getParentFrame());
@@ -375,13 +390,20 @@ public class AutomaticPolitics extends AbstractAction
     {
         Map<String, Object> extraAttributes = new HashMap<>();
         ArrayList<String> controlPlaces = root.getDocument().getPetriNet().getControlPlaces();
+        ArrayList<String> Update_Transitions = root.getDocument().getPetriNet().getUpdateTArray();
         Gson gson = new Gson();
         extraAttributes.put("Costos", root.getDocument().getPetriNet().getCostArray());
         extraAttributes.put("Invariantes",invariantAnalysis());
+        
         if(!controlPlaces.isEmpty())
         {
             extraAttributes.put("ControlPlaces",controlPlaces);
         }
+        if(!Update_Transitions.isEmpty())
+        {
+            extraAttributes.put("UpdateT",Update_Transitions);
+        }
+
         String json = gson.toJson(extraAttributes);
 
         String destFNcfg,destFN;
@@ -488,6 +510,18 @@ public class AutomaticPolitics extends AbstractAction
             execPolitics();
             results.setVisible(true);
             showPlotButton.setButtonsEnabled(true);
+            
+            ArrayList<String> Update_transitions = root.getDocument().getPetriNet().getUpdateTArray();
+    
+            if(Update_transitions.isEmpty())
+            {
+                netWithMod.setSelected(false);
+            }
+            else
+            {
+                netWithMod.setToolTipText(Update_transitions.toString());
+                netWithMod.setSelected(true);
+            }
 
         }
     };

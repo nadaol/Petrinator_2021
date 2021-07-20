@@ -157,6 +157,7 @@ public class DocumentExporter {
         xmlTransition.var1 = transition.getVar1();
         xmlTransition.var2 = transition.getVar2();
         xmlTransition.distribution = transition.getDistribution();
+        xmlTransition.type = transition.getType();
         //nuevo
         xmlTransition.cost=transition.getCost();
         return xmlTransition;

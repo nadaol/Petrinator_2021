@@ -3,6 +3,9 @@ from xml.dom import minidom
 from xml.etree import ElementTree
 from xml.etree.ElementTree import SubElement
 
+UPDATE_TRANSITION_TYPE = '1'
+REGULAR_PLACE_TYPE = '0'
+
 
 class Arc:
     def __init__(self, arcType, source, destination, weight):
@@ -104,7 +107,7 @@ def addPlace(tree, placeID, marking):
     place_isStatic.text = 'false'
     #nuevo para agregarle tipo regular a las plazas
     place_type = SubElement(place, 'type')
-    place_type.text = '0'
+    place_type.text = REGULAR_PLACE_TYPE
     #
     x += 20
     y += 20
@@ -146,6 +149,9 @@ def addTransition(tree, transitionID):
     t_properties.set('labelVar2', ' ')
     t_properties.set('var1', '1.0')
     t_properties.set('var2', '1.0')
+    t_type = SubElement(transition, 'type')
+    t_type.text = UPDATE_TRANSITION_TYPE
+
     x += 10
     y += 10
     # mod = prettify(tree.getroot())

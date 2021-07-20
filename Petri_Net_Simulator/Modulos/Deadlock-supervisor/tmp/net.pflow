@@ -19,8 +19,8 @@
         </place>
         <place>
             <id>P15</id>
-            <x>221</x>
-            <y>123</y>
+            <x>-226</x>
+            <y>-259</y>
             <label>P15</label>
             <tokens>1</tokens>
             <isStatic>false</isStatic>
@@ -28,8 +28,8 @@
         </place>
         <place>
             <id>P14</id>
-            <x>57</x>
-            <y>91</y>
+            <x>222</x>
+            <y>-258</y>
             <label>P14</label>
             <tokens>3</tokens>
             <isStatic>false</isStatic>
@@ -155,6 +155,7 @@
             <enableWhenTrue>false</enableWhenTrue>
             <guard>none</guard>
             <cost>0</cost>
+            <type>0</type>
             <stochasticProperties distribution="Exponential" labelVar1="Rate (λ)" labelVar2=" " var1="1.0" var2="1.0"/>
         </transition>
         <transition>
@@ -169,6 +170,7 @@
             <enableWhenTrue>false</enableWhenTrue>
             <guard>none</guard>
             <cost>0</cost>
+            <type>0</type>
             <stochasticProperties distribution="Exponential" labelVar1="Rate (λ)" labelVar2=" " var1="1.0" var2="1.0"/>
         </transition>
         <transition>
@@ -183,6 +185,7 @@
             <enableWhenTrue>false</enableWhenTrue>
             <guard>none</guard>
             <cost>0</cost>
+            <type>0</type>
             <stochasticProperties distribution="Exponential" labelVar1="Rate (λ)" labelVar2=" " var1="1.0" var2="1.0"/>
         </transition>
         <transition>
@@ -197,6 +200,7 @@
             <enableWhenTrue>false</enableWhenTrue>
             <guard>none</guard>
             <cost>0</cost>
+            <type>0</type>
             <stochasticProperties distribution="Exponential" labelVar1="Rate (λ)" labelVar2=" " var1="1.0" var2="1.0"/>
         </transition>
         <transition>
@@ -211,6 +215,7 @@
             <enableWhenTrue>false</enableWhenTrue>
             <guard>none</guard>
             <cost>0</cost>
+            <type>0</type>
             <stochasticProperties distribution="Exponential" labelVar1="Rate (λ)" labelVar2=" " var1="1.0" var2="1.0"/>
         </transition>
         <transition>
@@ -225,6 +230,7 @@
             <enableWhenTrue>false</enableWhenTrue>
             <guard>none</guard>
             <cost>0</cost>
+            <type>0</type>
             <stochasticProperties distribution="Exponential" labelVar1="Rate (λ)" labelVar2=" " var1="1.0" var2="1.0"/>
         </transition>
         <transition>
@@ -239,6 +245,7 @@
             <enableWhenTrue>false</enableWhenTrue>
             <guard>none</guard>
             <cost>0</cost>
+            <type>0</type>
             <stochasticProperties distribution="Exponential" labelVar1="Rate (λ)" labelVar2=" " var1="1.0" var2="1.0"/>
         </transition>
         <transition>
@@ -253,6 +260,7 @@
             <enableWhenTrue>false</enableWhenTrue>
             <guard>none</guard>
             <cost>0</cost>
+            <type>0</type>
             <stochasticProperties distribution="Exponential" labelVar1="Rate (λ)" labelVar2=" " var1="1.0" var2="1.0"/>
         </transition>
         <transition>
@@ -267,6 +275,7 @@
             <enableWhenTrue>false</enableWhenTrue>
             <guard>none</guard>
             <cost>0</cost>
+            <type>0</type>
             <stochasticProperties distribution="Exponential" labelVar1="Rate (λ)" labelVar2=" " var1="1.0" var2="1.0"/>
         </transition>
         <transition>
@@ -281,6 +290,7 @@
             <enableWhenTrue>false</enableWhenTrue>
             <guard>none</guard>
             <cost>0</cost>
+            <type>0</type>
             <stochasticProperties distribution="Exponential" labelVar1="Rate (λ)" labelVar2=" " var1="1.0" var2="1.0"/>
         </transition>
         <arc>

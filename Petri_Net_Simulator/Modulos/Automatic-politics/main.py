@@ -1,3 +1,4 @@
+from Rdp import Rdp
 from ApnLa import ApnLa
 from exceptions import NetException
 import pflowEditor as editor
@@ -52,6 +53,8 @@ def main():
                     for k in range(len(probs[l])):
                         probabilidades[l][k].append(probs[l][k])
 
+
+
         showPlots(cantDisparos, probabilidades, apn.getClusterTransitions())
 
         if not block:
@@ -65,6 +68,9 @@ def main():
 
     if pflowFile != 'null' and apn is not None:
         editPflow(apn, pflowFile)
+
+    print(f'\nUpdate T : {apn.rdp.updateT}')
+    print(f'Conflictos {apn.rdp.conflictList[1:-1]}')
 
 
 def getArgs():

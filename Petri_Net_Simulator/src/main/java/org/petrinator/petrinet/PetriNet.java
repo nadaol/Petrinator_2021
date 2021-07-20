@@ -393,6 +393,30 @@ public class PetriNet {
 
         return arrayCostos;
     }
+
+    /*
+     * Obtener vector de transiciones de actualizacion
+     */
+    public ArrayList<String> getUpdateTArray(){
+
+        ArrayList<Node> transitions = getSortedTransitions(); //TODO
+        Transition castTransitions;
+
+        ArrayList<String> arrayUpdate = new ArrayList<String>();
+
+        for(int i=0; i<transitions.size(); i++)
+        {
+            castTransitions = (Transition)transitions.get(i);
+            if(castTransitions.getType()==Transition.UPDATE)
+            {
+                arrayUpdate.add(castTransitions.getLabel());
+            }
+            
+        }
+
+        return arrayUpdate;
+    }
+
     public ArrayList<String> getControlPlaces()
     {
         ArrayList<String> controlPlaces = new ArrayList<String>();

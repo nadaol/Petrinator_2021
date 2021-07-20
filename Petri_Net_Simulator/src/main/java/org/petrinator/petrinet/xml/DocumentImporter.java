@@ -208,6 +208,7 @@ public class DocumentImporter {
         transition.setTime(xmlTransition.timed);
         transition.setEnableWhenTrue(xmlTransition.enableWhenTrue);
         transition.setGuard(xmlTransition.guard);
+        transition.setType(xmlTransition.type);
         //nuevo
         transition.setCost(xmlTransition.cost);
         if (xmlTransition.labelVar1 != null && xmlTransition.labelVar2 != null && xmlTransition.distribution != null)

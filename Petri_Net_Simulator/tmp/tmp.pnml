@@ -20,7 +20,7 @@
         </place>
         <place id="P15">
             <graphics>
-                <position x="1053" y="548"/>
+                <position x="606" y="166"/>
             </graphics>
             <name>
                 <value>P15</value>
@@ -37,7 +37,7 @@
         </place>
         <place id="P14">
             <graphics>
-                <position x="889" y="516"/>
+                <position x="1054" y="167"/>
             </graphics>
             <name>
                 <value>P14</value>
