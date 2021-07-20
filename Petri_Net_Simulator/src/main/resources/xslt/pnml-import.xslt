@@ -31,7 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 <label><xsl:value-of select="name/value"/></label>
                 <tokens><xsl:value-of select="initialMarking/token/value"/><xsl:value-of select="initialMarking/value"/></tokens>
                 <isStatic>false</isStatic>
-                <type><xsl:value-of select="type"/></type>
+                <type><xsl:value-of select="Type"/></type>
             </place>
         </xsl:for-each>
         <xsl:for-each select="pnml/net/transition">

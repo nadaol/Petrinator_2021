@@ -104,7 +104,7 @@ def addPlace(tree, placeID, marking):
     place_isStatic.text = 'false'
     #nuevo para agregarle tipo regular a las plazas
     place_type = SubElement(place, 'type')
-    place_type.text = 'regular'
+    place_type.text = '0'
     #
     x += 20
     y += 20

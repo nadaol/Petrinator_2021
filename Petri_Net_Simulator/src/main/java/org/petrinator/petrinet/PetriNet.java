@@ -402,7 +402,7 @@ public class PetriNet {
         {
 
             castPlace = (Place) places;
-            if(castPlace.getType().equals("controlPlace"))
+            if(castPlace.getType()== Place.CONTROL)
             {
                 controlPlaces.add(castPlace.getLabel());
             }

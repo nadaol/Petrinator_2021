@@ -62,9 +62,9 @@ public abstract class PlaceNode extends Node implements Cloneable {
 
     abstract public void setStatic(boolean isStatic);
     // metodos abstractos
-    abstract public String getType();
+    abstract public int getType();
 
-    abstract public void setType(String type);
+    abstract public void setType(int Type);
 
     @Override
     public void draw(Graphics g, DrawingOptions drawingOptions) {

@@ -26,10 +26,12 @@ import java.util.List;
  */
 public class Place extends PlaceNode implements Cloneable {
 
+    public static int REGULAR = 0;
+    public static int CONTROL = 1;
     private boolean isStatic = false;
     List<Double> values = new ArrayList<Double>();
     //nuevo para agregarle un atributo tipo a la plaza
-    private String type = "regular";
+    private int type = REGULAR;
 
     @Override
     public boolean isStatic() {
@@ -43,10 +45,10 @@ public class Place extends PlaceNode implements Cloneable {
 
     //get y set types
     @Override
-    public String getType(){return type;}
+    public int getType(){return type;}
 
     @Override
-    public void setType(String type){
+    public void setType(int type){
         this.type=type;
     }
 

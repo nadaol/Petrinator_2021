@@ -28,7 +28,7 @@ import javax.swing.*;
 
 import net.miginfocom.swing.MigLayout;
 import org.petrinator.editor.Root;
-import org.petrinator.editor.commands.SetLabelCommand;;
+import org.petrinator.editor.commands.SetLabelCommand;
 import org.petrinator.petrinet.TransitionNode;
 import org.petrinator.util.GraphicsTools;
 

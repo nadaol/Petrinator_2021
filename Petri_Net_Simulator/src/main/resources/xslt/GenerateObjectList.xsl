@@ -125,6 +125,8 @@
          <!-- David Patterson 24 Nov 2006 Move call-template after attributes -->
          <xsl:attribute name="initialMarking">
             <xsl:value-of select="initialMarking/value"/>
+         <xsl:attribute name="type">
+            <xsl:value-of select="type/value"/>
          </xsl:attribute>
          <xsl:attribute name="markingOffsetX">
             <xsl:value-of select="initialMarking/graphics/offset/@x"/>

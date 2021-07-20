@@ -34,5 +34,5 @@ public class XmlPlace extends XmlNode {
     public boolean isStatic;
     //new for place type
     @XmlElement(name = "type")
-    public String type;
+    public int type;
 }

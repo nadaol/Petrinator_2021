@@ -32,7 +32,7 @@ public class ReferencePlace extends PlaceNode {
 
         this.connectedPlaceNode = connectedPlaceNode;
         //nuevo
-        this.connectedPlaceNode.setType("regular");
+        this.connectedPlaceNode.setType(Place.REGULAR);
     }
 
     public ReferenceArc getReferenceArc() {
@@ -109,12 +109,12 @@ public class ReferencePlace extends PlaceNode {
     }
 
     @Override
-    public String getType() {
+    public int getType() {
         return connectedPlaceNode.getType();
     }
 
     @Override
-    public void setType(String type) {
+    public void setType(int type) {
         connectedPlaceNode.setType(type);
     }
 

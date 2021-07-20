@@ -28,6 +28,6 @@ public class XmlReferencePlace extends XmlNode {
     public String connectedPlaceId;
 
     @XmlElement(name = "type")
-    public String type;
+    public int type;
 
 }
