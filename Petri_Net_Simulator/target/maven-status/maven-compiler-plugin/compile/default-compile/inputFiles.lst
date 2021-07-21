@@ -64,6 +64,7 @@
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/actions/algorithms/GSPNAction.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/filechooser/TinaPnmlFileType.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/petrinet/xml/IdFromObject.java
+/home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/util/S3pr.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/petrinet/Subnet.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/commands/SetArcMultiplicityCommand.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/canvas/ArcFeature.java
@@ -114,6 +115,7 @@
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/actions/SetPlaceStaticAction.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/commands/SetLabelCommand.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/filechooser/Preview.java
+/home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/util/Print.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/petrinet/xml/XmlSubnet.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/canvas/RoleFeature.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/petrinet/NodeLabelGenerator.java
@@ -134,6 +136,7 @@
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/canvas/TokenFeature.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/util/Command.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/auxiliar/GraphFrame.java
+/home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/util/Save.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/actions/ExportAction.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/commands/AddPlaceCommand.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/filechooser/PflowxFileType.java

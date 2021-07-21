@@ -18,33 +18,25 @@
  *
  */
 
-
 package org.petrinator.editor.actions.algorithms;
 
 import com.google.gson.Gson;
 import org.petrinator.editor.Root;
 import org.petrinator.editor.actions.ReloadFileAction;
-import org.petrinator.editor.actions.SaveAction;
-import org.petrinator.editor.actions.algorithms.reachability.CRTree;
 import org.petrinator.editor.filechooser.*;
 import org.petrinator.petrinet.*;
 import org.petrinator.util.GraphicsTools;
+import org.petrinator.util.Print;
+import org.petrinator.util.Save;
+
 import pipe.gui.widgets.ButtonBar;
 import pipe.gui.widgets.EscapableDialog;
-import pipe.gui.widgets.FileBrowser;
 import pipe.gui.widgets.ResultsHTMLPane;
-import pipe.modules.minimalSiphons.MinimalSiphons;
 import pipe.utilities.math.Matrix;
-import pipe.views.PetriNetView;
-import scala.Array;
-
 import javax.swing.*;
 import java.awt.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.*;
 import java.net.*;
-import java.lang.*;
 import java.io.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -53,14 +45,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
-
-
 public class AutomaticPolitics extends AbstractAction
 {
     private static final String MODULE_NAME = "Automatics Politics";
     private ResultsHTMLPane results;
     private String sPanel;
-    private String S3PRresults;
     private Root root;
     private JDialog guiDialog;
     private ButtonBar FirstAnalizeButton;
@@ -72,17 +61,10 @@ public class AutomaticPolitics extends AbstractAction
     JTextField repeats = new JTextField(0);
     JCheckBox netWithMod = new JCheckBox("NET with Modifications" );
     JCheckBox netWithControlPlaces = new JCheckBox("NET with Control Places");
-    //
-    ArrayList<String> ControlPlacesString = new ArrayList<String>();
-    //
+
     JCheckBox modifyNetButton = new JCheckBox("Modify NET" );
     InvariantAction accion;
     MatricesAction matrices;
-    //test
-    ServerSocket server = null;
-    Process proceso = null;
-    DataOutputStream outw = null;
-    DataInputStream inw = null;
 
     public AutomaticPolitics(Root root)
     {
@@ -97,7 +79,6 @@ public class AutomaticPolitics extends AbstractAction
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
         results = new ResultsHTMLPane("");
         sPanel = new String();//new
-        S3PRresults = new String();
         contentPane.add(results);
         FirstAnalizeButton = new ButtonBar("Run Politics Analysis", new RunListener(), guiDialog.getRootPane());
         showPlotButton = new ButtonBar("Show Plot", new showPlotListener(), guiDialog.getRootPane());
@@ -132,46 +113,6 @@ public class AutomaticPolitics extends AbstractAction
 
     }
 
-    public String catch_error()
-    {
-        String Respuesta = "";
-        try {
-            Respuesta = inw.readUTF();
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-            results.setText("");
-            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error reading python module input buffer", JOptionPane.ERROR_MESSAGE);
-            guiDialog.setVisible(false);
-            return null;
-        }
-
-        //System.out.println ("Respuesta:" + Respuesta);
-        if(Respuesta.startsWith("Error"))
-        {
-            try {
-                outw.close();
-                inw.close();
-                server.close();
-                //proceso.destroy();
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-                results.setText("");
-                JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error in python module", JOptionPane.ERROR_MESSAGE);
-                guiDialog.setVisible(false);
-                return null;
-            }
-
-            results.setText("");
-            JOptionPane.showMessageDialog(root.getParentFrame(),Respuesta, "Error in python module", JOptionPane.ERROR_MESSAGE);
-            guiDialog.setVisible(false);
-            return null;
-        }
-        return Respuesta;
-    }
 
     public void actionPerformed(ActionEvent e)
     {
@@ -225,15 +166,6 @@ public class AutomaticPolitics extends AbstractAction
         guiDialog.setVisible(true);
     }
 
-    /*
-        Exports all html analysis and pflow net for suprevision analysis
-
-     */
-    public int Runanalysis(String message)
-    {
-        //JOptionPane.showMessageDialog(null, "llego al run alanisis", "Error", JOptionPane.ERROR_MESSAGE, null);
-        return 0;
-    }
     private String getInputAsString(InputStream is)
     {
         try(java.util.Scanner s = new java.util.Scanner(is))
@@ -241,7 +173,7 @@ public class AutomaticPolitics extends AbstractAction
             return s.useDelimiter("\\A").hasNext() ? s.next() : "";
         }
     }
-    public int execPolitics()
+    private int execPolitics()
     {
         sPanel = "<h2>Run Automatic Politics Analisys</h2>";
         List<String> comandos = new ArrayList<String>();
@@ -249,7 +181,7 @@ public class AutomaticPolitics extends AbstractAction
         try {
             comandos.add("python3");//1°comand
             //Get tesis python path and execute
-            String  jar_path = get_Current_JarPath();
+            String  jar_path = Save.get_Current_JarPath(AutomaticPolitics.class,root,results);
             String pathToPythonMain;
             if(jar_path!= null)pathToPythonMain = jar_path +"/Modulos/Automatic-politics/main.py";
             else return 1;
@@ -288,12 +220,12 @@ public class AutomaticPolitics extends AbstractAction
                 JOptionPane.showMessageDialog(null, "Invalid firenumber or repeats");
                 return 1;
             }
-            print_arraylistStringonly((ArrayList<String>) comandos,"comando");
+            Print.print_arraylist_string((ArrayList<String>) comandos,"comando");
             ProcessBuilder pb = new ProcessBuilder(comandos);
             pb.redirectErrorStream(true);
             sPanel+= getInputAsString(pb.start().getInputStream());
             results.setText(sPanel);
-            reSaveNet();
+            Save.reSaveNet(root);
             //showPlot();
 
         } catch (IOException e) {
@@ -305,56 +237,6 @@ public class AutomaticPolitics extends AbstractAction
         return 0;
     }
 
-    //Function to save the current net in a temp.pflow file for later supervision analisys
-    public int saveNet()
-    {
-
-        FileChooserDialog chooser = new FileChooserDialog();
-        chooser.setVisible(false);
-        chooser.setAcceptAllFileFilterUsed(false);
-
-
-        String Temp_net_path;
-        String jar_path = get_Current_JarPath();
-        if(jar_path != null)Temp_net_path = jar_path + "/Modulos/Deadlock-supervisor/tmp/net.pflow";
-        else return 1;
-
-        File file = new File(Temp_net_path);
-        FileType chosenFileType = (FileType) new PflowFileType();
-        try {
-            chosenFileType.save(root.getDocument(), file);
-        } catch (FileTypeException ex) {
-            results.setText("");
-            JOptionPane.showMessageDialog(root.getParentFrame(),ex.getMessage(), "Error saving net", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
-            return 1;
-        }
-
-        return 0;
-    }
-
-    public void print_arraylistString(ArrayList<String []> list,String Title)
-    {
-        System.out.println(Title);
-        for(String [] string_array : list)
-        {
-            for(int i=0;i<string_array.length;i++)
-            {
-                System.out.print(string_array[i]+" ");
-            }
-            System.out.println("\n");
-        }
-        System.out.println("\n");
-    }
-    public void print_arraylistStringonly(ArrayList<String> list,String Title)
-    {
-        System.out.println(Title);
-        for(String string_array : list)
-        {
-                System.out.print(string_array+" ");
-        }
-        System.out.println("\n");
-    }
     /**
      * hace el analisis de t invariantes
      * @return Array list con T invariantes de a forma [T1,T2,T3]
@@ -407,7 +289,7 @@ public class AutomaticPolitics extends AbstractAction
         String json = gson.toJson(extraAttributes);
 
         String destFNcfg,destFN;
-        String jar_path = get_Current_JarPath();
+        String jar_path = Save.get_Current_JarPath(AutomaticPolitics.class,root,results);
         if(jar_path != null)destFNcfg = jar_path + "/Modulos/Automatic-politics/tmp/jsonmat.cfg.json";
         else return 1;
 
@@ -451,7 +333,7 @@ public class AutomaticPolitics extends AbstractAction
             //org.petrinator.auxiliar.ResultsHTMLPane results = new org.petrinator.auxiliar.ResultsHTMLPane("");
             //contentPane.add(results);
             //
-            File fichero=new File(get_Current_JarPath() + "/plot.png");
+            File fichero=new File(Save.get_Current_JarPath(AutomaticPolitics.class,root,results) + "/plot.png");
             ImageIcon books = new ImageIcon(fichero.getPath());
             JLabel imgLabel = new JLabel();
             imgLabel.setIcon(books);
@@ -471,24 +353,7 @@ public class AutomaticPolitics extends AbstractAction
             books.getImage().flush();
         }
     }
-    public int close_socket()
-    {
-        try {
-            outw.writeUTF("quit");
-            outw.flush();
-            String Respuesta =inw.readUTF();
-            System.out.println ("Respuesta: " + Respuesta);
-            outw.close();
-            inw.close();
-            server.close();
-            //proceso.destroy();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return 1;
-        }
-        //cierro sockets y streams
-        return 0;
-    }
+
     /**
      * Listener for analyse button
      */
@@ -556,84 +421,4 @@ public class AutomaticPolitics extends AbstractAction
         }
     };
   
-    public void reSaveNet() {
-
-        FileType chosenFileType = (FileType) new PflowFileType();
-        List<FileType> fileTypes = new LinkedList<>();
-        fileTypes.add(chosenFileType);
-        SaveAction guardar = new SaveAction(this.root, fileTypes);
-        //guardar.actionPerformed(null);
-        ReloadFileAction reload = new ReloadFileAction(this.root, fileTypes);
-        reload.actionPerformed(null);
-
-    }
-
-    public String getOsName() {
-        return System.getProperty("os.name");
-    }
-
-    //Get actual absolute executed .jar path
-    public String get_Current_JarPath()
-    {
-        String pathNet = SupervisionAction.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        pathNet = pathNet.substring(0, pathNet.lastIndexOf("/"));
-        if (getOsName().startsWith("Windows") && pathNet.startsWith("/"))
-            pathNet = pathNet.substring(1, pathNet.length());
-        String decodedPath = null;
-        try {
-            decodedPath = URLDecoder.decode(pathNet, "UTF-8");
-        } catch (Exception e) {
-            results.setText("");
-            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error obtaining absolute jar path", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
-            return null;
-        }
-        //System.out.println("Jar path : " + decodedPath);
-        return decodedPath;
-    }
-
-// ----- Print funcitons -----
-
-    public void print_matrix(int[][] matrix,String Title)
-    {
-        System.out.println(Title);
-        for (int f=0; f < matrix.length; f++)
-        {
-            for (int c=0; c < matrix[f].length; c++)
-            {
-                System.out.print(Integer.toString(matrix[f][c])+" ");
-            }
-            System.out.println("\n");
-        }
-    }
-
-
-    public void print_arraylist(ArrayList<Integer> list,String Title)
-    {
-        System.out.println(Title);
-        for(int list_element : list)
-        {
-            System.out.print(list_element+" ");
-        }
-        System.out.println("\n");
-    }
-
-    public void print_hashmap(Map<String,ArrayList<Integer>> hashmap,String Title)
-    {
-        System.out.println(Title);
-        //iterate over the linked hashmap
-        for (Map.Entry<String, ArrayList<Integer>> entry : hashmap.entrySet())
-        {
-            //Print key
-            System.out.print(entry.getKey()+" : ");
-            //Print value (arraylist)
-            for(int list_element : entry.getValue()){
-                System.out.print(list_element+" ");
-            }
-            System.out.println();
-        }
-        System.out.println();
-    }
-
-
 }

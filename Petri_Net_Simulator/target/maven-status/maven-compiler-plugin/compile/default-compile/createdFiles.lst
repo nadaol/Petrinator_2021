@@ -109,6 +109,7 @@ org/petrinator/editor/Main.class
 org/petrinator/editor/commands/ReplaceSubnetLooseMethodCommand.class
 org/petrinator/auxiliar/ResultsHTMLPane$1.class
 org/petrinator/editor/actions/ReplaceSubnetAction.class
+org/petrinator/util/S3pr.class
 org/petrinator/editor/actions/algorithms/ReachabilityAction.class
 org/petrinator/editor/actions/SetArcResetAction.class
 org/petrinator/petrinet/Edge.class
@@ -126,6 +127,7 @@ org/petrinator/editor/actions/ImportAction.class
 org/petrinator/editor/commands/ReplaceSubnetsLooseMethodCommand.class
 org/petrinator/petrinet/Arc.class
 org/petrinator/util/GraphicsTools.class
+org/petrinator/util/Print.class
 org/petrinator/editor/canvas/ArcFeature.class
 org/petrinator/editor/actions/algorithms/SupervisionAction$ClassifyListener.class
 org/petrinator/auxiliar/MergeSort.class
@@ -230,6 +232,7 @@ org/petrinator/editor/actions/SimulateAction$3.class
 org/petrinator/editor/actions/SetBehaviorAction.class
 org/petrinator/editor/commands/DeletePlaceNodeCommand.class
 org/petrinator/editor/actions/QuitAction.class
+org/petrinator/util/Save.class
 org/petrinator/editor/actions/algorithms/SupervisionAction$1.class
 org/petrinator/Language.class
 org/petrinator/editor/actions/algorithms/BoundednessAction.class
