@@ -97,16 +97,11 @@ public class SupervisionAction extends AbstractAction
         checkPanel.add(fixConflictButton);
         //termino de agregar al nuevo panel
         contentPane.add(checkPanel);
-        //contentPane.add(FirstAnalizeButton);
-        //contentPane.add(SecondAnalizeButton);
-        //contentPane.add(superviseButton);
-        //contentPane.add(fixConflictButton);
         contentPane.add(HelpButton);
         //creo un objeto de invariantes
         accion = new InvariantAction(this.root);
         matrices = new MatricesAction(this.root);
         states = new ReachabilityAction(this.root);
-        //sifon = new SiphonsAction(this.root);
 
     }
 
@@ -124,8 +119,6 @@ public class SupervisionAction extends AbstractAction
             guiDialog.setVisible(false); 
             return null;
         }
-
-        //System.out.println ("Respuesta:" + Respuesta);
         if(Respuesta.startsWith("Error"))
         {
             try {
@@ -178,7 +171,6 @@ public class SupervisionAction extends AbstractAction
      */
     private int Runanalysis(String message)
     {
-        //JOptionPane.showMessageDialog(null, "llego al run alanisis", "Error", JOptionPane.ERROR_MESSAGE, null);
         if( (invariantAnalysis()==1) || (matricesAnalysis()==1)|| (coverabilityAnalysis()==1)|| 
             (sifonnalysis()==1) || (saveNet()==1) || (socketServer(message)==1) )
             return 1;//Supervision analysis
@@ -201,8 +193,6 @@ public class SupervisionAction extends AbstractAction
 
             ProcessBuilder pb = new ProcessBuilder("python3", pathToPythonMain,String.valueOf(port), root.getCurrentFile().getPath(),jar_path);
             pb.start();
-            //System.out.println("python3 '" + pathToPythonMain + "' "+ String.valueOf(port) + " '" + root.getCurrentFile().getPath() + "'");
-
             //Blocking accept executed python client
             cli = server.accept();
             //Instantiate input and output socket buffers
@@ -282,7 +272,6 @@ public class SupervisionAction extends AbstractAction
         chooser.setVisible(false);
         chooser.setAcceptAllFileFilterUsed(false);
 
-        
         String Temp_net_path;
         String jar_path = Save.get_Current_JarPath(SupervisionAction.class,root,results);
         if(jar_path != null)Temp_net_path = jar_path + "/Modulos/Deadlock-supervisor/tmp/net.pflow";
@@ -422,8 +411,6 @@ public class SupervisionAction extends AbstractAction
         {
             try
             {
-
-                //PNMLWriter.saveTemporaryFile(sourceDataLayer,this.getClass().getName());
                 s += accion.analyse();
                 results.setEnabled(false);
             }
@@ -636,7 +623,6 @@ public class SupervisionAction extends AbstractAction
                         "Deadlock", "" + Deadlock
                 };
                 sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
-                //results.setEnabled(false);
                 if(Runanalysis("1")==1 )
                 {
                     guiDialog.setVisible(false);
@@ -782,8 +768,7 @@ public class SupervisionAction extends AbstractAction
                 return;
             }
             String[] choices;
-            //sPanel = "<h2>Add Supervisors</h2>";
-            //results.setText(sPanel);
+
             String Respuesta;
             try {
                 outw.writeUTF("S");
@@ -791,7 +776,6 @@ public class SupervisionAction extends AbstractAction
                 Respuesta = catch_error();
                 if(Respuesta==null)return;
                 //PIDO ID
-                //String id = JOptionPane.showInputDialog("Indicar ID");
                 choices = Respuesta.split(" ");
                 String id = (String) JOptionPane.showInputDialog(null, "Choose now...",
                         "Indicar ID", JOptionPane.QUESTION_MESSAGE, null,
@@ -836,7 +820,6 @@ public class SupervisionAction extends AbstractAction
 
         public void actionPerformed(ActionEvent actionEvent)
         {
-            //Runanalysis("2");
             System.out.println("----- Running Fix Conflict Analysis ------\n");
             if(execServer()==1)
             {
@@ -848,8 +831,6 @@ public class SupervisionAction extends AbstractAction
                 outw.writeUTF("3");
                 outw.flush();
                 Respuesta =inw.readUTF();
-                //System.out.println ("Respuesta:");
-                //System.out.println (Respuesta);
                 String[] treeInfo = new String[]{
                         Respuesta
                 };
@@ -900,13 +881,8 @@ public class SupervisionAction extends AbstractAction
             String s = scanner.useDelimiter("\\Z").next();
             scanner.close();
 
-            /*
-             * Show the text on dialog
-             */
             results.setText(s);
         }
     };
-
-  
 
 }

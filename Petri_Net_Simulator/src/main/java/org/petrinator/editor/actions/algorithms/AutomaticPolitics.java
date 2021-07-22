@@ -22,8 +22,6 @@ package org.petrinator.editor.actions.algorithms;
 
 import com.google.gson.Gson;
 import org.petrinator.editor.Root;
-import org.petrinator.editor.actions.ReloadFileAction;
-import org.petrinator.editor.filechooser.*;
 import org.petrinator.petrinet.*;
 import org.petrinator.util.GraphicsTools;
 import org.petrinator.util.Print;
@@ -36,7 +34,6 @@ import pipe.utilities.math.Matrix;
 import javax.swing.*;
 import java.awt.*;
 import java.util.*;
-import java.net.*;
 import java.io.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -109,10 +106,7 @@ public class AutomaticPolitics extends AbstractAction
         //creo un objeto de invariantes
         accion = new InvariantAction(this.root);
         matrices = new MatricesAction(this.root);
-        //sifon = new SiphonsAction(this.root);
-
     }
-
 
     public void actionPerformed(ActionEvent e)
     {
@@ -121,7 +115,6 @@ public class AutomaticPolitics extends AbstractAction
             results.setText("Invalid Net");
             JOptionPane.showMessageDialog(null, "Invalid Net!", "Error analysing net", JOptionPane.ERROR_MESSAGE, null);
             guiDialog.setVisible(false);
-            //close_socket();
             return;
         }
         results.setText("");
@@ -130,6 +123,8 @@ public class AutomaticPolitics extends AbstractAction
         results.setEnabled(false);
 
         // Enables classify button
+        repeats.setText("1");
+        firenumbers.setText("2000");
         FirstAnalizeButton.setButtonsEnabled(true);
         FirstAnalizeButton.setEnabled(true);//para luego chequear
         showPlotButton.setButtonsEnabled(false);
@@ -214,6 +209,7 @@ public class AutomaticPolitics extends AbstractAction
                 {
                     comandos.add("-m");
                     comandos.add(root.getCurrentFile().getPath());
+                    modifyNetButton.setSelected(false);
                 }
 
             } catch (NumberFormatException e) {
