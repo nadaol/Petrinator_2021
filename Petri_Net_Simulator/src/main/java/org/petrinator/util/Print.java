@@ -17,6 +17,15 @@ public class Print {
         }
     }
 
+    public static void print_arraylist_arraylist_String(ArrayList<ArrayList<String>> ars,String Title)
+    {
+        System.out.println(Title);
+        for(ArrayList<String> ar : ars)
+        {
+            Print.print_arraylist_string(ar, String.format("Conflicto") );
+        }
+    }
+
     public static void print_arraylist_string(ArrayList<String> list,String Title)
     {
         System.out.println(Title);

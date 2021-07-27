@@ -56,7 +56,7 @@ class Rdp:
             # I Matrix
             self.iMatrix = np.array(json_matrices["Incidencia"])
             # Control Conflicts
-            controlIndexes = json_settings["ClusterControl"]
+            controlIndexes = json_settings["ClusterControl"] 
             self.controlConflicts = [False] * len(conflictList)
             for index in controlIndexes:
                 self.controlConflicts[index - 1] = True

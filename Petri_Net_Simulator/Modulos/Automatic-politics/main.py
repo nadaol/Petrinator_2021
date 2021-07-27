@@ -6,7 +6,6 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 def main():
     args = getArgs()
 
@@ -68,9 +67,6 @@ def main():
 
     if pflowFile != 'null' and apn is not None:
         editPflow(apn, pflowFile)
-
-    print(f'\nUpdate T : {apn.rdp.updateT}')
-    print(f'Conflictos {apn.rdp.conflictList[1:-1]}')
 
 
 def getArgs():

@@ -226,6 +226,7 @@ org/petrinator/util/CollectionTools.class
 org/petrinator/editor/filechooser/PflowxFileType.class
 org/petrinator/exception/BehaviorException.class
 org/petrinator/editor/commands/DeleteElementsCommand.class
+org/petrinator/util/Useful_algorithms.class
 org/petrinator/workflow/WorkflowLogger.class
 org/petrinator/editor/commands/DeleteElementCommand.class
 org/petrinator/editor/actions/SimulateAction$3.class

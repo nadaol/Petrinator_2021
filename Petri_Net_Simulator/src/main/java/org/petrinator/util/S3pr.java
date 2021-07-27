@@ -12,7 +12,6 @@ import org.petrinator.petrinet.Transition;
 import pipe.utilities.math.Matrix;
 
 public class S3pr {
-    
       //S3PR classification
       public static boolean isS3PR(InvariantAction accion,Root root,String S3PRresults)
       {

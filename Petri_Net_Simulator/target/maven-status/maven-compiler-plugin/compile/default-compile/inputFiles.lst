@@ -131,6 +131,7 @@
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/canvas/SelectionChangedListener.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/actions/algorithms/reachability/CRTree.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/petrinet/Edge.java
+/home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/util/Useful_algorithms.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/canvas/PopupMenuFeature.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/canvas/VisualSelection.java
 /home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/canvas/TokenFeature.java
