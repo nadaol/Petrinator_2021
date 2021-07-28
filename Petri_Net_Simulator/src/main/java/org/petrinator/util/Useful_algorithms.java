@@ -3,16 +3,21 @@ package org.petrinator.util;
 import java.util.ArrayList;
 
 import org.petrinator.editor.Root;
+import org.petrinator.petrinet.Node;
+import org.petrinator.petrinet.Place;
 
 public class Useful_algorithms {
 
-    public static ArrayList<ArrayList<String>> get_Conflicts(Root root)
+    public static ArrayList<ArrayList<String>> get_Conflicts(Root root,ArrayList<Integer> Control_conflicts_indexes)
     {
         ArrayList<ArrayList<String>> conflicts = new ArrayList<ArrayList<String>>();
 
         int[][] IncidenceMatrix = root.getDocument().getPetriNet().getIncidenceMatrix();
 
         ArrayList<String> transitions_labels = root.getDocument().getPetriNet().getSortedTransitionsNames();
+        ArrayList<Node> places =root.getDocument().getPetriNet().getSortedPlaces();
+
+        
 
         for(int place=0;place< IncidenceMatrix.length;place++)
         {
@@ -42,7 +47,15 @@ public class Useful_algorithms {
                     }
                 }
                 if(!repeated)
+                {
                     conflicts.add(new ArrayList<String>(place_out_transitions));
+                    Place place_aux = (Place) places.get(place);
+                    if(place_aux.getType() == Place.CONTROL)
+                    {
+                        Control_conflicts_indexes.add(conflicts.size());
+                    }
+                }
+                    
             }
 
             place_out_transitions.clear();

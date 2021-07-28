@@ -271,7 +271,8 @@ public class AutomaticPolitics extends AbstractAction
         ArrayList<String> controlPlaces = root.getDocument().getPetriNet().getControlPlaces();
 
         ArrayList<String> Update_Transitions = root.getDocument().getPetriNet().getUpdateTArray();
-        ArrayList<ArrayList<String>> conflicts = Useful_algorithms.get_Conflicts(root);
+        ArrayList<Integer> Control_conflict_indexes =  new ArrayList<Integer>();
+        ArrayList<ArrayList<String>> conflicts = Useful_algorithms.get_Conflicts(root,Control_conflict_indexes);
 
         Gson gson = new Gson();
         extraAttributes.put("Costos", root.getDocument().getPetriNet().getCostArray());
@@ -285,6 +286,7 @@ public class AutomaticPolitics extends AbstractAction
         {
             extraAttributes.put("UpdateT",Update_Transitions);
             extraAttributes.put("Conflictos",conflicts);
+            extraAttributes.put("ClusterControl",Control_conflict_indexes);
         }
 
         String json = gson.toJson(extraAttributes);
@@ -372,7 +374,7 @@ public class AutomaticPolitics extends AbstractAction
                 //close_socket();
                 return;
             }
-            //exportJsonsFiles(); -------------------------------------------------------------------------------------------
+            exportJsonsFiles();
             execPolitics();
             results.setVisible(true);
             showPlotButton.setButtonsEnabled(true);
