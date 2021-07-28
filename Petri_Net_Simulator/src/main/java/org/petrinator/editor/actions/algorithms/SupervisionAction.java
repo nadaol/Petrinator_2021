@@ -146,16 +146,25 @@ public class SupervisionAction extends AbstractAction
 
     public void actionPerformed(ActionEvent e)
     {
-
+        ArrayList<String> controlPlaces = root.getDocument().getPetriNet().getControlPlaces();
         results.setText("");
 
         // Disables the copy and save buttons
         results.setEnabled(false);
 
         // Enables classify button
-        FirstAnalizeButton.setButtonsEnabled(true);
-        FirstAnalizeButton.setEnabled(true);//para luego chequear
-        SecondAnalizeButton.setButtonsEnabled(true);
+        if(controlPlaces.isEmpty())
+        {
+            FirstAnalizeButton.setButtonsEnabled(true);
+            SecondAnalizeButton.setButtonsEnabled(false);
+            FirstAnalizeButton.setToolTipText("The net hasn't supervisors");
+            //FirstAnalizeButton.setEnabled(true);//para luego chequear
+        }
+        else{
+            FirstAnalizeButton.setButtonsEnabled(false);
+            SecondAnalizeButton.setButtonsEnabled(true);
+            SecondAnalizeButton.setToolTipText("The net has supervisors");
+        }
         superviseButton.setButtonsEnabled(false);
         fixConflictButton.setButtonsEnabled(false);
 
@@ -676,6 +685,7 @@ public class SupervisionAction extends AbstractAction
             }
 
             FirstAnalizeButton.setButtonsEnabled(false);
+            FirstAnalizeButton.setToolTipText("The net has places control");
 
 
             sPanel = "<h2>Deadlock analysis</h2>";
@@ -777,15 +787,32 @@ public class SupervisionAction extends AbstractAction
                 if(Respuesta==null)return;
                 //PIDO ID
                 choices = Respuesta.split(" ");
-                String id = (String) JOptionPane.showInputDialog(null, "Choose now...",
-                        "Indicar ID", JOptionPane.QUESTION_MESSAGE, null,
-                        choices, // Array of choices
-                        choices[0]); // Initial choice
+                String id;
+                do{
+                    
+                    id = (String) JOptionPane.showInputDialog(null, "Choose now...",
+                            "Indicar ID", JOptionPane.QUESTION_MESSAGE, null,
+                            choices, // Array of choices
+                            choices[0]); // Initial choice
+                    if (id == null)
+                        break;
+
+                    if(results.getText().contains("id="+id+"<br>Marcado_del_supervisor:0"))
+                    {
+                        JOptionPane.showMessageDialog(null, "The supervisor : " +id +" is invalid",
+                                "Warning: Help for more information!", JOptionPane.ERROR_MESSAGE);
+                    }
+                    else
+                        break;
+
+                }while(results.getText().contains("id="+id+"<br>Marcado_del_supervisor:0"));
+
                 if (id == null)//chequeo si se toco cancelar o cerrar
                 {
                     close_socket();
                     return;
                 }
+
                 outw.writeUTF(id);
                 outw.flush();
                 Respuesta = catch_error();
