@@ -146,6 +146,13 @@ public class SupervisionAction extends AbstractAction
 
     public void actionPerformed(ActionEvent e)
     {
+        if(!root.getDocument().getPetriNet().getRootSubnet().isValid())
+        {
+            results.setText("Invalid Net");
+            JOptionPane.showMessageDialog(null, "Invalid Net!", "Error analysing net", JOptionPane.ERROR_MESSAGE, null);
+            guiDialog.setVisible(false);
+            return;
+        }
         ArrayList<String> controlPlaces = root.getDocument().getPetriNet().getControlPlaces();
         results.setText("");
 
@@ -789,7 +796,7 @@ public class SupervisionAction extends AbstractAction
                 choices = Respuesta.split(" ");
                 String id;
                 do{
-                    
+
                     id = (String) JOptionPane.showInputDialog(null, "Choose now...",
                             "Indicar ID", JOptionPane.QUESTION_MESSAGE, null,
                             choices, // Array of choices

@@ -28,8 +28,8 @@
         </place>
         <place>
             <id>P28</id>
-            <x>252</x>
-            <y>-284</y>
+            <x>75</x>
+            <y>-144</y>
             <label>P28</label>
             <tokens>1</tokens>
             <isStatic>false</isStatic>
@@ -91,8 +91,8 @@
         </place>
         <place>
             <id>P7</id>
-            <x>241</x>
-            <y>-257</y>
+            <x>237</x>
+            <y>-281</y>
             <label>P7</label>
             <tokens>1</tokens>
             <isStatic>false</isStatic>

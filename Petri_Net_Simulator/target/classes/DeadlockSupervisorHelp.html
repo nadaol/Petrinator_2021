@@ -1,63 +1,28 @@
-<h2 style="color: #5e9ca0; text-align: center;">Petrinator 1.0.0&nbsp;</h2>
-<h4 style="color: #2e6c80; text-align: center;"><em>Joaqu&iacute;n Rodr&iacute;guez Felici</em><br /><em>Leandro Ass&oacute;n</em></h4>
-<table>
-<tbody>
-<tr>
-<td style="text-align: justify;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</td>
-<td style="text-align: justify;">This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the license or any later version. This program is distributed in the hope that it will be useful, but with no warranty or fitness for a particular purpose. See the GNU General Public License for more details. You should have recieved a copy of the GNU General Public License along with this software. If not, see &lt;http://www.gnu.org/licenses/&gt;.</td>
-<td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</td>
-</tr>
-</tbody>
-</table>
-<h4 style="color: #2e6c80; text-align: center;">Contributions:</h4>
-<table class="editorDemoTable" style="margin-left: auto; margin-right: auto; border-color: 000000; background-color: cee1eb; font-family: arial; font-size: 8px;" border="1">
-<thead>
-<tr>
-<td style="text-align: center;" bgcolor="#124878"><span style="color: #ffffff;"><strong>Name&nbsp;</strong></span></td>
-<td style="text-align: center;" bgcolor="#124878"><span style="color: #ffffff;"><strong>Contribution</strong></span></td>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: center;">Martin Riesz</td>
-<td style="text-align: center;">PNEditor.</td>
-</tr>
-<tr>
-<td style="text-align: center;">J&aacute;n Tančibok</td>
-<td style="text-align: center;">Inhibitor arc types.</td>
-</tr>
-<tr>
-<td style="text-align: center;">Maxim Gready</td>
-<td style="text-align: center;">Petri net classification.</td>
-</tr>
-<tr>
-<td style="text-align: center;">James Bloom</td>
-<td style="text-align: center;">Petri net classification.</td>
-</tr>
-<tr>
-<td style="text-align: center;">Nadeem Akharware</td>
-<td style="text-align: center;">Place and transition invariants.</td>
-</tr>
-<tr>
-<td style="text-align: center;">Matthew Worthington</td>
-<td style="text-align: center;">Reachability and coverability.</td>
-</tr>
-<tr>
-<td style="text-align: center;">Edwin Chung</td>
-<td style="text-align: center;">Reachability and coverability.</td>
-</tr>
-<tr>
-<td style="text-align: center;">Will Master</td>
-<td style="text-align: center;">Reachability and coverability.</td>
-</tr>
-<tr>
-<td style="text-align: center;">Pere Bonet</td>
-<td style="text-align: center;">Siphons and traps.&nbsp;</td>
-</tr>
-<tr>
-<td style="text-align: center;">Ariel Rabinovich</td>
-<td style="text-align: center;">Petri engine.</td>
-</tr>
-</tbody>
-</table>
-<h4 style="color: #2e6c80; text-align: center;"><br />Universidad Nacional de C&oacute;rdoba<br />Argentina&nbsp;</h4>
+<h3 style="color: #5e9ca0; text-align: center;">Help about Deadlock Supervisor Module&nbsp;</h2>
+<h3 style="color: #2e6c80; text-align: center;"><strong>Funcionalidad</strong></h3>
+<p style="text-align: justify;">El siguiente modulo ejecuta un algoritmo capaz de solucionar los problemas de vivacidad de las redes de Petri(RdP), puntualmente las que modelan Sistemas de procesos secuenciales simples con recursos (S3PR).</p>
+<p style="text-align: left;">El modulo tiene las siguientes funcionalidades:</p>
+<ul>
+    <li style="text-align: justify;">Verificar si la RdP esta en estado de Interbloqueo y si se trata de una red S3PR,</li>
+    <li style="text-align: justify;">Agregar supervisores (Plazas de control) a la RdP para lograr corregir el Interbloqueo.</li>
+    <li style="text-align: justify;">Agregar Arcos a la RdP para corregir problemas con los T-Invariantesde la red sin supervisores</li>
+</ul>
+<h3 style="color: #2e6c80; text-align: center;"><strong>Modo de uso</strong></h3>
+<p style="text-align: justify;">El modulo cuenta con cuatro botones, cada uno con una funcionalidad y limitado por ciertas verificaciones autom&aacute;ticas, dos botones son para el an&aacute;lisis y otras dos para la modificaci&oacute;n de la red, se listaran y explicaran en orden de uso cada bot&oacute;n.</p>
+<ol>
+    <li style="text-align: justify;"><strong>First Analysis:</strong> Este bot&oacute;n de an&aacute;lisis se habilita solo y al principio de ejecutar el modulo &uacute;nicamente si la red no cuenta con supervisores.Realizara el primer an&aacute;lisis de la red donde verificara el Interbloqueo y si es S3PR, solo en caso que las dos verificaciones sean verdaderas,el modulo calculara los posibles supervisores a agregar y habilitara los dem&aacute;s botones, en caso contrario el modulo no tiene mas funcionalidad.</li>
+    <li style="text-align: justify;"><strong>Add Supervisor/s y Fix Conflict/s:</strong>Estos dos botones son los encargados de modificar la red para reparar el Interbloqueo.
+        <ul>
+            <li style="text-align: justify;"><strong>Add Supervisor/s:&nbsp;</strong>Recomendable siempre primero, al apretar el bot&oacute;n aparecen una lista con los id de los supervisores para agregar a la red.<br><strong>Importante:</strong> agregar supervisores con marcado distinto de cero y recomendable el que controle mayor cantidad de plazas, en caso de seleccionar un id de un supervisor con marcado igual a cero saldr&aacute; una advertencia y no lo permitir&aacute;, ya que la red se rompe en ese caso.</li>
+            <li style="text-align: justify;"><strong>Fix Conflict/s:&nbsp;</strong>En caso que en an&aacute;lisis retorne supervisores con marcado igual a cero, siempre es recomendable hacer un arreglo de los conflictos (mediante este boton), que corregir&aacute; los T-Invariantes de la red original ya que los supervisores agregados los modificaron.<br><strong>Importante:</strong> si un an&aacute;lisis retorno muchos supervisores y algunos con marcado igual a cero, antes de agregar otro supervisor con marcado es recomendable ejecutar esta opci&oacute;n.</li>
+        </ul>
+    </li>
+    <li style="text-align: justify;"><strong>Net Analysis (with supervisors):&nbsp;</strong>Este bot&oacute;n de an&aacute;lisis se ejecuta para realizar el an&aacute;lisis cuando una red tiene o se le agrega un supervisor, verifica si la red sigue o no teniendo interbloqueo y en caso que tenga hace el an&aacute;lisis de los supervisores para luego mediante los botones de modificaci&oacute;n arreglar la red</li>
+</ol>
+<h3 style="color: #2e6c80; text-align: center;"><strong>Autores</strong></h3>
+<ul>
+    <li style="text-align: justify;">Algoritmo de supervisaci&oacute;n de Deadlock. Tesis: NAVARRO Matias Alejandro, SALVATIERRA Andres, IZQUIERDO Agustina</li>
+    <li style="text-align: justify;">Implementaci&oacute;n en petrinator: BOSACK Federico, OLIVA Nahuel</li>
+</ul>
+<p><br></p>
+<h3 style="color: #2e6c80; text-align: center;"><br />Universidad Nacional de C&oacute;rdoba<br />Argentina&nbsp;</h3>
