@@ -603,7 +603,7 @@ public class SupervisionAction extends AbstractAction
             }
 
             FirstAnalizeButton.setButtonsEnabled(false);
-            FirstAnalizeButton.setEnabled(false);//para luego chequear
+            //FirstAnalizeButton.setEnabled(false);//para luego chequear
 
             sPanel = "<h2>Deadlock and S3PR analysis</h2>";
 
