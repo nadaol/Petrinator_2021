@@ -26,6 +26,14 @@ public class Print {
         }
     }
 
+    public static void print_arraylist_arraylist_int(ArrayList<ArrayList<Integer>> ars,String Title)
+    {
+        System.out.println(Title);
+        for(ArrayList<Integer> ar : ars)
+        {
+            Print.print_arraylist_int(ar, String.format("Conflicto") );
+        }
+    }
     public static void print_arraylist_string(ArrayList<String> list,String Title)
     {
         System.out.println(Title);
@@ -43,6 +51,30 @@ public class Print {
         for(int list_element : list)
         {
             System.out.print(list_element+" ");
+        }
+        System.out.println("\n");
+    }
+
+    public static void print_arraylist_int_array(ArrayList<Integer[]> list,String Title)
+    {
+        System.out.println(Title);
+        for(Integer[] list_element : list)
+        {
+            for (int j=0; j<list_element.length; j++)
+            {
+                System.out.print(list_element[j]+" ");
+            }
+            System.out.println("\n");
+        }
+    }
+
+    public static void print_int_array(Integer[] list,String Title)
+    {
+        System.out.println(Title);
+
+        for (int j=0; j<list.length; j++)
+        {
+            System.out.print(list[j]+" ");
         }
         System.out.println("\n");
     }

@@ -6,6 +6,7 @@ org/petrinator/auxiliar/ProgressBarDialog.class
 org/petrinator/editor/actions/algorithms/reachability/TreeNode.class
 org/petrinator/petrinet/xml/IdFromObject.class
 org/petrinator/editor/commands/MoveElementsCommand.class
+org/petrinator/editor/actions/algorithms/MarkedSiphonsAction$1.class
 org/petrinator/util/CachedGraphics2D$2.class
 org/petrinator/util/CachedGraphics2D$8.class
 org/petrinator/editor/actions/GraphMultiplePlacesAction.class
@@ -44,6 +45,7 @@ org/petrinator/util/ListEditor$SmallButton.class
 org/petrinator/editor/filechooser/Sidebar.class
 org/petrinator/editor/commands/SetLabelCommand.class
 org/petrinator/editor/commands/SetTokensCommand.class
+org/petrinator/editor/actions/algorithms/MarkedSiphonsAction.class
 org/petrinator/util/PropertiesDialog.class
 org/petrinator/petrinet/xml/XmlReferencePlace.class
 org/petrinator/editor/actions/UndoAction.class

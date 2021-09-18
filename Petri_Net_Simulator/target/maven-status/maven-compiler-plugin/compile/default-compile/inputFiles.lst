@@ -99,6 +99,7 @@
 /home/fedebos/Escritorio/Fede/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/util/Print.java
 /home/fedebos/Escritorio/Fede/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/canvas/SelectionChangedListener.java
 /home/fedebos/Escritorio/Fede/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/commands/AddTransitionsToRolesCommand.java
+/home/fedebos/Escritorio/Fede/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/actions/algorithms/MarkedSiphonsAction.java
 /home/fedebos/Escritorio/Fede/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/actions/OpenFileAction.java
 /home/fedebos/Escritorio/Fede/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/petrinet/Role.java
 /home/fedebos/Escritorio/Fede/Petrinator_2021/Petri_Net_Simulator/src/main/java/org/petrinator/editor/commands/AddPlaceCommand.java
