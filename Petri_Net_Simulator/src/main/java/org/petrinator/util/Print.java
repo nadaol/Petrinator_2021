@@ -29,9 +29,11 @@ public class Print {
     public static void print_arraylist_arraylist_int(ArrayList<ArrayList<Integer>> ars,String Title)
     {
         System.out.println(Title);
+        int cont=1;
         for(ArrayList<Integer> ar : ars)
         {
-            Print.print_arraylist_int(ar, String.format("Conflicto") );
+            Print.print_arraylist_int(ar,"Grupo " +cont);
+            cont++;
         }
     }
     public static void print_arraylist_string(ArrayList<String> list,String Title)

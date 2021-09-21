@@ -171,7 +171,16 @@ public class MarkedSiphonsAction extends AbstractAction
     public String getMarkedSiphons()
     {
         int inicial_marking [] = root.getDocument().getPetriNet().getInitialMarking().getMarkingAsArray()[1];
+        Integer total_places [] = new Integer[root.getDocument().getPetriNet().getSortedPlaces().size()];
+        for (int i=0;i<total_places.length;i++)
+        {
+            total_places[i]=i;
+        }
         ArrayList<Integer> marked_places_index = new ArrayList();
+        ArrayList<Integer[]> conjunto_marked_places_index = new ArrayList();
+        ArrayList<ArrayList<Integer>> OutputArcs = new ArrayList<>();
+        ArrayList<ArrayList<Integer>> InputArcs = new ArrayList<>();
+        ArrayList<Integer> siphon_tramps = new ArrayList();
 
         for(int i=0; i<inicial_marking.length;i++)
         {
@@ -180,12 +189,19 @@ public class MarkedSiphonsAction extends AbstractAction
                 marked_places_index.add(i);
             }
         }
+        System.out.println("----- Running Marked Siphons Analysis -----\n");
         Print.print_arraylist_int(marked_places_index,"index plazas marcadas");
         Integer[] array_marked_places_index = marked_places_index.toArray(new Integer[0]);
-        ArrayList<Integer[]> conjunto_marked_places_index = new ArrayList();
-        get_groups(conjunto_marked_places_index,array_marked_places_index);
+
+        //get_groups(conjunto_marked_places_index,marked_places_index,total_places);//total plazas
+        get_groups(conjunto_marked_places_index,marked_places_index,array_marked_places_index);//total plazas
         Print.print_arraylist_int_array(conjunto_marked_places_index,"conjunto de plazas marcadas");
-        get_siphons_and_traps(conjunto_marked_places_index);
+
+        get_inputs_and_outpus(conjunto_marked_places_index,OutputArcs,InputArcs);
+        Print.print_arraylist_arraylist_int(InputArcs,"-------Groups Inputs-------");
+        Print.print_arraylist_arraylist_int(OutputArcs,"-------Groups Outputs-------");
+        get_siphons_and_traps(OutputArcs,InputArcs,siphon_tramps);
+        Print.print_arraylist_int(siphon_tramps,"Sifones o trampas");
         return "Todo OK!";
     }
     /* arr[]  ---> Input Array
@@ -193,7 +209,7 @@ public class MarkedSiphonsAction extends AbstractAction
     start & end ---> Staring and Ending indexes in arr[]
     index  ---> Current index in data[]
     r ---> Size of a combination to be printed */
-    static void combinationUtil(Integer arr[], int data[], int start,int end, int index, int r,ArrayList<Integer[]> conjunto_marked_places_index)
+    static void combinationUtil(Integer arr[], int data[], int start,int end, int index, int r,ArrayList<Integer[]> conjunto_marked_places_index,ArrayList<Integer> marked_places_index)
     {
         // Current combination is ready to be printed, print it
         if (index == r)
@@ -203,7 +219,16 @@ public class MarkedSiphonsAction extends AbstractAction
             {
                 conjunto[j]=data[j];
             }
-            conjunto_marked_places_index.add(conjunto);
+            /*
+            for (int k =0 ;k<conjunto.length;k++)
+            {
+                if(marked_places_index.contains(conjunto[k]))
+                {
+                    conjunto_marked_places_index.add(conjunto);
+                    break;
+                }
+            }*/
+            conjunto_marked_places_index.add(conjunto);//solo plazas marcadas
             return;
         }
 
@@ -214,54 +239,100 @@ public class MarkedSiphonsAction extends AbstractAction
         for (int i=start; i<=end && end-i+1 >= r-index; i++)
         {
             data[index] = arr[i];
-            combinationUtil(arr, data, i+1, end, index+1, r,conjunto_marked_places_index);
+            combinationUtil(arr, data, i+1, end, index+1, r,conjunto_marked_places_index,marked_places_index);
         }
     }
 
     /*Driver function to check for above function*/
     public void get_groups (ArrayList<Integer[]> conjunto_marked_places_index,
-                                   Integer array_marked_places_index[])
+                            ArrayList<Integer> marked_places_index,Integer total_places[])
     {
-        int n = array_marked_places_index.length;
+        int n = total_places.length;
         for(int r=2; r<=n;r++)
         {
             int data[] = new int[r];
             // Print all combination using temporary array 'data[]'
-            combinationUtil(array_marked_places_index, data, 0, n-1, 0, r, conjunto_marked_places_index);
+            combinationUtil(total_places, data, 0, n-1, 0, r, conjunto_marked_places_index,marked_places_index);
         }
     }
-    public void get_siphons_and_traps(ArrayList<Integer[]> groups)
+    public void get_inputs_and_outpus(ArrayList<Integer[]> groups,ArrayList<ArrayList<Integer>> OutputArcs,ArrayList<ArrayList<Integer>> InputArcs)
     {
         int[][] FordwardMatrix = root.getDocument().getPetriNet().getForwardIMatrix();
         int[][] BackwardsMatrix = root.getDocument().getPetriNet().getBackwardsIMatrix();
-        int cont = 1;
+        int t = 0;
+
         for(Integer[] group : groups)
         {
-            Print.print_int_array(group,"Grupo "+cont);
-            ArrayList<ArrayList<Integer>> OutputArcs = new ArrayList<>();
-            ArrayList<ArrayList<Integer>> InputArcs = new ArrayList<>();
+            ArrayList<Integer> auxI = new  ArrayList<>();
+            //inicializo en cero el vector de grupo
+            for (int i : FordwardMatrix[0])
+            {
+                auxI.add(0);
+            }
+            //recorro las plazas del grupo
             for (int j=0; j<group.length; j++)
             {
-                ArrayList<Integer> auxO = new  ArrayList<>();
+                //recorro las transiciones de las plazas
+                t=0;//iterador para saber la transicion
                 for (int i : FordwardMatrix[group[j]])
                 {
-                    auxO.add(i);
+                    if(i==1)
+                    {
+                        auxI.set(t,i);
+                    }
+                    t++;
                 }
-                InputArcs.add(auxO);
             }
-            Print.print_arraylist_arraylist_int(InputArcs,"Inputs Grupo "+cont);
+            InputArcs.add(auxI);
 
+            ArrayList<Integer> auxO = new  ArrayList<>();
+            //inicializo en cero el vector de grupo
+            for (int i : BackwardsMatrix[0])
+            {
+                auxO.add(0);
+            }
             for (int j=0; j<group.length; j++)
             {
-                ArrayList<Integer> auxI = new  ArrayList<>();
+                t=0;//iterador para saber la transicion
                 for (int i : BackwardsMatrix[group[j]])
                 {
-                    auxI.add(i);
+                    if(i==1)
+                    {
+                        auxO.set(t,-i);//se guardan como -1 para sumar XOR
+                    }
+                    t++;
                 }
-                OutputArcs.add(auxI);
             }
-            Print.print_arraylist_arraylist_int(OutputArcs,"Outputs Grupo "+cont);
-            cont++;
+            OutputArcs.add(auxO);
         }
     }
+    /*
+    siphon_tramps = -1 :siphon
+                     1 :tramps
+                     0 :nothing
+     */
+    public void get_siphons_and_traps(ArrayList<ArrayList<Integer>> OutputArcs,ArrayList<ArrayList<Integer>> InputArcs,ArrayList<Integer> siphon_tramps)
+    {
+        for (int i=0;i<OutputArcs.size();i++)
+        {
+            //InputArcs.get(i).addAll(OutputArcs.get(i));
+            ArrayList<Integer> auxS = new ArrayList();
+            for (int j=0;j<InputArcs.get(i).size();j++)
+            {
+                auxS.add(InputArcs.get(i).get(j)+OutputArcs.get(i).get(j));
+            }
+            Print.print_arraylist_int(auxS,"Suma grupo "+i);
+            if ((auxS.contains(-1)) && (!auxS.contains(1)))
+            {
+                siphon_tramps.add(-1);
+            }
+            else if ((auxS.contains(1)) && (!auxS.contains(-1)))
+            {
+                siphon_tramps.add(1);
+            }
+            else
+                siphon_tramps.add(0);
+        }
+    }
+
 }
