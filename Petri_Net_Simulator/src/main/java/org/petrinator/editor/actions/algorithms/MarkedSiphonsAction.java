@@ -24,9 +24,11 @@ import org.petrinator.editor.Root;
 import org.petrinator.editor.filechooser.*;
 import org.petrinator.util.GraphicsTools;
 import org.petrinator.util.Print;
+import org.petrinator.util.Save;
 import pipe.gui.widgets.ButtonBar;
 import pipe.gui.widgets.EscapableDialog;
 import pipe.gui.widgets.ResultsHTMLPane;
+import pipe.modules.minimalSiphons.MinimalSiphons;
 import pipe.views.PetriNetView;
 
 import javax.swing.*;
@@ -34,9 +36,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.ArrayList;
+import java.util.*;
 import java.net.URLDecoder;
-import java.util.Arrays;
 
 /**
  * MinimalSiphons computes minimal siphons and minimals traps of a Petri Net.
@@ -141,9 +142,8 @@ public class MarkedSiphonsAction extends AbstractAction
                 s += "Invalid net!";
             } else {
                 try {
-                    //MinimalSiphons siphonsAlgorithm = new MinimalSiphons();
-                    //s += siphonsAlgorithm.analyse(sourceDataLayer);
-                    s += getMarkedSiphons();
+                    s += getSetsPlacesTraps();
+                    //s += getMarkedSiphons();
                     results.setEnabled(true);
                 } catch (OutOfMemoryError oome) {
                     System.gc();
@@ -168,6 +168,64 @@ public class MarkedSiphonsAction extends AbstractAction
             results.setText(s);
         }
     };
+
+    public String getSetsPlacesTraps() {
+        int inicial_marking[] = root.getDocument().getPetriNet().getInitialMarking().getMarkingAsArray()[1];
+        ArrayList<Integer> marked_places_index = new ArrayList();
+        for (int i = 0; i < inicial_marking.length; i++) {
+            if (inicial_marking[i] > 0) {
+                marked_places_index.add(i);
+            }
+        }
+        Date start_time = new Date();
+        PetriNetView sourceDataLayer = new PetriNetView(Save.get_Current_JarPath(SupervisionAction.class, root, results) + "/tmp/tmp.pnml");
+        MinimalSiphons siphonsAlgorithm = new MinimalSiphons();
+        Vector<boolean[]> siphons = siphonsAlgorithm.getMinimalSiphons(sourceDataLayer);
+        Vector<boolean[]> MarkedSiphons = new Vector<boolean[]>();
+        Vector<boolean[]> traps = siphonsAlgorithm.getMinimalTraps(sourceDataLayer);
+        Vector<boolean[]> MarkedTraps = new Vector<boolean[]>();
+        System.out.println("--------------SIFONES--------------");
+        for (int i = 0; i < marked_places_index.size(); i++)
+        {
+            //System.out.println("Marcado :"+marked_places_index.get(i));
+            Iterator iterator = siphons.iterator();
+            while (iterator.hasNext()) {
+                boolean[] array = (boolean[]) iterator.next();
+                if (array[marked_places_index.get(i)]) {
+
+                    if (!MarkedSiphons.contains(array)) {
+                        MarkedSiphons.add(array);
+                        //ya contiene una plaza marcada y no es necesario volver a analizar
+                        iterator.remove();//ver
+                    }
+
+                }
+            }
+            Iterator iterator2 = traps.iterator();
+            while (iterator2.hasNext()) {
+                boolean[] array = (boolean[]) iterator2.next();
+                if (array[marked_places_index.get(i)]) {
+
+                    if (!MarkedTraps.contains(array)) {
+                        MarkedTraps.add(array);
+                        //ya contiene una plaza marcada y no es necesario volver a analizar
+                        iterator2.remove();//ver
+                    }
+
+                }
+            }
+        }
+        String output = "<h3>Minimal marked siphons</h3>";
+        output = output + Print.toString(MarkedSiphons, sourceDataLayer);
+        output = output + "<h3>Minimal marked traps</h3>";
+        output = output + Print.toString(MarkedTraps, sourceDataLayer);
+        Date stop_time = new Date();
+        double etime = (double)(stop_time.getTime() - start_time.getTime()) / 1000.0D;
+        return output + "<br>Analysis time: " + etime + "s";
+    }
+    /*
+        Obtiene sifones marcados con algoritmo propio de fuerza bruta
+     */
     public String getMarkedSiphons()
     {
         int inicial_marking [] = root.getDocument().getPetriNet().getInitialMarking().getMarkingAsArray()[1];

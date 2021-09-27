@@ -1,7 +1,11 @@
 package org.petrinator.util;
 
+import pipe.views.PetriNetView;
+
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Vector;
 
 public class Print {
     public static void print_matrix(int[][] matrix,String Title)
@@ -96,6 +100,29 @@ public class Print {
             System.out.println();
         }
         System.out.println();
+    }
+    public static String toString(Vector<boolean[]> vector, PetriNetView pnmlData) {
+        String s = "";
+        if (vector.size() == 0) {
+            return "None found.<br>";
+        } else {
+            for(Iterator var5 = vector.iterator(); var5.hasNext(); s = s + "}<br>") {
+                boolean[] element = (boolean[])var5.next();
+                s = s + "{";
+
+                for(int i = 0; i < element.length; ++i) {
+                    s = s + (element[i] ? pnmlData.getPlace(i).getName() + ", " : "");
+                }
+
+                StringBuilder b = new StringBuilder(s);
+                if (s.contains(",")) {
+                    b.replace(s.lastIndexOf(","), s.lastIndexOf(",") + 1, "");
+                    s = b.toString();
+                }
+            }
+
+            return s;
+        }
     }
 
 }
