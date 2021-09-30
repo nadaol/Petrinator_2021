@@ -21,7 +21,9 @@
 package org.petrinator.editor.actions.algorithms;
 
 import org.petrinator.editor.Root;
+import org.petrinator.editor.actions.algorithms.reachability.CRTree;
 import org.petrinator.editor.filechooser.*;
+import org.petrinator.petrinet.Marking;
 import org.petrinator.util.GraphicsTools;
 import org.petrinator.util.Print;
 import org.petrinator.util.Save;
@@ -132,7 +134,7 @@ public class MarkedSiphonsAction extends AbstractAction
              * Read tmp file
              */
             PetriNetView sourceDataLayer = new PetriNetView(get_Current_JarPath() +"/tmp/tmp.pnml");
-            String s = "<h2>Marked Siphons and Traps</h2>";
+            String s = "<h2>Inicial and Deadlock Marked Siphons</h2>";
 
             if (sourceDataLayer == null) {
                 return;
@@ -142,7 +144,7 @@ public class MarkedSiphonsAction extends AbstractAction
                 s += "Invalid net!";
             } else {
                 try {
-                    s += getSetsPlacesTraps();
+                    s += get_incial_deadlock_marked_siphons();
                     //s += getMarkedSiphons();
                     results.setEnabled(true);
                 } catch (OutOfMemoryError oome) {
@@ -168,9 +170,34 @@ public class MarkedSiphonsAction extends AbstractAction
             results.setText(s);
         }
     };
-
-    public String getSetsPlacesTraps() {
+    public String get_incial_deadlock_marked_siphons()
+    {
         int inicial_marking[] = root.getDocument().getPetriNet().getInitialMarking().getMarkingAsArray()[1];
+        CRTree statesTree = new CRTree(root, root.getCurrentMarking().getMarkingAsArray()[Marking.CURRENT]);
+        //sifones iniciales
+        PetriNetView sourceDataLayer = new PetriNetView(Save.get_Current_JarPath(SupervisionAction.class, root, results) + "/tmp/tmp.pnml");
+        MinimalSiphons siphonsAlgorithm = new MinimalSiphons();
+        Vector<boolean[]> siphons = siphonsAlgorithm.getMinimalSiphons(sourceDataLayer);
+        //sifones marcados inciales
+        String title1="<h3>Minimal inicial marked siphons</h3>";
+        Vector<boolean[]> InicialMarkedSiphons = new Vector<boolean[]>();
+        String output = get_marked_siphons(inicial_marking,InicialMarkedSiphons,siphons,title1,true);
+        //sifones marcados finales
+        if(statesTree.hasDeadlock())
+        {
+            String title2="<h3>Minimal Deadlock Unmarked siphons</h3>";
+            Vector<boolean[]> MarkedFinalSiphons = new Vector<boolean[]>();
+            Vector<boolean[]> UnMarkedFinalSiphons = new Vector<boolean[]>(InicialMarkedSiphons);
+            int deadlock_marking [] = get_deadlock_path_vector(inicial_marking,statesTree);
+            Print.print_int_array(deadlock_marking,"Deadlock Marking");
+            output += get_marked_siphons(deadlock_marking,MarkedFinalSiphons,UnMarkedFinalSiphons,title2,false);
+        }
+        return output;
+    }
+
+    public String get_marked_siphons(int inicial_marking[],Vector<boolean[]> MarkedSiphons,Vector<boolean[]> siphons,String title,boolean marked)
+    {
+        PetriNetView sourceDataLayer = new PetriNetView(Save.get_Current_JarPath(SupervisionAction.class, root, results) + "/tmp/tmp.pnml");
         ArrayList<Integer> marked_places_index = new ArrayList();
         for (int i = 0; i < inicial_marking.length; i++) {
             if (inicial_marking[i] > 0) {
@@ -178,13 +205,7 @@ public class MarkedSiphonsAction extends AbstractAction
             }
         }
         Date start_time = new Date();
-        PetriNetView sourceDataLayer = new PetriNetView(Save.get_Current_JarPath(SupervisionAction.class, root, results) + "/tmp/tmp.pnml");
-        MinimalSiphons siphonsAlgorithm = new MinimalSiphons();
-        Vector<boolean[]> siphons = siphonsAlgorithm.getMinimalSiphons(sourceDataLayer);
-        Vector<boolean[]> MarkedSiphons = new Vector<boolean[]>();
-        Vector<boolean[]> traps = siphonsAlgorithm.getMinimalTraps(sourceDataLayer);
-        Vector<boolean[]> MarkedTraps = new Vector<boolean[]>();
-        System.out.println("--------------SIFONES--------------");
+        System.out.println("--------------"+title+"--------------");
         for (int i = 0; i < marked_places_index.size(); i++)
         {
             //System.out.println("Marcado :"+marked_places_index.get(i));
@@ -196,32 +217,72 @@ public class MarkedSiphonsAction extends AbstractAction
                     if (!MarkedSiphons.contains(array)) {
                         MarkedSiphons.add(array);
                         //ya contiene una plaza marcada y no es necesario volver a analizar
-                        iterator.remove();//ver
-                    }
-
-                }
-            }
-            Iterator iterator2 = traps.iterator();
-            while (iterator2.hasNext()) {
-                boolean[] array = (boolean[]) iterator2.next();
-                if (array[marked_places_index.get(i)]) {
-
-                    if (!MarkedTraps.contains(array)) {
-                        MarkedTraps.add(array);
-                        //ya contiene una plaza marcada y no es necesario volver a analizar
-                        iterator2.remove();//ver
+                        iterator.remove();
                     }
 
                 }
             }
         }
-        String output = "<h3>Minimal marked siphons</h3>";
-        output = output + Print.toString(MarkedSiphons, sourceDataLayer);
-        output = output + "<h3>Minimal marked traps</h3>";
-        output = output + Print.toString(MarkedTraps, sourceDataLayer);
+        String output = title;
+        if(marked)
+            output = output + Print.toString(MarkedSiphons, sourceDataLayer);
+        else
+            output = output + Print.toString(siphons, sourceDataLayer);
         Date stop_time = new Date();
         double etime = (double)(stop_time.getTime() - start_time.getTime()) / 1000.0D;
         return output + "<br>Analysis time: " + etime + "s";
+    }
+
+    public int[] get_deadlock_path_vector(int inicial_marking [],CRTree statesTree)
+    {
+        int deadlock_marking [] = new int[inicial_marking.length];
+
+        String[] transitions = statesTree.getShortestPathToDeadlock().split(" => ");
+        int[][] incidenceMatrix = root.getDocument().getPetriNet().getIncidenceMatrix();
+        int[] path_vector = new int[incidenceMatrix[0].length];
+
+        for (int j=0; j<transitions.length -1 ; j++)
+        {
+            path_vector[Integer.valueOf(transitions[j].substring(1))-1]+=1;
+        }
+        //Print.print_int_array(path_vector,"vector de disparos final");
+
+        int[][] matrix_mult_vector = get_matrix_mult_vector(incidenceMatrix,path_vector);
+        //Print.print_matrix(matrix_mult_vector, "Incidencia x vetor de disparos");
+
+        for(int i = 0 ; i < inicial_marking.length; i++)
+        {
+            //System.out.println(inicial_marking[i]+" + " +matrix_mult_vector[i][0]);
+            deadlock_marking[i] = inicial_marking[i] + matrix_mult_vector[i][0];
+        }
+        //Mj+1 = Mj + I ∗ σ.
+        //Print.print_int_array(deadlock_marking,"Marcado deadlock");
+
+        return deadlock_marking;
+    }
+
+    public int[][] get_matrix_mult_vector(int[][] matrix,int[] v)
+    {
+        int fil_m1 = matrix.length;
+        int col_m1 = matrix[0].length;
+        int fil_m2 = v.length;
+        int col_m2 = 1;
+        int[][] multiplicacion = new int[fil_m1][col_m2];
+
+        if (col_m1 != fil_m2)
+            throw new RuntimeException("No se pueden multiplicar las matrices");
+
+        for (int x=0; x < multiplicacion.length; x++)
+        {
+            for (int y=0; y < multiplicacion[x].length; y++)
+            {
+                // El nuevo bucle suma la multiplicación de la fila por la columna
+                for (int z=0; z<col_m1; z++) {
+                    multiplicacion [x][y] += matrix[x][z]*v[z];
+                }
+            }
+        }
+        return multiplicacion;
     }
     /*
         Obtiene sifones marcados con algoritmo propio de fuerza bruta

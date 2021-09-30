@@ -73,8 +73,29 @@ public class Print {
             System.out.println("\n");
         }
     }
+    public static void print_boolean_vector(Vector<boolean[]> list,String Title)
+    {
+        System.out.println(Title);
+        for (boolean[] dataHolder : list)
+        {
+            for (int j = 0; j < dataHolder.length; j++) {
+                System.out.print(dataHolder[j] + " ");
+            }
+            System.out.println();
+        }
+    }
+    public static void print_int_array(int[] list,String Title)
+    {
+        System.out.println(Title);
 
-    public static void print_int_array(Integer[] list,String Title)
+        for (int j=0; j<list.length; j++)
+        {
+            System.out.print(list[j]+" ");
+        }
+        System.out.println("\n");
+    }
+
+    public static void print_string_array(String[] list,String Title)
     {
         System.out.println(Title);
 
@@ -101,6 +122,7 @@ public class Print {
         }
         System.out.println();
     }
+
     public static String toString(Vector<boolean[]> vector, PetriNetView pnmlData) {
         String s = "";
         if (vector.size() == 0) {
