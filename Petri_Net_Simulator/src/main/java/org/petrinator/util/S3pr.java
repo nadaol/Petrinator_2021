@@ -49,12 +49,11 @@ public class S3pr {
   
           if(!check_Tinvariants_SM(Tinv_incidence_matrices,Tinvariants_places,Tinvariants_SM_places,Tinvariants_trans,Tinvariants_SM_trans,Tinvariants_resources,root,S3PRresults))return false;
           System.out.println("3° CHECK: All T-Invariants are State Machines");
-          System.out.println("4° CHECK: All Resources have marking greater than or equal to one");
-          Print.print_hashmap(Tinvariants_resources,"T-invariant resources");
-  
           if(!get_shared_places(Tinvariants_resources,Tinvariants_shared_resoruces,S3PRresults))return false;
-          System.out.println("5° CHECK: All T-Invariants have Shared Resources");
+          System.out.println("4° CHECK: All T-Invariants have Shared Resources");
+          Print.print_hashmap(Tinvariants_resources,"T-invariant resources");
           Print.print_hashmap(Tinvariants_shared_resoruces,"T-Invariants Shared Resources");
+          System.out.println("5° CHECK: All Resources have marking greater than or equal to one");
           //print_arraylist(getEnabledTransitions(),"Enabled transitions");
           //aca verifica el marcado de las plazas del state machine y las plazas IDLE
           if(!check_SM_places_and_pidle_marking(Tinvariants_SM_places,S3PRresults,root))return false;
