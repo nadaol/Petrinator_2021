@@ -170,6 +170,8 @@ public class MarkedSiphonsAction extends AbstractAction
             results.setText(s);
         }
     };
+
+    // Get the group of siphons that causes the closest deadlock
     public String get_incial_deadlock_marked_siphons()
     {
         int inicial_marking[] = root.getDocument().getPetriNet().getInitialMarking().getMarkingAsArray()[1];
@@ -195,6 +197,7 @@ public class MarkedSiphonsAction extends AbstractAction
         return output;
     }
 
+    // Filter from siphons vector only the ones that are marked
     public String get_marked_siphons(int inicial_marking[],Vector<boolean[]> MarkedSiphons,Vector<boolean[]> siphons,String title,boolean marked)
     {
         PetriNetView sourceDataLayer = new PetriNetView(Save.get_Current_JarPath(SupervisionAction.class, root, results) + "/tmp/tmp.pnml");
@@ -233,6 +236,7 @@ public class MarkedSiphonsAction extends AbstractAction
         return output + "<br>Analysis time: " + etime + "s";
     }
 
+    // Get the transitions path to the closest deadlock state
     public int[] get_deadlock_path_vector(int inicial_marking [],CRTree statesTree)
     {
         int deadlock_marking [] = new int[inicial_marking.length];
@@ -261,6 +265,7 @@ public class MarkedSiphonsAction extends AbstractAction
         return deadlock_marking;
     }
 
+    // Multiplication of integer Matrix and vector arrays
     public int[][] get_matrix_mult_vector(int[][] matrix,int[] v)
     {
         int fil_m1 = matrix.length;
@@ -284,9 +289,8 @@ public class MarkedSiphonsAction extends AbstractAction
         }
         return multiplicacion;
     }
-    /*
-        Obtiene sifones marcados con algoritmo propio de fuerza bruta
-     */
+    
+    // Brute force algotithm to find marked siphons (Finds siphons from groups filtering all places in the Net with at least one mark)
     public String getMarkedSiphons()
     {
         int inicial_marking [] = root.getDocument().getPetriNet().getInitialMarking().getMarkingAsArray()[1];
@@ -323,6 +327,8 @@ public class MarkedSiphonsAction extends AbstractAction
         Print.print_arraylist_int(siphon_tramps,"Sifones o trampas");
         return "Todo OK!";
     }
+
+    // Generates All posible distinct combinations from array 'arr' of size r
     /* arr[]  ---> Input Array
     data[] ---> Temporary array to store current combination
     start & end ---> Staring and Ending indexes in arr[]
@@ -362,7 +368,7 @@ public class MarkedSiphonsAction extends AbstractAction
         }
     }
 
-    /*Driver function to check for above function*/
+    // Finds all possible distinct combinatios of total_places
     public void get_groups (ArrayList<Integer[]> conjunto_marked_places_index,
                             ArrayList<Integer> marked_places_index,Integer total_places[])
     {
@@ -425,6 +431,8 @@ public class MarkedSiphonsAction extends AbstractAction
             OutputArcs.add(auxO);
         }
     }
+
+    // Classify siphons and traps from inputs and outputs arc groups
     /*
     siphon_tramps = -1 :siphon
                      1 :tramps
