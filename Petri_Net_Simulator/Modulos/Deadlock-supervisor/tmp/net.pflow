@@ -18,15 +18,6 @@
             <type>0</type>
         </place>
         <place>
-            <id>P22</id>
-            <x>196</x>
-            <y>-3</y>
-            <label>P22</label>
-            <tokens>3</tokens>
-            <isStatic>false</isStatic>
-            <type>1</type>
-        </place>
-        <place>
             <id>P2</id>
             <x>-320</x>
             <y>-126</y>
@@ -190,8 +181,8 @@
         </place>
         <place>
             <id>P20</id>
-            <x>42</x>
-            <y>-6</y>
+            <x>43</x>
+            <y>-12</y>
             <label>P20</label>
             <tokens>1</tokens>
             <isStatic>false</isStatic>
@@ -205,6 +196,15 @@
             <tokens>1</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+        </place>
+        <place>
+            <id>P22</id>
+            <x>159</x>
+            <y>-110</y>
+            <label>P22</label>
+            <tokens>3</tokens>
+            <isStatic>false</isStatic>
+            <type>1</type>
         </place>
         <transition>
             <id>T1</id>
@@ -420,30 +420,6 @@
             <type>regular</type>
             <sourceId>P1</sourceId>
             <destinationId>T1</destinationId>
-            <multiplicity>1</multiplicity>
-        </arc>
-        <arc>
-            <type>regular</type>
-            <sourceId>T5</sourceId>
-            <destinationId>P22</destinationId>
-            <multiplicity>1</multiplicity>
-        </arc>
-        <arc>
-            <type>regular</type>
-            <sourceId>T11</sourceId>
-            <destinationId>P22</destinationId>
-            <multiplicity>1</multiplicity>
-        </arc>
-        <arc>
-            <type>regular</type>
-            <sourceId>P22</sourceId>
-            <destinationId>T1</destinationId>
-            <multiplicity>1</multiplicity>
-        </arc>
-        <arc>
-            <type>regular</type>
-            <sourceId>P22</sourceId>
-            <destinationId>T13</destinationId>
             <multiplicity>1</multiplicity>
         </arc>
         <arc>
@@ -736,6 +712,30 @@
             <type>regular</type>
             <sourceId>T12</sourceId>
             <destinationId>P21</destinationId>
+            <multiplicity>1</multiplicity>
+        </arc>
+        <arc>
+            <type>regular</type>
+            <sourceId>P22</sourceId>
+            <destinationId>T13</destinationId>
+            <multiplicity>1</multiplicity>
+        </arc>
+        <arc>
+            <type>regular</type>
+            <sourceId>P22</sourceId>
+            <destinationId>T1</destinationId>
+            <multiplicity>1</multiplicity>
+        </arc>
+        <arc>
+            <type>regular</type>
+            <sourceId>T11</sourceId>
+            <destinationId>P22</destinationId>
+            <multiplicity>1</multiplicity>
+        </arc>
+        <arc>
+            <type>regular</type>
+            <sourceId>T5</sourceId>
+            <destinationId>P22</destinationId>
             <multiplicity>1</multiplicity>
         </arc>
         <arc>

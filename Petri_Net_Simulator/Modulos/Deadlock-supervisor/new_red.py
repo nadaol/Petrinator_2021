@@ -33,11 +33,13 @@ def main(p_vs, token_vs, t_in, t_out, file_name):
     x=np.random.randint(-300, 300)
     y=np.random.randint(-300, 300)
 
+    # ------------------------- Ver adonde agrega el suprevisor en el pflow
     flag_place=1
     flag_arco=1
     for i in range(len(archivo)):
         archivo_sin_espacio.append(archivo[i].strip()) #Elimina los espacios contenidos en el archivo y los guarda en 'archivo_sin_espacio'
-        if(archivo_sin_espacio[len(archivo_sin_espacio)-1]=="</place>" and flag_place==1): #Busca el lugar del archivo donde se debe agregar la plaza con el marcado
+        if(archivo_sin_espacio[len(archivo_sin_espacio)-1]=="</transition>" and flag_place==1): #Busca el lugar del archivo donde se debe agregar la plaza con el marcado
+            archivo_sin_espacio.append(archivo[i-1].strip())
             archivo_sin_espacio.append('<place>\n<id>'+ p_vs + '</id>\n<x>' + str(x) + '</x>\n<y>'+ str(y) +'</y>\n<label>'+ p_vs + '</label>\n<tokens>'+ token_vs + '</tokens>\n<isStatic>false</isStatic>\n<type>1</type>\n</place>')#+'<type>controlPlace</type>'
             flag_place=0
 
