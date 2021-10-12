@@ -20,6 +20,7 @@
 
 package org.petrinator.editor.actions.algorithms;
 
+import org.hamcrest.Matcher;
 import org.petrinator.editor.Root;
 import org.petrinator.editor.actions.algorithms.reachability.CRTree;
 import org.petrinator.editor.filechooser.*;
@@ -32,6 +33,7 @@ import pipe.gui.widgets.EscapableDialog;
 import pipe.gui.widgets.ResultsHTMLPane;
 import pipe.modules.minimalSiphons.MinimalSiphons;
 import pipe.views.PetriNetView;
+import java.util.regex.Pattern;
 
 import javax.swing.*;
 import java.awt.*;
@@ -179,36 +181,159 @@ public class MarkedSiphonsAction extends AbstractAction
         //sifones iniciales
         PetriNetView sourceDataLayer = new PetriNetView(Save.get_Current_JarPath(SupervisionAction.class, root, results) + "/tmp/tmp.pnml");
         MinimalSiphons siphonsAlgorithm = new MinimalSiphons();
-        Vector<boolean[]> siphons = siphonsAlgorithm.getMinimalSiphons(sourceDataLayer);
+        //System.out.println(siphonsAlgorithm.analyse(sourceDataLayer));
+        Vector<boolean[]> siphons = get_current_siphons(siphonsAlgorithm,sourceDataLayer,inicial_marking.length);
+        //Vector<boolean[]> siphons = siphonsAlgorithm.getMinimalSiphons(sourceDataLayer);
         //sifones marcados inciales
-        String title1="<h3>Minimal inicial marked siphons</h3>";
+        String output = "<h3>Minimal inicial marked siphons</h3>";
         Vector<boolean[]> InicialMarkedSiphons = new Vector<boolean[]>();
-        String output = get_marked_siphons(inicial_marking,InicialMarkedSiphons,siphons,title1,true);
+        Date start_time = new Date();
+        output += get_marked_siphons(inicial_marking,InicialMarkedSiphons,siphons,true);
+        Date stop_time = new Date();
+        double etime = (double)(stop_time.getTime() - start_time.getTime()) / 1000.0D;
+        output +=  "<br>Analysis time: " + etime + "s";
+
         //sifones marcados finales
         if(statesTree.hasDeadlock())
         {
-            String title2="<h3>Minimal Deadlock Unmarked siphons</h3>";
-            Vector<boolean[]> MarkedFinalSiphons = new Vector<boolean[]>();
-            Vector<boolean[]> UnMarkedFinalSiphons = new Vector<boolean[]>(InicialMarkedSiphons);
-            int deadlock_marking [] = get_deadlock_path_vector(inicial_marking,statesTree);
-            Print.print_int_array(deadlock_marking,"Deadlock Marking");
-            output += get_marked_siphons(deadlock_marking,MarkedFinalSiphons,UnMarkedFinalSiphons,title2,false);
+            start_time = new Date();
+            output+= "<h3>Problematic siphons for each deadlock State</h3>";
+            
+            ArrayList<int[]> Deadlock_markings = get_deadlock_states();
+            for (int[] marking : Deadlock_markings) 
+            {
+                Vector<boolean[]> MarkedFinalSiphons = new Vector<boolean[]>();
+                Vector<boolean[]> UnMarkedFinalSiphons = new Vector<boolean[]>(InicialMarkedSiphons);
+
+                output+= "<h4>Deadlock : " + Arrays.toString(marking) + " </h4>";
+                output += get_marked_siphons(marking,MarkedFinalSiphons,UnMarkedFinalSiphons,false);      
+            }
+            stop_time = new Date();
+            etime = (double)(stop_time.getTime() - start_time.getTime()) / 1000.0D;
+            output +=  "<br>Analysis time: " + etime + "s";
+
         }
+
+        
+
         return output;
     }
 
+    /*         CRTree statesTree = new CRTree(root, root.getCurrentMarking().getMarkingAsArray()[Marking.CURRENT]);
+        String log = statesTree.getTreeLog();
+        // Deadlock on S30 [1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1]</h3>
+        String regular_expression = "(.*Minimal traps)" ;
+        Pattern pattern = Pattern.compile(regular_expression);
+        java.util.regex.Matcher matcher = pattern.matcher(log);
+        log = matcher.group(1);
+        regular_expression = "(\\{([^}]+)\\})" ;
+        pattern = Pattern.compile(regular_expression);
+        matcher = pattern.matcher(log);
+
+        ArrayList<int[]> Deadlock_markings = new ArrayList<>();
+
+        // Find all matches
+        while (matcher.find()) 
+        {
+            // Get the matching string
+            String match = matcher.group(1);
+            String [] markingS =match.split(", ");
+            
+            int[] marking = Arrays.stream(markingS).mapToInt(Integer::parseInt).toArray();
+            Deadlock_markings.add(marking);
+        }
+        return Deadlock_markings; */
+
+    private Vector<boolean[]> get_current_siphons(MinimalSiphons siphonsAlgorithm,PetriNetView sourceDataLayer,int Nplaces)
+    {
+        String log = siphonsAlgorithm.analyse(sourceDataLayer);
+        Vector<boolean[]> siphons_bool = new Vector<boolean[]>();
+
+        // Deadlock on S30 [1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1]</h3>
+        String regular_expression = ".*Minimal traps" ;
+        Pattern pattern = Pattern.compile(regular_expression);
+        java.util.regex.Matcher matcher = pattern.matcher(log);
+        if(matcher.find())
+        {
+            log = matcher.group();
+        }
+            
+        
+        regular_expression = "(\\{([^}]+)\\})" ;
+        pattern = Pattern.compile(regular_expression);
+        matcher = pattern.matcher(log);
+
+        // Find all matches
+        while (matcher.find()) 
+        {
+            // Get the matching string
+            String match = matcher.group(1);
+            String [] markingS =match.split(", ");
+
+            for(int i =0; i<markingS.length;i++)
+            {
+                if(i==0) markingS[i] = markingS[i].substring(2);
+                else markingS[i] = markingS[i].substring(1);
+
+                if(i==markingS.length-1) markingS[i]= markingS[i].split(" ")[0];
+            }
+           
+            //Print.print_string_array(markingS,"String siphons");
+            int[] marking = Arrays.stream(markingS).mapToInt(Integer::parseInt).toArray();
+            Print.print_int_array(marking, "marking");
+            
+
+            boolean[] siphon = new boolean[Nplaces];
+
+            for(int i =0; i<marking.length;i++)
+            {
+                siphon[marking[i]-1] = true;
+            }
+            siphons_bool.add(siphon);
+            Print.print_boolean_vector(siphons_bool,"Boolean array");
+            
+        }
+
+
+
+        return siphons_bool;
+    }
+
+    // Obtains all deadlock states markings
+    private ArrayList<int[]> get_deadlock_states()
+    {
+        CRTree statesTree = new CRTree(root, root.getCurrentMarking().getMarkingAsArray()[Marking.CURRENT]);
+        String log = statesTree.getTreeLog();
+        // Deadlock on S30 [1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1]</h3>
+        String regular_expression = "(Deadlock on S[0-9]* )(\\[)([0-9, ]*)" ;
+        Pattern pattern = Pattern.compile(regular_expression);
+        java.util.regex.Matcher matcher = pattern.matcher(log);
+        ArrayList<int[]> Deadlock_markings = new ArrayList<>();
+
+        // Find all matches
+        while (matcher.find()) 
+        {
+            // Get the matching string
+            String match = matcher.group(3);
+            String [] markingS =match.split(", ");
+            int[] marking = Arrays.stream(markingS).mapToInt(Integer::parseInt).toArray();
+            Deadlock_markings.add(marking);
+        }
+        return Deadlock_markings;
+    }
+
     // Filter from siphons vector only the ones that are marked
-    public String get_marked_siphons(int inicial_marking[],Vector<boolean[]> MarkedSiphons,Vector<boolean[]> siphons,String title,boolean marked)
+    public String get_marked_siphons(int inicial_marking[],Vector<boolean[]> MarkedSiphons,Vector<boolean[]> siphons,boolean marked)
     {
         PetriNetView sourceDataLayer = new PetriNetView(Save.get_Current_JarPath(SupervisionAction.class, root, results) + "/tmp/tmp.pnml");
-        ArrayList<Integer> marked_places_index = new ArrayList();
+        ArrayList<Integer> marked_places_index = new ArrayList<Integer>();
         for (int i = 0; i < inicial_marking.length; i++) {
             if (inicial_marking[i] > 0) {
                 marked_places_index.add(i);
             }
         }
-        Date start_time = new Date();
-        System.out.println("--------------"+title+"--------------");
+        
+
         for (int i = 0; i < marked_places_index.size(); i++)
         {
             //System.out.println("Marcado :"+marked_places_index.get(i));
@@ -226,14 +351,13 @@ public class MarkedSiphonsAction extends AbstractAction
                 }
             }
         }
-        String output = title;
+        String output;
         if(marked)
-            output = output + Print.toString(MarkedSiphons, sourceDataLayer);
+            output = Print.toString(MarkedSiphons, sourceDataLayer);
         else
-            output = output + Print.toString(siphons, sourceDataLayer);
-        Date stop_time = new Date();
-        double etime = (double)(stop_time.getTime() - start_time.getTime()) / 1000.0D;
-        return output + "<br>Analysis time: " + etime + "s";
+            output = Print.toString(siphons, sourceDataLayer);
+
+        return output ;
     }
 
     // Get the transitions path to the closest deadlock state
