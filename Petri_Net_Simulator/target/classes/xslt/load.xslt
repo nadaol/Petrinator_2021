@@ -32,6 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
         <y><xsl:value-of select="y"/></y>
         <label><xsl:value-of select="label"/></label>
         <xsl:for-each select="place">
+        <xsl:sort data-type="number" select = "nid"/>
             <place>
                 <id><xsl:value-of select="id"/></id>
                 <x><xsl:value-of select="x"/></x>
@@ -40,6 +41,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 <tokens><xsl:value-of select="tokens"/></tokens>
                 <isStatic><xsl:value-of select="isStatic"/></isStatic>
                 <type><xsl:value-of select="type"/></type>
+                <nid><xsl:value-of select="nid"/></nid>
             </place>
         </xsl:for-each>
         <xsl:for-each select="transition">
@@ -89,12 +91,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             </subnet>
         </xsl:for-each>
         <xsl:for-each select="referencePlace">
+        <xsl:sort data-type="number" select = "nid"/>
             <referencePlace>
                 <id><xsl:value-of select="id"/></id>
                 <x><xsl:value-of select="x"/></x>
                 <y><xsl:value-of select="y"/></y>
                 <connectedPlaceId><xsl:value-of select="connectedPlaceId"/></connectedPlaceId>
                 <type><xsl:value-of select="type"/></type>
+                <nid><xsl:value-of select="nid"/></nid>
             </referencePlace>
         </xsl:for-each>
         <xsl:for-each select="referenceArc">

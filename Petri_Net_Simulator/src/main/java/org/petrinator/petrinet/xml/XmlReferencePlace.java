@@ -30,4 +30,7 @@ public class XmlReferencePlace extends XmlNode {
     @XmlElement(name = "type")
     public int type;
 
+    @XmlElement(name = "nid")
+    public int nid;
+
 }

@@ -135,6 +135,7 @@ public class DocumentExporter {
         xmlPlace.label = place.getLabel();
         xmlPlace.tokens = initialMarking.getTokens(place);
         //nuevo
+        xmlPlace.nid = Integer.parseInt(place.getId().substring(1));
         xmlPlace.type = place.getType();
         return xmlPlace;
     }
@@ -201,6 +202,7 @@ public class DocumentExporter {
         xmlReferencePlace.y = referencePlace.getCenter().y;
         xmlReferencePlace.connectedPlaceId = referencePlace.getConnectedPlaceNode().getId();
         //nuevo
+        xmlReferencePlace.nid = Integer.parseInt(referencePlace.getId().substring(1));
         xmlReferencePlace.type = referencePlace.getType();
         return xmlReferencePlace;
     }

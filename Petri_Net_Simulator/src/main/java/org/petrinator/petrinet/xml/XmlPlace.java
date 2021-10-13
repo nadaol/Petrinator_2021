@@ -24,6 +24,9 @@ import javax.xml.bind.annotation.XmlElement;
  */
 public class XmlPlace extends XmlNode {
 
+    @XmlElement(name = "nid")
+    public int nid;
+
     @XmlElement(name = "label")
     public String label;
 
