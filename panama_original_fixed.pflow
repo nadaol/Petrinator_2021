@@ -16,6 +16,7 @@
             <tokens>3</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>1</nid>
         </place>
         <place>
             <id>P2</id>
@@ -25,6 +26,7 @@
             <tokens>0</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>2</nid>
         </place>
         <place>
             <id>P3</id>
@@ -34,6 +36,7 @@
             <tokens>0</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>3</nid>
         </place>
         <place>
             <id>P4</id>
@@ -43,6 +46,7 @@
             <tokens>0</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>4</nid>
         </place>
         <place>
             <id>P5</id>
@@ -52,6 +56,7 @@
             <tokens>0</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>5</nid>
         </place>
         <place>
             <id>P6</id>
@@ -61,6 +66,7 @@
             <tokens>0</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>6</nid>
         </place>
         <place>
             <id>P7</id>
@@ -70,6 +76,7 @@
             <tokens>3</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>7</nid>
         </place>
         <place>
             <id>P8</id>
@@ -79,6 +86,7 @@
             <tokens>0</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>8</nid>
         </place>
         <place>
             <id>P9</id>
@@ -88,6 +96,7 @@
             <tokens>0</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>9</nid>
         </place>
         <place>
             <id>P10</id>
@@ -97,6 +106,7 @@
             <tokens>0</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>10</nid>
         </place>
         <place>
             <id>P11</id>
@@ -106,6 +116,7 @@
             <tokens>0</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>11</nid>
         </place>
         <place>
             <id>P12</id>
@@ -115,6 +126,7 @@
             <tokens>0</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>12</nid>
         </place>
         <place>
             <id>P13</id>
@@ -124,6 +136,7 @@
             <tokens>0</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>13</nid>
         </place>
         <place>
             <id>P14</id>
@@ -133,6 +146,7 @@
             <tokens>0</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>14</nid>
         </place>
         <place>
             <id>P15</id>
@@ -142,6 +156,7 @@
             <tokens>1</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>15</nid>
         </place>
         <place>
             <id>P16</id>
@@ -151,6 +166,7 @@
             <tokens>1</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>16</nid>
         </place>
         <place>
             <id>P17</id>
@@ -160,6 +176,7 @@
             <tokens>1</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>17</nid>
         </place>
         <place>
             <id>P18</id>
@@ -169,6 +186,7 @@
             <tokens>1</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>18</nid>
         </place>
         <place>
             <id>P19</id>
@@ -178,6 +196,7 @@
             <tokens>1</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>19</nid>
         </place>
         <place>
             <id>P20</id>
@@ -187,6 +206,7 @@
             <tokens>1</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>20</nid>
         </place>
         <place>
             <id>P21</id>
@@ -196,15 +216,17 @@
             <tokens>1</tokens>
             <isStatic>false</isStatic>
             <type>0</type>
+            <nid>21</nid>
         </place>
         <place>
             <id>P22</id>
-            <x>176</x>
-            <y>-3</y>
+            <x>180</x>
+            <y>-44</y>
             <label>P22</label>
             <tokens>3</tokens>
             <isStatic>false</isStatic>
             <type>1</type>
+            <nid>22</nid>
         </place>
         <transition>
             <id>T1</id>
