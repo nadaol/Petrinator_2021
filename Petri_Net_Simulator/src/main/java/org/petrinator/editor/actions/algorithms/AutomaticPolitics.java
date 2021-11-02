@@ -52,6 +52,7 @@ public class AutomaticPolitics extends AbstractAction
     private JDialog guiDialog;
     private ButtonBar FirstAnalizeButton;
     private ButtonBar showPlotButton;
+    private ButtonBar showCostsButton;
     private ButtonBar HelpButton;
     String[] cost = {"simp", "inv"};
     JComboBox tipoCosto = new JComboBox(cost);
@@ -80,6 +81,7 @@ public class AutomaticPolitics extends AbstractAction
         contentPane.add(results);
         FirstAnalizeButton = new ButtonBar("Run Politics Analysis", new RunListener(), guiDialog.getRootPane());
         showPlotButton = new ButtonBar("Show Plot", new showPlotListener(), guiDialog.getRootPane());
+        showCostsButton = new ButtonBar("Show Costs", new showCostsListener(), guiDialog.getRootPane());
         HelpButton = new ButtonBar("Help", new HelpListener(), guiDialog.getRootPane());
         //action listener del plazas de control
         //netWithControlPlaces.addActionListener(new PlaceControlListener());
@@ -101,6 +103,7 @@ public class AutomaticPolitics extends AbstractAction
         contentPane.add(checkPanel, BorderLayout.CENTER);
         JPanel checkPanel2 = new JPanel(new GridLayout(1,2));
         checkPanel2.add(FirstAnalizeButton);
+        checkPanel2.add(showCostsButton);//show cost button
         checkPanel2.add(showPlotButton);
         contentPane.add(checkPanel2, BorderLayout.CENTER);
         contentPane.add(HelpButton);
@@ -356,7 +359,46 @@ public class AutomaticPolitics extends AbstractAction
             books.getImage().flush();
         }
     }
+    private class showCostsListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            /*
+             * Create the dialog
+             */
+            EscapableDialog guiDialog = new EscapableDialog(root.getParentFrame(), "Costs results", false);
+            Container contentPane = guiDialog.getContentPane();
+            String sPanelCosts = "";
+            Print.print_int_array(root.getDocument().getPetriNet().getCostArray(),"costos");
+            sPanelCosts+=ResultsHTMLPane.makeTable(new String[]{
+                    "<h2>Transitions Costs</h2>",
+                    renderCost()
+            }, 1, false, false, true, false);
 
+            org.petrinator.auxiliar.ResultsHTMLPane resultsCost = new org.petrinator.auxiliar.ResultsHTMLPane("");
+            resultsCost.setText(sPanelCosts);
+            resultsCost.setVisible(true);
+            contentPane.add(resultsCost);
+            guiDialog.pack();
+            guiDialog.setAlwaysOnTop(true);
+            guiDialog.setLocationRelativeTo(root.getParentFrame());
+            guiDialog.setVisible(true);
+        }
+    }
+    public String renderCost()
+    {
+        ArrayList<String> sortedNames = root.getDocument().getPetriNet().getSortedTransitionsNames();
+        ArrayList result = new ArrayList();
+        int [] costos = root.getDocument().getPetriNet().getCostArray();
+        result.add("");
+        for(int i=0; i<sortedNames.size(); i++){
+            result.add(sortedNames.get(i));
+        }
+        result.add("Cost");
+        for (int i : costos) {
+            result.add(String.valueOf(i));
+        }
+        return ResultsHTMLPane.makeTable(
+                result.toArray(), sortedNames.size() + 1, false, false, true, true);
+    }
     /**
      * Listener for analyse button
      */
