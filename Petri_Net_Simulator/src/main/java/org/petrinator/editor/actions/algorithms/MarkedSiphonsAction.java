@@ -64,7 +64,7 @@ public class MarkedSiphonsAction extends AbstractAction
         String name = "Marked Siphons and traps";
         putValue(NAME, name);
         putValue(SHORT_DESCRIPTION, name);
-        putValue(SMALL_ICON, GraphicsTools.getIcon("pneditor/siphons16.png"));
+        putValue(SMALL_ICON, GraphicsTools.getIcon("pneditor/markedsiphons16.png"));
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -99,13 +99,13 @@ public class MarkedSiphonsAction extends AbstractAction
         //sourceFilePanel = new PetriNetChooserPanel("Source net", null);
         results = new ResultsHTMLPane("");
         contentPane.add(results);
-        contentPane.add(new ButtonBar("Analyze", analyseButtonClick, guiDialog.getRootPane()));
+        contentPane.add(new ButtonBar("Analyze", analyseListener, guiDialog.getRootPane()));
         guiDialog.pack();
         guiDialog.setLocationRelativeTo(root.getParentFrame());
         guiDialog.setVisible(true);
     }
 
-    private final ActionListener analyseButtonClick = new ActionListener() {
+    private final ActionListener analyseListener = new ActionListener() {
         public void actionPerformed(ActionEvent arg0) {
             /*
              * Read tmp file
@@ -121,7 +121,7 @@ public class MarkedSiphonsAction extends AbstractAction
                 s += "Invalid net!";
             } else {
                 try {
-                    s += get_incial_deadlock_marked_siphons();
+                    s += analyze_problematic_siphons();
                     //s += getMarkedSiphons();
                     results.setEnabled(true);
                 } catch (OutOfMemoryError oome) {
@@ -147,32 +147,9 @@ public class MarkedSiphonsAction extends AbstractAction
             results.setText(s);
         }
     };
-    public String getOsName() {
-        return System.getProperty("os.name");
-    }
-
-    //Get actual absolute executed .jar path
-    public String get_Current_JarPath()
-    {
-        String pathNet = SupervisionAction.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        pathNet = pathNet.substring(0, pathNet.lastIndexOf("/"));
-        if (getOsName().startsWith("Windows") && pathNet.startsWith("/"))
-            pathNet = pathNet.substring(1, pathNet.length());
-        String decodedPath = null;
-        try {
-            decodedPath = URLDecoder.decode(pathNet, "UTF-8");
-        } catch (Exception e) {
-            results.setText("");
-            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error obtaining absolute jar path", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
-            return null;
-        }
-        //System.out.println("Jar path : " + decodedPath);
-        return decodedPath;
-    }
 
     // Get the group of siphons that causes the closest deadlock
-    public String get_incial_deadlock_marked_siphons()
+    public String analyze_problematic_siphons()
     {
         int deadlock_cont;
         int inicial_marking[] = root.getDocument().getPetriNet().getInitialMarking().getMarkingAsArray()[1];
@@ -284,6 +261,29 @@ public class MarkedSiphonsAction extends AbstractAction
         return Deadlock_markings;
     }
 
+    public String getOsName() {
+        return System.getProperty("os.name");
+    }
+
+    //Get actual absolute executed .jar path
+    public String get_Current_JarPath()
+    {
+        String pathNet = SupervisionAction.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        pathNet = pathNet.substring(0, pathNet.lastIndexOf("/"));
+        if (getOsName().startsWith("Windows") && pathNet.startsWith("/"))
+            pathNet = pathNet.substring(1, pathNet.length());
+        String decodedPath = null;
+        try {
+            decodedPath = URLDecoder.decode(pathNet, "UTF-8");
+        } catch (Exception e) {
+            results.setText("");
+            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error obtaining absolute jar path", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+            return null;
+        }
+        //System.out.println("Jar path : " + decodedPath);
+        return decodedPath;
+    }
     /*
         ---------------------------------IMPORTANTE---------------------------------
         a partir de aca Funciones no usadas en esta version
