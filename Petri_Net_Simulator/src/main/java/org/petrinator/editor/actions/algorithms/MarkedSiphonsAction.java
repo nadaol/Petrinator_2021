@@ -55,13 +55,13 @@ import java.net.URLDecoder;
 public class MarkedSiphonsAction extends AbstractAction
 {
     Root root;
-    private static final String MODULE_NAME = "Marked Siphons and traps";
+    private static final String MODULE_NAME = "Marked Siphons";
     private ResultsHTMLPane results;
 
     public MarkedSiphonsAction(Root root)
     {
         this.root = root;
-        String name = "Marked Siphons and traps";
+        String name = "Marked Siphons";
         putValue(NAME, name);
         putValue(SHORT_DESCRIPTION, name);
         putValue(SMALL_ICON, GraphicsTools.getIcon("pneditor/markedsiphons16.png"));
@@ -93,7 +93,7 @@ public class MarkedSiphonsAction extends AbstractAction
         /*
          * Show initial pane
          */
-        EscapableDialog guiDialog = new EscapableDialog(root.getParentFrame(), "Marked siphons and traps", true);
+        EscapableDialog guiDialog = new EscapableDialog(root.getParentFrame(), "Marked siphons", true);
         Container contentPane = guiDialog.getContentPane();
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
         //sourceFilePanel = new PetriNetChooserPanel("Source net", null);

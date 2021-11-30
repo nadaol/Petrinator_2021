@@ -1,63 +1,35 @@
-<h2 style="color: #5e9ca0; text-align: center;">Help about Automatics Politc Module&nbsp;</h2>
-<h4 style="color: #2e6c80; text-align: center;"><em>Joaqu&iacute;n Rodr&iacute;guez Felici</em><br /><em>Leandro Ass&oacute;n</em></h4>
-<table>
-<tbody>
-<tr>
-<td style="text-align: justify;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</td>
-<td style="text-align: justify;">This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the license or any later version. This program is distributed in the hope that it will be useful, but with no warranty or fitness for a particular purpose. See the GNU General Public License for more details. You should have recieved a copy of the GNU General Public License along with this software. If not, see &lt;http://www.gnu.org/licenses/&gt;.</td>
-<td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;</td>
-</tr>
-</tbody>
-</table>
-<h4 style="color: #2e6c80; text-align: center;">Contributions:</h4>
-<table class="editorDemoTable" style="margin-left: auto; margin-right: auto; border-color: 000000; background-color: cee1eb; font-family: arial; font-size: 8px;" border="1">
-<thead>
-<tr>
-<td style="text-align: center;" bgcolor="#124878"><span style="color: #ffffff;"><strong>Name&nbsp;</strong></span></td>
-<td style="text-align: center;" bgcolor="#124878"><span style="color: #ffffff;"><strong>Contribution</strong></span></td>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: center;">Martin Riesz</td>
-<td style="text-align: center;">PNEditor.</td>
-</tr>
-<tr>
-<td style="text-align: center;">J&aacute;n Tančibok</td>
-<td style="text-align: center;">Inhibitor arc types.</td>
-</tr>
-<tr>
-<td style="text-align: center;">Maxim Gready</td>
-<td style="text-align: center;">Petri net classification.</td>
-</tr>
-<tr>
-<td style="text-align: center;">James Bloom</td>
-<td style="text-align: center;">Petri net classification.</td>
-</tr>
-<tr>
-<td style="text-align: center;">Nadeem Akharware</td>
-<td style="text-align: center;">Place and transition invariants.</td>
-</tr>
-<tr>
-<td style="text-align: center;">Matthew Worthington</td>
-<td style="text-align: center;">Reachability and coverability.</td>
-</tr>
-<tr>
-<td style="text-align: center;">Edwin Chung</td>
-<td style="text-align: center;">Reachability and coverability.</td>
-</tr>
-<tr>
-<td style="text-align: center;">Will Master</td>
-<td style="text-align: center;">Reachability and coverability.</td>
-</tr>
-<tr>
-<td style="text-align: center;">Pere Bonet</td>
-<td style="text-align: center;">Siphons and traps.&nbsp;</td>
-</tr>
-<tr>
-<td style="text-align: center;">Ariel Rabinovich</td>
-<td style="text-align: center;">Petri engine.</td>
-</tr>
-</tbody>
-</table>
-<h4 style="color: #2e6c80; text-align: center;"><br />Universidad Nacional de C&oacute;rdoba<br />Argentina&nbsp;</h4>
+<h3 style="color: #5e9ca0; text-align: center;">Help about Automatics Politcs Module&nbsp;</h2>
+    <h3 style="color: #2e6c80; text-align: center;"><strong>Funcionalidad</strong></h3>
+    <p style="text-align: justify;">Este módulo permitirá ampliar la eficiencia y flexibilidad de modelación para la definición de políticas. Esto es introduciendo la posibilidad de regular las políticas de disparo de manera dinámica, a medida que la red evoluciona, de manera tal que se optimice la utilización de recursos presentes en el sistema.<br>Este control se realizará introduciendo nuevas modificaciones en la red a través de múltiples autómatas asociados a cada conflicto.</p>
+    <p style="text-align: left;">El módulo cuenta con las siguientes funcionalidades:</p>
+    <ul>
+        <li style="text-align: justify;">Obtención del vector de costos, definido desde la interfaz de propiedades de cada transición.</li>
+        <li style="text-align: justify;">Ejecución del algoritmo de regulación de políticas propiamente dicho. Obteniendo como resultado, la evolución de las probabilidades de cada conflicto presente en la red.<br>Este algoritmo cuenta con dos modos de ejecución:</li>
+        <ul>
+            <li style="text-align: justify;"><strong>Ejecución con costos simples:&nbsp;</strong>n este modo se buscará optimizar el uso de los recursos utilizando sólo los costos de las transiciones asociadas a cada conflicto.</li>
+            <li style="text-align: justify;"><strong>Ejecución de costos invariantes:&nbsp;</strong>En este modo se buscará optimizar el uso de los recursos teniendo en cuenta el comportamiento global de la red, analizando el costo de los invariantes de transición. Esto será de utilidad para el caso en que se presenten múltiples conflictos dependientes y la solución encontrada por el primer modo no sea la óptima.</li>
+        </ul>
+        Además, el módulo permitirá al usuario ajustar los distintos parámetros de ejecución explicados a continuación: 
+        <ul>
+            <li style="text-align: justify;"><strong>Número de iteraciones:&nbsp;</strong>Define el número de disparos que el algoritmo realizará sobre la red para determinar cuales son las secuencias de disparos más eficientes de acuerdo a los costos especificados.</li>
+            <li style="text-align: justify;"><strong>Repeticiones:&nbsp;</strong>Define la cantidad de veces que el algoritmo se ejecutará. Esto será de utilidad para identificar de manera más consistente cuales son los patrones de comportamiento de la nueva red controlada.</li>
+            <li style="text-align: justify;"><strong>Casilla de verificación 'Modify net':&nbsp;</strong>Utilizada para aplicar las modificaciones de la nueva red controlada a la red actual.</li>
+        </ul>
+        <li style="text-align: justify;">Mostrar el Gráfico de las probabilidades calculadas.</li>
+        <li style="text-align: justify;">Verificar automáticamente si se trata de una red de Petri con plazas de control (agregadas por el algoritmo de supervisación de interbloqueo).</li>
+        <li style="text-align: justify;">Verificar automáticamente si se trata de una red la cual ya ha sido modificada por el mismo algoritmo para asegurar el correcto funcionamiento del mismo.</li>
+    </ul>
+    <h3 style="color: #2e6c80; text-align: center;"><strong>Modo de uso</strong></h3>
+    <ul>
+        <li style="text-align: justify;">Especificar los costos individuales, en el panel de propiedades de cada transición.</li>
+        <li style="text-align: justify;">Especificar en la interfaz del módulo todos los parámetros del algoritmo.</li>
+        <li style="text-align: justify;">Ejecutar el análisis con el botón de 'Run Politic analysis' y observar el gráfico de probabilidades, mediante el botón de 'show plot', para verificar si el comportamiento del sistema es el deseado.</li>
+        <li style="text-align: justify;">Una vez satisfecho con el comportamiento de la nueva red, aplicar las modificaciones habilitando la casilla de 'Modify Net' y ejecutando nuevamente el análisis.</li>
+    </ul>
+    <h3 style="color: #2e6c80; text-align: center;"><strong>Autores</strong></h3>
+    <ul>
+        <li style="text-align: justify;"><strong>Algoritmos de determinación automáticas de políticas:</strong> ALTUNA Julian, ARCE GIACOBE, Alejandro.</li>
+        <li style="text-align: justify;"><strong>Implementación en Petrinator:</strong> BOSACK Federico, OLIVA Nahuel.</li>
+    </ul>
+    <p><br></p>
+    <h3 style="color: #2e6c80; text-align: center;"><br />Universidad Nacional de Córdoba<br />Argentina&nbsp;</h3>
