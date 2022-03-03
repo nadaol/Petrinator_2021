@@ -184,6 +184,7 @@ public class AutomaticPolitics extends AbstractAction
             String pathToPythonMain;
             if(jar_path!= null)pathToPythonMain = jar_path +"/Modulos/Automatic-politics/main.py";
             else return 1;
+
             comandos.add(pathToPythonMain);//2°comand
             comandos.add("./Modulos/Automatic-politics/tmp/jsonmat.json");//3°comand
             try
@@ -299,6 +300,9 @@ public class AutomaticPolitics extends AbstractAction
         if(jar_path != null)destFNcfg = jar_path + "/Modulos/Automatic-politics/tmp/jsonmat.cfg.json";
         else return 1;
 
+        File dir = new File(jar_path +"/Modulos/Automatic-politics/tmp");
+        if (!dir.exists()) dir.mkdirs();
+
         try {
             FileWriter writer = new FileWriter(new File(destFNcfg));
             writer.write(json);
@@ -309,6 +313,7 @@ public class AutomaticPolitics extends AbstractAction
         //only matrices
         if(jar_path != null)destFN = jar_path + "/Modulos/Automatic-politics/tmp/jsonmat.json";
         else return 1;
+
         Map<String, Object> matricesonly = new HashMap<>();
 
         Gson gsononly = new Gson();

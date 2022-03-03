@@ -33,6 +33,8 @@ id=0
 #name_pflow= ""
 Pflow_path =""
 #respuesta =""
+log = open('/home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/Modulos/Deadlock-supervisor/out.txt', 'w') 
+log.write('init\n')
 #
 def siphones_traps(cantidad_plazas):
     """ 
@@ -229,7 +231,7 @@ def conflict_t_invariante(t_conflict,t_invariant,matriz_pos,plazas_sifon_complem
                                     flag_sifon=1
 
         if(flag_sifon==0):
-            print("Transicion input:",int(t_conflict[ii])+1)
+            #print("Transicion input:",int(t_conflict[ii])+1)
             respuestaTI= "<br>Transicion input: " + str(int(t_conflict[ii])+1)
             t_in.append("T"+str(int(t_conflict[ii])+1))
     
@@ -297,7 +299,7 @@ def supervisor(cantidad_transiciones,cantidad_plazas,sifon,matriz_es_tr,matriz_p
         t_invariant             -- T-invariantes
     """
     global id
-    print("\nid=", id)
+    #print("\nid=", id)
     respuestaSup= "<br><br>id="+ str(id)
     id=id+1
     trans_idle=[] #Transiciones habilitadas en el marcado inicial
@@ -306,16 +308,16 @@ def supervisor(cantidad_transiciones,cantidad_plazas,sifon,matriz_es_tr,matriz_p
     #nuevo
     respuestaSup+= "<br>Marcado_del_supervisor:"+ str(marcado_supervisor)
     #end nuevo
-    print("Sifon a controlar: ",sifon[1]+1)
+    #("Sifon a controlar: ",sifon[1]+1)
     respuestaSup+= "<br>Sifon a controlar: "+ str(sifon[1]+1)
     plazas_sifon_aux=np.copy(matriz_sifones[sifon[1]])
     sif_aux = []
     for i in range (len(plazas_sifon_aux)): 
         if(plazas_sifon_aux[i] != 0):
             sif_aux.append(f"P{i+1}")
-    print("Plazas del Sifon: ",sif_aux)
+    #print("Plazas del Sifon: ",sif_aux)
     respuestaSup+= "<br>Plazas del Sifon: "+ str(sif_aux)
-    print("Marcado del supervisor",marcado_supervisor) 
+    #print("Marcado del supervisor",marcado_supervisor) 
     #respuestaSup+= "<br>Marcado del supervisor: "+ str(marcado_supervisor)
 
     #Transiciones que salen del estado idle, le quitan tokens a los supervisores
@@ -326,7 +328,7 @@ def supervisor(cantidad_transiciones,cantidad_plazas,sifon,matriz_es_tr,matriz_p
         if(matriz_es_tr[0][ii]!=-1):
             trans_idle.append(ii)
             t_out.append("T"+str(ii+1))
-            print("Transicion output: ",ii+1) #+1 Por problemas de indice en petrinator empieza en 1
+            #print("Transicion output: ",ii+1) #+1 Por problemas de indice en petrinator empieza en 1
             respuestaSup+= "<br>Transicion output: "+ str(ii+1)
 
     tran_sifon=np.zeros(cantidad_transiciones) #Vector que indica que transiciones sacan/ponen tokens en el sifon
@@ -344,7 +346,7 @@ def supervisor(cantidad_transiciones,cantidad_plazas,sifon,matriz_es_tr,matriz_p
     t_in=[]
     for i in range(0,cantidad_transiciones):
         if(tran_sifon[i]>0): #Si es mayor a 0 significa que esta transicion coloca mas tokens a los sifones de los que le quitan
-            print("Transicion input:", i+1) #Petrinator empieza en 1 y no en cero por eso el +1
+            #("Transicion input:", i+1) #Petrinator empieza en 1 y no en cero por eso el +1
             respuestaSup+= "<br>Transicion input: " + str(i+1)
             t_in.append("T"+str(i+1))
     plazas_sifon_complemento=np.copy(plazas_sifon) #Usado para calcular la 3er transicion de Ezpeleta
@@ -431,13 +433,15 @@ def createString(len):
         arr+= str(i) + " "
     return arr   
 
-def closeSocket():
-    respuesta = "Closed conection"
-    respuesta = respuesta.encode("UTF-8")
-    sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
-    sCliente.send(respuesta)
+def finalizeCom():
+    respuesta = "Analysis executed, python process is exiting"
+    #respuesta = respuesta.encode("UTF-8")
+    #sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
+    #sCliente.send(respuesta)
+    #print(len(respuesta))
+    print(respuesta,flush=True)
     cleanTXTS()
-    sCliente.close()
+    #sCliente.close()
     exit(0)
 
 def main():
@@ -447,8 +451,14 @@ def main():
     #print("Algoritmo para la solucion de deadlock para redes de petri tipo S3PR")
     #print("--------------------------------------------------------------------------")
     #obetnemos primer argumento del socket
-    length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
-    analisis = sCliente.recv(length_of_message).decode("UTF-8")
+    #length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
+    #analisis = sCliente.recv(length_of_message).decode("UTF-8")
+
+    #length_of_message = input() 
+
+    analisis = sys.stdin.readline().replace("\n","")
+    log.write(f'readed analisis : {analisis}\n')
+
     #Conversion de archivos html a txt
     error = False
     try:
@@ -466,16 +476,19 @@ def main():
         #T-invariantes
         t_invariant=invariantes(cantidad_transiciones)
 
-        print("\nIngrese: ")
-        print("1 - Primer analisis de la red")
-        print("2 - Análisis de red con supervisores")
-        print("3 - Red con supervisores, tratamiento de conflicto y t_idle")
+        #print("\nIngrese: ")
+        #print("1 - Primer analisis de la red")
+        #print("2 - Análisis de red con supervisores")
+        #print("3 - Red con supervisores, tratamiento de conflicto y t_idle")
 
-        if (analisis == "quit"):
-            closeSocket()
+        if (((analisis != "1")and(analisis != "2")and(analisis != "3")and(analisis != "S"))):
+            if(analisis != "quit"):
+                log.write("invalid command")
+            finalizeCom()
 
         if(analisis=="1"):
             #Obtenemos la cantidad de plazas de la red original
+            log.write("executing 1\n")
             file_plazas = open(Jar_path + '/tmp/cantidad_plazas_red_original.txt', 'w')
             file_plazas.write(str(len(matriz_es_pl[0])))
             file_plazas.close()
@@ -488,7 +501,7 @@ def main():
                 file_t_inv_orig.write("\n")
             file_t_inv_orig.close()
 
-            print("\n")
+            #print("\n")
             file_t_conflict_orig = open(Jar_path +  '/tmp/t_conflict_red_original.txt', 'w')
             file_t_conflict_orig.close()
 
@@ -505,9 +518,9 @@ def main():
             idle=0 #Sifones en estado deadlock
             for i in range (0, len(state_deadlock)):
                 fun_sifones_deadlock(state_deadlock[i],matriz_sifones,matriz_es_pl,idle,cantidad_plazas,cantidad_sifones,sifon_idle,sifon_deadlock)
-            print("Cantidad de estados con deadlock:", len(state_deadlock))
+            #print("Cantidad de estados con deadlock:", len(state_deadlock))
             respuesta = "Cantidad de estados con deadlock: "+ str(len(state_deadlock)) +"<br>"
-            print("Cantidad de sifones vacios:", len(sifon_deadlock))
+            #print("Cantidad de sifones vacios:", len(sifon_deadlock))
             respuesta += "Cantidad de sifones vacios: "+ str(len(sifon_deadlock)) +"<br>"
 
             lista_supervisores=[]
@@ -524,15 +537,22 @@ def main():
             #respuesta
         if(analisis=="S"):
             respuesta = createString(len(sifon_deadlock))#le envio la cantidad de sifones
-            respuesta = respuesta.encode("UTF-8")
-            sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
-            sCliente.send(respuesta)
+            #respuesta = respuesta.encode("UTF-8")
+
+            #sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
+            #sCliente.send(respuesta)
+            log.write(respuesta)
+            print(respuesta,flush=True)
+
             #espero un ID
         
-            length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
-            recv=sCliente.recv(length_of_message).decode("UTF-8")
-            if(recv=="quit"):
-                closeSocket()
+            #length_of_message = int.from_bytes(sCliente.recv(2), byteorder='big')
+            #recv=sCliente.recv(length_of_message).decode("UTF-8")
+
+            #length_of_message = input()
+            recv = sys.stdin.readline().replace("\n","")
+            if(recv == "quit"):
+               finalizeCom()
             id_int = int(recv)
             #id_int= 0 #int(input("AGREGA EL ID: ")) 
             new_red.main(lista_supervisores[id_int][0],lista_supervisores[id_int][1],lista_supervisores[id_int][2],lista_supervisores[id_int][3],Pflow_path)
@@ -601,30 +621,30 @@ def main():
                                     aux = int(t_conflict_red_original[k])
                                     if(int(t_invariant_red_original[j][aux])==1): #La transicion en conflicto forma parte del T-invariante por lo tanto debe devolver el token 
                                         cont = cont + 1
-                                        print(f"La transicion en conflicto T{aux+1} le tiene que devolver un token al supervisor  P{array_supervisor[m]+1}")
+                                        #print(f"La transicion en conflicto T{aux+1} le tiene que devolver un token al supervisor  P{array_supervisor[m]+1}")
                                         msjadd.append('Se agrego un arco desde '+ str(f'T{aux+1}') + ' hasta ' + str(f'P{array_supervisor[m]+1}'))
                                         #Se agrega el arco
                                         arcosrdp.agregararco(Pflow_path,aux+1,array_supervisor[m]+1)
 
                                 if(cont == 0):
                                     if(int(matriz_pre[int(array_supervisor[m])][int(trans_idle[i])])==1):
-                                        print(f"Eliminar arco desde  P{array_supervisor[m]+1} hasta  T{trans_idle[i]+1}")
+                                        #print(f"Eliminar arco desde  P{array_supervisor[m]+1} hasta  T{trans_idle[i]+1}")
                                         msjdel.append('Se elimino el arco desde '+ str(f'P{array_supervisor[m]+1}') + ' hasta ' + str(f'T{trans_idle[i]+1}'))
                                         
                                         #Se elimina el arco
                                         arcosrdp.eliminararco(Pflow_path, array_supervisor[m]+1, trans_idle[i]+1)
 
             respuesta=""
-            print("\n")
+            #print("\n")
             for i in range (len(msjadd)):
-                print(msjadd[i])
+                #print(msjadd[i])
                 respuesta+=msjadd[i]+"<br>"
             for i in range (len(msjdel)):
-                print(msjdel[i])
+                #print(msjdel[i])
                 respuesta+=msjdel[i]+"<br>"
             
             if (respuesta==""):
-                respuesta="No hay conflictos<br>"
+                respuesta="There are no conflicts in the net<br>"
 
         
     #aca llegamos luego del addsupervisor en espera de saber si hay deadlock o no para continuar el analisis
@@ -634,30 +654,37 @@ def main():
     except Exception as e:
         error = True
         respuesta = "Error : " + str(e) + " occurred."
-        print(respuesta)
+        print(respuesta,flush=True)
 
     #ENVIO INFO AL SOCKET
 
-    respuesta =respuesta.encode("UTF-8")
+    #respuesta =respuesta.encode("UTF-8")
     
-    sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
-    sCliente.send(respuesta)
+    #sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
+    #sCliente.send(respuesta)
+
+    #print(len(respuesta))
+    print(respuesta,flush=True)
+    
+
     if(error):
         cleanTXTS()
-        sCliente.close()
+        #sCliente.close()
         exit(0)
     
 #creamos el socket
-host = "127.0.0.1"
-port = int(sys.argv[1])
+#host = "127.0.0.1"
+#port = int(sys.argv[1])
 #print(port)
-Pflow_path=str(sys.argv[2])
-Jar_path = str(sys.argv[3])
-print(Pflow_path)
-print(Jar_path)
+Pflow_path=str(sys.argv[1])
+Jar_path = str(sys.argv[2])
+#analisis = str(sys.argv[3])
+#print(Pflow_path)
+#print(Jar_path)
+
 #print(sys.argv[3])
-sCliente =  sk.socket()
-sCliente.connect((host, port))
+#sCliente =  sk.socket()
+#sCliente.connect((host, port))
 flag = 1
 
 while(1): #El algoritmo se ejecuta iterativamente hasta que se controla la red. De no ser así se dice que el algoritmo no converge

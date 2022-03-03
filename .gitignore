@@ -1,0 +1,20 @@
+# Eclipse
+**/.classpath
+**/.project
+**/.settings
+ 
+# Intellij
+**/.idea
+**.iml
+**.iws
+**/.vs
+**/.settings
+
+# Maven
+**/log
+**/target/
+**/tmp
+Petri_Net_Simulator/tmp
+/out/
+*__pycache__*
+**.jar
