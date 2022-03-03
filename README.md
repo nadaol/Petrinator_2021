@@ -8,6 +8,7 @@
 - Federico Bosack  (<fedebosack@gmail.com>)
 - Oliva Nahuel David   (<nahueloliva@gmail.com>)
 
-#### <ins>Director :</ins> Dr.Ing. Orlando Micolini
+#### <ins>Director :</ins> Ing. Luis Orlando Ventre
+#### <ins>Co-director :</ins> Dr.Ing. Orlando Micolini
 
 #### - [Documentos](https://drive.google.com/drive/folders/1uNZ8VyM7oHyWAPjXcXDwKA1AN3WtBTnV?usp=sharing)
