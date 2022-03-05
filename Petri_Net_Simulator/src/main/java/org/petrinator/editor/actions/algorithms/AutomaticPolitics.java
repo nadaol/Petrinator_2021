@@ -77,19 +77,15 @@ public class AutomaticPolitics extends AbstractAction
         Container contentPane = guiDialog.getContentPane();
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
         results = new ResultsHTMLPane("");
-        sPanel = new String();//new
+        sPanel = new String();
         contentPane.add(results);
         FirstAnalizeButton = new ButtonBar("Run Politics Analysis", new RunListener(), guiDialog.getRootPane());
         showPlotButton = new ButtonBar("Show Plot", new showPlotListener(), guiDialog.getRootPane());
         showCostsButton = new ButtonBar("Show Costs", new showCostsListener(), guiDialog.getRootPane());
         HelpButton = new ButtonBar("Help", new HelpListener(), guiDialog.getRootPane());
-        //action listener del plazas de control
-        //netWithControlPlaces.addActionListener(new PlaceControlListener());
-        //
+
+        //Build primary panel
         JPanel checkPanel = new JPanel(new GridLayout(3,3));
-        //agrego al nuevo panel
-        //String[] cost = {"simp", "inv"};
-        //JComboBox tipoCosto = new JComboBox(cost);
         checkPanel.add(new JLabel("Firenumber:"),BorderLayout.PAGE_START);
         checkPanel.add(firenumbers,BorderLayout.PAGE_START);
         checkPanel.add(netWithControlPlaces);
@@ -99,19 +95,20 @@ public class AutomaticPolitics extends AbstractAction
         checkPanel.add(new JLabel("Cost type:"));
         checkPanel.add(tipoCosto);
         checkPanel.add(netWithMod);
-        //termino de agregar al nuevo panel
         contentPane.add(checkPanel, BorderLayout.CENTER);
         JPanel checkPanel2 = new JPanel(new GridLayout(1,2));
         checkPanel2.add(FirstAnalizeButton);
-        checkPanel2.add(showCostsButton);//show cost button
+        checkPanel2.add(showCostsButton);
         checkPanel2.add(showPlotButton);
         contentPane.add(checkPanel2, BorderLayout.CENTER);
         contentPane.add(HelpButton);
-        //creo un objeto de invariantes
+        //Analysis actions
         accion = new InvariantAction(this.root);
         matrices = new MatricesAction(this.root);
     }
-
+      /**
+     * Action handler for this class, opening up the main interface window.
+     */
     public void actionPerformed(ActionEvent e)
     {
         if(!root.getDocument().getPetriNet().getRootSubnet().isValid())
@@ -156,7 +153,6 @@ public class AutomaticPolitics extends AbstractAction
             netWithMod.setSelected(true);
         }
 
-        //print_arraylistStringonly(controlPlaces,"plazas de control");
         netWithControlPlaces.setEnabled(false);
         netWithMod.setEnabled(false);
         // Shows initial pane
@@ -165,6 +161,10 @@ public class AutomaticPolitics extends AbstractAction
         guiDialog.setVisible(true);
     }
 
+     /** 
+        Read opened stream buffer 
+        @return string formated content of buffer
+    **/
     private String getInputAsString(InputStream is)
     {
         try(java.util.Scanner s = new java.util.Scanner(is))
@@ -172,21 +172,28 @@ public class AutomaticPolitics extends AbstractAction
             return s.useDelimiter("\\A").hasNext() ? s.next() : "";
         }
     }
+
+
+    /** 
+        Execute politic analysis by creating a child process and calling the politics python module till its finished
+        to show in the html panel the response.
+        @return 1 if exception has been caught , else 0.
+    **/
     private int execPolitics()
     {
         sPanel = "<h2>Run Automatic Politics Analisys</h2>";
         List<String> comandos = new ArrayList<String>();
 
         try {
-            comandos.add("python3");//1°comand
-            //Get tesis python path and execute
+            comandos.add("python3");//1°arg
+    
             String  jar_path = Save.get_Current_JarPath(AutomaticPolitics.class,root,results);
             String pathToPythonMain;
             if(jar_path!= null)pathToPythonMain = jar_path +"/Modulos/Automatic-politics/main.py";
             else return 1;
 
-            comandos.add(pathToPythonMain);//2°comand
-            comandos.add("./Modulos/Automatic-politics/tmp/jsonmat.json");//3°comand
+            comandos.add(pathToPythonMain);//2°arg
+            comandos.add(jar_path + "/Modulos/Automatic-politics/tmp/jsonmat.json");//3°arg
             try
             {
                 if(0 >= Integer.valueOf(firenumbers.getText()) || Integer.valueOf(firenumbers.getText())>100000)
@@ -194,17 +201,17 @@ public class AutomaticPolitics extends AbstractAction
                     JOptionPane.showMessageDialog(null, "Invalid range of firenumbers");
                     return 1;
                 }
-                comandos.add("-n");//4°comand
-                comandos.add(firenumbers.getText());//5°comand
+                comandos.add("-n");//4°arg
+                comandos.add(firenumbers.getText());//5°arg
                 if(0 >= Integer.valueOf(repeats.getText()) || Integer.valueOf(repeats.getText())>10)
                 {
                     JOptionPane.showMessageDialog(null, "Invalid range of repeats");
                     return 1;
                 }
-                comandos.add("-r");//6°comand
-                comandos.add(repeats.getText());//7°comand
-                comandos.add("-t");//8°comand
-                comandos.add(tipoCosto.getSelectedItem().toString());//9°comand
+                comandos.add("-r");//6°arg
+                comandos.add(repeats.getText());//7°arg
+                comandos.add("-t");//8°arg
+                comandos.add(tipoCosto.getSelectedItem().toString());//9°arg
                 if(netWithMod.isSelected())
                 {
                     comandos.add("-l");
@@ -224,10 +231,16 @@ public class AutomaticPolitics extends AbstractAction
             Print.print_arraylist_string((ArrayList<String>) comandos,"comando");
             ProcessBuilder pb = new ProcessBuilder(comandos);
             pb.redirectErrorStream(true);
-            sPanel+= getInputAsString(pb.start().getInputStream());
+            String Respuesta= getInputAsString(pb.start().getInputStream());
+             if(Respuesta.contains("Error"))
+            {
+                results.setText("");
+                JOptionPane.showMessageDialog(root.getParentFrame(),Respuesta, "Runtime error in python module", JOptionPane.ERROR_MESSAGE); 
+                return 1;
+            }
+            sPanel+=Respuesta;
             results.setText(sPanel);
             Save.reSaveNet(root);
-            //showPlot();
 
         } catch (IOException e) {
             results.setText("");
@@ -307,12 +320,21 @@ public class AutomaticPolitics extends AbstractAction
             FileWriter writer = new FileWriter(new File(destFNcfg));
             writer.write(json);
             writer.close();
-        } catch (Exception var6) {
-            System.out.println("Error saving CGF.JSON to file");
+        } catch (Exception e) {
+            System.out.println("Error saving cfg,json to file");
+            results.setText("");
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Exception ocurred while exporting files", JOptionPane.ERROR_MESSAGE); 
+            return 1;
         }
         //only matrices
         if(jar_path != null)destFN = jar_path + "/Modulos/Automatic-politics/tmp/jsonmat.json";
-        else return 1;
+        else 
+        {   
+            results.setText("");
+            JOptionPane.showMessageDialog(root.getParentFrame(),"Unable to get java directory path","Error ocurred while exporting files", JOptionPane.ERROR_MESSAGE); 
+            return 1;
+        }
 
         Map<String, Object> matricesonly = new HashMap<>();
 
@@ -329,21 +351,25 @@ public class AutomaticPolitics extends AbstractAction
             FileWriter writer = new FileWriter(new File(destFN));
             writer.write(jsononly);
             writer.close();
-        } catch (Exception var6) {
-            System.out.println("Error saving JSON to file");
+        } catch (Exception e) {
+            System.out.println("Error saving json to file");
+            results.setText("");
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Exception ocurred while exporting files", JOptionPane.ERROR_MESSAGE); 
+            return 1;
         }
         return 0;
     }
+
+    
+    /** 
+        Listener to visualize probability plot of the last executed analysis
+    **/
     private class showPlotListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            /*
-             * Create the dialog
-             */
+
             EscapableDialog guiDialog = new EscapableDialog(root.getParentFrame(), "Plot results", false);
             Container contentPane = guiDialog.getContentPane();
-            //org.petrinator.auxiliar.ResultsHTMLPane results = new org.petrinator.auxiliar.ResultsHTMLPane("");
-            //contentPane.add(results);
-            //
             File fichero=new File(Save.get_Current_JarPath(AutomaticPolitics.class,root,results) + "/plot.png");
             ImageIcon books = new ImageIcon(fichero.getPath());
             JLabel imgLabel = new JLabel();
@@ -352,13 +378,11 @@ public class AutomaticPolitics extends AbstractAction
             imgLabel.setAutoscrolls(true);
             imgLabel.grabFocus();
             contentPane.add(imgLabel);
-            //
+
             guiDialog.pack();
             guiDialog.setAlwaysOnTop(true);
             guiDialog.setLocationRelativeTo(root.getParentFrame());
             guiDialog.setVisible(true);
-
-            //String s = "<img src='"+get_Current_JarPath()+"/plotonly.png"+"' class='img-responsive' height='1000' width='1200' alt=''>";
 
             System.out.println(fichero.getPath());
             books.getImage().flush();
@@ -366,9 +390,7 @@ public class AutomaticPolitics extends AbstractAction
     }
     private class showCostsListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
-            /*
-             * Create the dialog
-             */
+  
             EscapableDialog guiDialog = new EscapableDialog(root.getParentFrame(), "Costs results", false);
             Container contentPane = guiDialog.getContentPane();
             String sPanelCosts = "";
@@ -404,6 +426,8 @@ public class AutomaticPolitics extends AbstractAction
         return ResultsHTMLPane.makeTable(
                 result.toArray(), sortedNames.size() + 1, false, false, true, true);
     }
+
+
     /**
      * Listener for analyse button
      */
@@ -421,8 +445,16 @@ public class AutomaticPolitics extends AbstractAction
                 //close_socket();
                 return;
             }
-            exportJsonsFiles();
-            execPolitics();
+            if(exportJsonsFiles()==1)
+            {
+                guiDialog.setVisible(false);
+                return;
+            }
+            if(execPolitics()==1)
+            {
+                guiDialog.setVisible(false);
+                return;
+            }
             results.setVisible(true);
             showPlotButton.setButtonsEnabled(true);
             
@@ -440,6 +472,10 @@ public class AutomaticPolitics extends AbstractAction
 
         }
     };
+
+    /** 
+        Listener to open help window
+    **/
     private class HelpListener implements ActionListener {
         public void actionPerformed(ActionEvent e)
         {

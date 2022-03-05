@@ -7,66 +7,71 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def main():
-    args = getArgs()
+    try:
+        args = getArgs()
 
-    loadModified = args.load_mod
-    verbose = args.verbose
-    pflowFile = args.net_name
-    apn = None
+        loadModified = args.load_mod
+        verbose = args.verbose
+        pflowFile = args.net_name
+        apn = None
 
-    f = open("results.txt", "w")
-    for j in range(int(args.repeat)):
-        block = False
-        cantDisparos = []
-        probabilidades = []
+        f = open("results.txt", "w")
+        for j in range(int(args.repeat)):
+            block = False
+            cantDisparos = []
+            probabilidades = []
 
-        print("<br><h3>","Inicializando iteracion ", j,"</h3>")
-        apn = ApnLa(args.jsonFile[0], loadModified, args.type)
+            print("<br><h3>","Inicializando iteracion ", j,"</h3>")
+            apn = ApnLa(args.jsonFile[0], loadModified, args.type)
 
-        if verbose:
-            apn.printClusters()
+            if verbose:
+                apn.printClusters()
 
-        for i in range(1, int(args.fireNumber) + 1):
-            try:
-                apn.fireNext()
-            except NetException:
-                print("<br>Red bloqueada - se anula la ejecucion<br>")
-                block = True
-                break
+            for i in range(1, int(args.fireNumber) + 1):
+                try:
+                    apn.fireNext()
+                except NetException:
+                    print("<br>Red bloqueada - se anula la ejecucion<br>")
+                    block = True
+                    break
 
-            if verbose and i % 2000 == 0:
-                print(i)
-                printClustersProbabilities(apn)
+                if verbose and i % 2000 == 0:
+                    print(i)
+                    printClustersProbabilities(apn)
 
-            if i == 1:
-                probs = apn.getClusterProbs()
-                for elem in probs:
-                    probabilidades.append([])
-                    for _ in elem:
-                        probabilidades[-1].append([])
+                if i == 1:
+                    probs = apn.getClusterProbs()
+                    for elem in probs:
+                        probabilidades.append([])
+                        for _ in elem:
+                            probabilidades[-1].append([])
 
-            if i % 50 == 0 or i == 1:
-                cantDisparos.append(i)
-                probs = apn.getClusterProbs()
-                for l in range(len(probs)):
-                    for k in range(len(probs[l])):
-                        probabilidades[l][k].append(probs[l][k])
+                if i % 50 == 0 or i == 1:
+                    cantDisparos.append(i)
+                    probs = apn.getClusterProbs()
+                    for l in range(len(probs)):
+                        for k in range(len(probs[l])):
+                            probabilidades[l][k].append(probs[l][k])
 
 
 
-        showPlots(cantDisparos, probabilidades, apn.getClusterTransitions())
+            showPlots(cantDisparos, probabilidades, apn.getClusterTransitions())
 
-        if not block:
-            writeResults(f, apn)
+            if not block:
+                writeResults(f, apn)
 
-        printClustersProbabilities(apn)
-    f.close()
+            printClustersProbabilities(apn)
+        f.close()
 
-    if verbose and apn is not None:
-        printInvariantCosts(apn)
+        if verbose and apn is not None:
+            printInvariantCosts(apn)
 
-    if pflowFile != 'null' and apn is not None:
-        editPflow(apn, pflowFile)
+        if pflowFile != 'null' and apn is not None:
+            editPflow(apn, pflowFile)
+    except Exception as e:
+        print("Error : " + str(e),flush=True)
+        exit(1)
+
 
 
 def getArgs():

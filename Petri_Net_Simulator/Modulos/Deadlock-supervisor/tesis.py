@@ -33,8 +33,8 @@ id=0
 #name_pflow= ""
 Pflow_path =""
 #respuesta =""
-log = open('/home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/Modulos/Deadlock-supervisor/out.txt', 'w') 
-log.write('init\n')
+#log = open('/home/nadaol/git/Petrinator_2021/Petri_Net_Simulator/Modulos/Deadlock-supervisor/out.txt', 'w') 
+#log.write('init\n')
 #
 def siphones_traps(cantidad_plazas):
     """ 
@@ -457,10 +457,10 @@ def main():
     #length_of_message = input() 
 
     analisis = sys.stdin.readline().replace("\n","")
-    log.write(f'readed analisis : {analisis}\n')
+    #log.write(f'readed analisis : {analisis}\n')
 
     #Conversion de archivos html a txt
-    error = False
+ 
     try:
 
         hta.main()
@@ -482,13 +482,13 @@ def main():
         #print("3 - Red con supervisores, tratamiento de conflicto y t_idle")
 
         if (((analisis != "1")and(analisis != "2")and(analisis != "3")and(analisis != "S"))):
-            if(analisis != "quit"):
-                log.write("invalid command")
+            #if(analisis != "q"):
+                #log.write("invalid command")
             finalizeCom()
 
         if(analisis=="1"):
             #Obtenemos la cantidad de plazas de la red original
-            log.write("executing 1\n")
+            #log.write("executing 1\n")
             file_plazas = open(Jar_path + '/tmp/cantidad_plazas_red_original.txt', 'w')
             file_plazas.write(str(len(matriz_es_pl[0])))
             file_plazas.close()
@@ -541,7 +541,7 @@ def main():
 
             #sCliente.send(len(respuesta).to_bytes(2, byteorder='big'))
             #sCliente.send(respuesta)
-            log.write(respuesta)
+            #log.write(respuesta)
             print(respuesta,flush=True)
 
             #espero un ID
@@ -551,7 +551,7 @@ def main():
 
             #length_of_message = input()
             recv = sys.stdin.readline().replace("\n","")
-            if(recv == "quit"):
+            if(recv == "q"):
                finalizeCom()
             id_int = int(recv)
             #id_int= 0 #int(input("AGREGA EL ID: ")) 
@@ -652,9 +652,10 @@ def main():
 #    decision = sCliente.recv(length_of_message).decode("UTF-8")
     
     except Exception as e:
-        error = True
-        respuesta = "Error : " + str(e) + " occurred."
+        respuesta = "Error : " + str(e)
         print(respuesta,flush=True)
+        cleanTXTS()
+        exit(1)
 
     #ENVIO INFO AL SOCKET
 
@@ -665,12 +666,9 @@ def main():
 
     #print(len(respuesta))
     print(respuesta,flush=True)
-    
-
-    if(error):
-        cleanTXTS()
+        
         #sCliente.close()
-        exit(0)
+        
     
 #creamos el socket
 #host = "127.0.0.1"

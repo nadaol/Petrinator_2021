@@ -48,17 +48,17 @@ import java.awt.event.*;
 
 public class SupervisionAction extends AbstractAction
 {
-    private static final String MODULE_NAME = "Deadlock Supervisor";
-    private ResultsHTMLPane results;
-    private String sPanel;
-    private String S3PRresults;
-    private Root root;
-    private JDialog guiDialog;
-    private ButtonBar FirstAnalizeButton;
-    private ButtonBar SecondAnalizeButton;
-    private ButtonBar superviseButton;
-    private ButtonBar fixConflictButton;
-    private ButtonBar HelpButton;
+    static final String MODULE_NAME = "Deadlock Supervisor";
+    ResultsHTMLPane results;
+    String sPanel;
+    String S3PRresults;
+    Root root;
+    JDialog guiDialog;
+    ButtonBar FirstAnalizeButton;
+    ButtonBar SecondAnalizeButton;
+    ButtonBar superviseButton;
+    ButtonBar fixConflictButton;
+    ButtonBar HelpButton;
     InvariantAction accion;
     MatricesAction matrices;
     ReachabilityAction states;
@@ -80,7 +80,7 @@ public class SupervisionAction extends AbstractAction
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
 
         results = new ResultsHTMLPane("");
-        sPanel = new String();//new
+        sPanel = new String();
         S3PRresults = new String();
         contentPane.add(results);
         FirstAnalizeButton = new ButtonBar("First Analysis", new ClassifyListener(), guiDialog.getRootPane());
@@ -88,87 +88,75 @@ public class SupervisionAction extends AbstractAction
         superviseButton = new ButtonBar("Add Supervisor/s", new AddSupervisorListener(), guiDialog.getRootPane());
         fixConflictButton = new ButtonBar("Fix Conflict/s", new FixConflictListener(), guiDialog.getRootPane());
         HelpButton = new ButtonBar("Help", new HelpListener(), guiDialog.getRootPane());
+
         // closing window listener
         guiDialog.addWindowListener(new WindowAdapter() 
         {
             public void windowClosed(WindowEvent e)
             {
+                System.out.println("Window closed");
                 closeProc();
             }
-
             public void windowClosing(WindowEvent e)
             {
+                System.out.println("Window closed");
                 closeProc();
             }
         });
-
+        //Build primary panel
         JPanel checkPanel = new JPanel(new GridLayout(2,2));
-        //agrego al nuevo panel
         checkPanel.add(FirstAnalizeButton);
         checkPanel.add(superviseButton);
         checkPanel.add(SecondAnalizeButton);
         checkPanel.add(fixConflictButton);
-        //termino de agregar al nuevo panel
         contentPane.add(checkPanel);
         contentPane.add(HelpButton);
-        //creo un objeto de invariantes
+        //Analysis actions
         accion = new InvariantAction(this.root);
         matrices = new MatricesAction(this.root);
         states = new ReachabilityAction(this.root);
-
     }
     
-
+    /**
+     * Reads process end side pipe and handle possible execution errors
+     * @return readed string if succesfull else null.
+     */
     private String readInput()
     {
         String Respuesta = "";
         
         String line;
+
         try {
-            // Blocking read
+            //Blocking read
             Respuesta = inw.readLine();
-            while(inw.ready() && (line = inw.readLine()) != null) 
+            while(inw.ready() && ( (line = inw.readLine()) != null) ) 
             {
-                Respuesta+=inw.readLine();
+                Respuesta+= "\n" + line;
             }
-            //Respuesta = inw.readLine();
+            
         } 
         
-        catch(Exception e)
+        catch(IOException e)
         {
             e.printStackTrace();
             results.setText("");
-            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error reading python module input buffer", JOptionPane.ERROR_MESSAGE); 
-            guiDialog.setVisible(false); 
+            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "IO Exception", JOptionPane.ERROR_MESSAGE); 
             return null;
         }
-        if(Respuesta.contains("Error : "))
+        if(Respuesta.contains("Error"))
         {
-/*             try {
-                //outw.close();
-                //inw.close();
-                //server.close();
-                //proceso.destroy();
-            } 
-            catch (IOException e) 
-            {
-                e.printStackTrace();
-                results.setText("");
-                JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error in python module", JOptionPane.ERROR_MESSAGE); 
-                guiDialog.setVisible(false);
-                return null;
-            } */
-
             results.setText("");
-            JOptionPane.showMessageDialog(root.getParentFrame(),Respuesta, "Error in python module", JOptionPane.ERROR_MESSAGE); 
-            guiDialog.setVisible(false);
+            JOptionPane.showMessageDialog(root.getParentFrame(),Respuesta, "Runtime error in python module", JOptionPane.ERROR_MESSAGE); 
             return null;
         }
         return Respuesta;
     }
 
 
-
+     /**
+     * Action handler for this class, opening up the main interface window.
+     */
     public void actionPerformed(ActionEvent e)
     {
         if(!root.getDocument().getPetriNet().getRootSubnet().isValid())
@@ -180,17 +168,14 @@ public class SupervisionAction extends AbstractAction
         }
         ArrayList<String> controlPlaces = root.getDocument().getPetriNet().getControlPlaces();
         results.setText("");
-
-        // Disables the copy and save buttons
+        
         results.setEnabled(false);
 
-        // Enables classify button
         if(controlPlaces.isEmpty())
         {
             FirstAnalizeButton.setButtonsEnabled(true);
             SecondAnalizeButton.setButtonsEnabled(false);
             FirstAnalizeButton.setToolTipText("The net doesn't have any supervisors");
-            //FirstAnalizeButton.setEnabled(true);//para luego chequear
         }
         else{
             FirstAnalizeButton.setButtonsEnabled(false);
@@ -206,9 +191,9 @@ public class SupervisionAction extends AbstractAction
         guiDialog.setVisible(true);
     }
 
-    /*
-        Exports all html analysis and pflow net for suprevision analysis
-
+    /**
+     * Executes and exports all analysis needed and tries to start the supervision python module.
+      @return 0 if there was no error during any execution, else 1.
      */
     private int Runanalysis(String message)
     {
@@ -218,55 +203,49 @@ public class SupervisionAction extends AbstractAction
         return 0;
     }
  
-    // Executes tesis.py and get the response using sockets
+    /**
+     * Creates new process if it hasn't been created, sends the specified message to the standard input of it and if specified reads the response.
+        @return 0 if there was no errors , else 1.
+     */
     private int remoteExecute(String message,boolean read_response)
     {
-        int port=0;
         String Respuesta;
-        Socket cli = null;
+        
 
-        try {
+            try {
+                if(process==null || !process.isAlive())
+                {
+                    String  jar_path = Save.get_Current_JarPath(SupervisionAction.class,root,results);
+                    String pathToPythonMain ;
+                    if(jar_path!=null)pathToPythonMain= jar_path +"/Modulos/Deadlock-supervisor/tesis.py";
+                    else return 1;
 
-            //server = new ServerSocket(0);
-            //port = server.getLocalPort();
-
-            //Get tesis python path and execute
-            String  jar_path = Save.get_Current_JarPath(SupervisionAction.class,root,results);
-            String pathToPythonMain ;
-            if(jar_path!=null)pathToPythonMain= jar_path +"/Modulos/Deadlock-supervisor/tesis.py";
-            else return 1;
-
-            ProcessBuilder pb = new ProcessBuilder("python3", pathToPythonMain, root.getCurrentFile().getPath(),jar_path);
-            process = pb.start();
-            
-            //System.out.println("python3 '" + pathToPythonMain + "' "+ String.valueOf(port) + " '" + root.getCurrentFile().getPath() + "'");
-
-
-            //Blocking accept executed python client
-            //cli = server.accept();
-            //Instantiate input and output socket buffers
-            //outw = new DataOutputStream(cli.getOutputStream());
-            //inw = new DataInputStream(cli.getInputStream());
-            
-            inw = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            outw = new PrintStream(process.getOutputStream());
-            BufferedReader error = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            outw.println(message); 
-            outw.flush();
-            
-        } catch (IOException e) {
+                    ProcessBuilder pb = new ProcessBuilder("python3", pathToPythonMain, root.getCurrentFile().getPath(),jar_path);
+                    pb.redirectErrorStream(true);
+                    process = pb.start();
+                    System.out.println("Starting process");
+                    
+                    System.out.println("python3"+" "+pathToPythonMain+" "+root.getCurrentFile().getPath()+" " +jar_path);
+                }
+                // get input stream connected to the std output of the subprocess.
+                if(inw == null) inw = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                // get output stream connected to the standard input of the subprocess.
+                if(outw == null) outw = new PrintStream(process.getOutputStream());
+                }
+            catch (IOException e) {
             results.setText("");
             e.printStackTrace();
-            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Error executing python module", JOptionPane.ERROR_MESSAGE); 
+            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Exception ocurred while starting python module", JOptionPane.ERROR_MESSAGE); 
             return 1;
         }
+        
 
-            //
-   
+            outw.println(message); 
+            outw.flush();
 
             if(read_response)
             {
-                System.out.println("waitning for process response ----------------------");
+                //System.out.println("waitning for process response ----------------------");
                 Respuesta = readInput();
                 if(Respuesta==null)return 1;
                 String[] treeInfo = new String[]{
@@ -284,7 +263,10 @@ public class SupervisionAction extends AbstractAction
         return 0;
     }
 
-    //Function to save the current net in a temp.pflow file for later supervision analisys
+    /**
+     * Save the current net in a temp.pflow file for later supervision analisys.
+        @return 0 if there was no errors , else 1.
+     */
     public int saveNet() {
 
         FileChooserDialog chooser = new FileChooserDialog();
@@ -311,14 +293,13 @@ public class SupervisionAction extends AbstractAction
         }
         return 0;
     }
-    /*
-     Do Siphon's and trap's analisys and saves it in html extension
-  */
+
+      /**
+     * Identify actual Siphon's and trap's in the net and saves it in html file.
+        @return 0 if there was no errors , else 1.
+     */
     public int sifonnalysis()
     {
-        /*
-         * Create tmp.pnml file
-         */
         FileChooserDialog chooser = new FileChooserDialog();
 
         if (root.getCurrentFile() != null) {
@@ -384,31 +365,27 @@ public class SupervisionAction extends AbstractAction
         if(SaveHTML("sif") == 1)return 1;
         return 0;
     }
-    /*
-       Do the coverability analisys and saves it in html extension
-    */
+    /**
+     * Calculates coverability tree of the actual net and saves it in html file.
+        @return 0 if there was no errors , else 1.
+     */
     public int coverabilityAnalysis()
     {
-        // Checks if the net is valid
         if (!root.getDocument().getPetriNet().getRootSubnet().isValid()) {
             results.setText("");
             JOptionPane.showMessageDialog(null, "Invalid Net!", "Error executing coverability analysis", JOptionPane.ERROR_MESSAGE, null);
             return 1;
         }
 
-        // Disables the calculate button
-
         String log = "<p></p><h2>Reachability/Coverability Graph Information</h2>";
 
         log += "<h3> Number of places: "+root.getDocument().getPetriNet().getSortedPlaces().size() +"</h3>";
         log += "<h3> Number of transitions: "+root.getDocument().getPetriNet().getSortedTransitions().size() +"</h3>";
 
-        //TODO check tree size
         try {
             CRTree statesTree = new CRTree(root, root.getCurrentMarking().getMarkingAsArray()[Marking.CURRENT]);
             log += statesTree.getTreeLog();
             states.reachMatrix = statesTree.getReachabilityMatrix();
-            // Enables the copy and save buttons
             results.setEnabled(false);
         } catch (StackOverflowError e) {
             log = "An error has occurred, the net might have too many states...";
@@ -419,8 +396,9 @@ public class SupervisionAction extends AbstractAction
         if(SaveHTML("cov") == 1)return 1;
         return 0;
     }
-    /*
-        Do the invariant analisys and saves it in html extension
+    /**
+     * Identifies transitions invariants of  the actual net and saves it in html file.
+        @return 0 if there was no errors , else 1.
      */
     public int invariantAnalysis()
     {
@@ -461,8 +439,10 @@ public class SupervisionAction extends AbstractAction
         if(SaveHTML("inv") == 1)return 1;
         return 0;
     }
-    /*
-        Get matrices and saves it in html extension
+
+    /**
+     * Get the incidences matrices of the actual net and saves it in a html file.
+        @return 0 if there was no errors , else 1.
      */
     public int matricesAnalysis()
     {
@@ -518,30 +498,28 @@ public class SupervisionAction extends AbstractAction
         {
             System.gc();
             results.setText("");
-            s = "Memory error: " + e.getMessage();
-
-            s += "<br>Not enough memory. Please use a larger heap size." + "<br>" + "<br>Note:" + "<br>The Java heap size can be specified with the -Xmx option." + "<br>E.g., to use 512MB as heap size, the command line looks like this:" + "<br>java -Xmx512m -classpath ...\n";
-            results.setText(s);
+            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(),  "Not enough heap memory.", JOptionPane.ERROR_MESSAGE); 
+            e.printStackTrace();
             return 1;
         }
         catch(Exception e)
         {
-            s = "<br>Invalid net";
-            results.setText(s);
+            results.setText("");
+            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(),  "Invalid Net", JOptionPane.ERROR_MESSAGE); 
+            e.printStackTrace();
             return 1;
         }
 
         results.setText(s);
-
-        // Enables the copy and save buttons
         results.setEnabled(false);
         if(SaveHTML("mat") == 1)return 1;
         return 0;
     }
 
-    /*
-        SAVE AS HTML
-     */
+    
+    /** Parse string with an html format and saves it to a temporary directory.
+        @return 0 if there was no errors , else 1. 
+    **/
     private int SaveHTML(String name)
     {
         String save_path="";
@@ -580,46 +558,64 @@ public class SupervisionAction extends AbstractAction
         return 0;
     }
 
-    public int closeProc()
+    /** 
+        Close started process and asosiated system buffers.
+    **/
+    public void closeProc()
     {
-
-        outw.println("quit");
-        outw.flush();
-        String Respuesta = readInput();
-        System.out.println("Respuesta: " + Respuesta);
-        //outw.close();
-        //inw.close();
-        //server.close();
-        //proceso.destroy();
-
-        //cierro sockets y streams
-        return 0;
+        try{
+                if( (process != null) && process.isAlive())
+                {
+                    System.out.println("Forcing process to close");
+                    process.destroyForcibly();
+                    process = null;
+                }
+                // Release system resourses associtaed with in and out streams
+                if(outw != null)
+                {
+                    System.out.println("Closing out buffer");
+                    outw.close();
+                    outw=null;
+                }
+                if(inw != null)
+                {
+                    System.out.println("Closing in buffer");
+                    inw.close();
+                    inw=null;
+                }
+            }
+        catch(Exception e)
+        {
+            results.setText("");
+            JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(),  "Error closing process io streams", JOptionPane.ERROR_MESSAGE); 
+            e.printStackTrace();
+            return;
+        }
+            return;
     }
-    /**
-     * Listener for analyse button
-     */
+
+    /** 
+        First Supervision analysis listener
+    **/
     private class ClassifyListener implements ActionListener {
 
         public void actionPerformed(ActionEvent actionEvent)
         {
             System.out.println("----- Running Supervision Analysis -----");
-            // Checks if the net is valid
             if(!root.getDocument().getPetriNet().getRootSubnet().isValid()) {
                 results.setText("3");
                 JOptionPane.showMessageDialog(null, "Invalid Net!", "Error analysing net", JOptionPane.ERROR_MESSAGE, null);
                 guiDialog.setVisible(false);
-                //closeProc();
+                closeProc();
                 return;
             }
 
             FirstAnalizeButton.setButtonsEnabled(false);
-            //FirstAnalizeButton.setEnabled(false);//para luego chequear
-
             sPanel = "<h2>Deadlock and S3PR analysis</h2>";
 
             try {
                 /*
-                 * Information for boundedness, safeness and deadlock
+                 * Identify net deadlock pressence and check for S3PR conditions.
                  */
                 CRTree statesTree = new CRTree(root, root.getCurrentMarking().getMarkingAsArray()[Marking.CURRENT]);
 
@@ -631,7 +627,7 @@ public class SupervisionAction extends AbstractAction
                     sPanel+="The net is not compatible with a deadlock supervision ,the net has to be S3PR and have a deadlock";
                     String[] treeInfo = new String[]{
                             "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",
-                            "S3PR", "" + S3PR,        // ----------------------  ADD S3PR CLASSIFICATION
+                            "S3PR", "" + S3PR,        
                             "Deadlock", "" + Deadlock
                     };
                     sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
@@ -641,63 +637,69 @@ public class SupervisionAction extends AbstractAction
                     results.setText(sPanel);
                     return;
                 }
+                // Net can be supervised, show Net characteristics.
                 superviseButton.setButtonsEnabled(true);
                 fixConflictButton.setButtonsEnabled(true);
                 String[] treeInfo = new String[]{
                         "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",
-                        "S3PR", "" + S3PR,        // ----------------------  ADD S3PR CLASSIFICATION
+                        "S3PR", "" + S3PR,        
                         "Deadlock", "" + Deadlock
                 };
+                // Execute analysis
                 sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
                 if(Runanalysis("1")==1 )
-                {
+                {   // Catched an internal exception,close main interface
                     guiDialog.setVisible(false);
-                    //closeProc();
+                    closeProc();
                     return;
                 }
-                //closeProc();
                 
             }
             catch(OutOfMemoryError e)
             {
                 System.gc();
                 results.setText("");
-                sPanel = "Memory error: " + e.getMessage();
-
-                sPanel += "<br>Not enough memory. Please use a larger heap size." +
-                        "<br>" + "<br>Note:" +
-                        "<br>The Java heap size can be specified with the -Xmx option." +
-                        "<br>E.g., to use 512MB as heap size, the command line looks like this:" +
-                        "<br>java -Xmx512m -classpath ...\n";
-                results.setText(sPanel);
+                JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(),  "Not enough heap memory.", JOptionPane.ERROR_MESSAGE); 
+                e.printStackTrace();
+                guiDialog.setVisible(false);
+                closeProc();
+                return;
             }
             catch (StackOverflowError e){
-                results.setText("An error has occurred, the net might have too many states...");
+                results.setText("");
+                JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(),  "Overflow detected, the net might have too many states", JOptionPane.ERROR_MESSAGE); 
+                e.printStackTrace();
+                guiDialog.setVisible(false);
+                closeProc();
+                return;
             }
             catch(Exception e)
             {
+                results.setText("");
+                JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(),  "Exception ocurred in main analysis", JOptionPane.ERROR_MESSAGE); 
                 e.printStackTrace();
-                sPanel = "<br>Error" + e.getMessage();
-                results.setText(sPanel);
+                guiDialog.setVisible(false);
+                closeProc();
+                return;
             }
-
             results.setText(sPanel);
-
         }
     };
 
-    // Analyse2 button (with supervisors)
+    /** 
+        Secondary supervision analysis listener
+    **/
     private class SecondClassifyListener implements ActionListener {
 
         public void actionPerformed(ActionEvent actionEvent)
         {
 
             System.out.println("----- Running Supervision Analysis (w/supervisors) -----");
-            // Checks if the net is valid
             if(!root.getDocument().getPetriNet().getRootSubnet().isValid()) {
                 results.setText("");
                 JOptionPane.showMessageDialog(null, "Invalid Net!", "Error analysing net", JOptionPane.ERROR_MESSAGE, null);
                 guiDialog.setVisible(false);
+                closeProc();
                 return;
             }
 
@@ -708,20 +710,15 @@ public class SupervisionAction extends AbstractAction
             sPanel = "<h2>Deadlock analysis</h2>";
 
             try {
-                /*
-                 * Information for boundedness, safeness and deadlock
-                 */
                 CRTree statesTree = new CRTree(root, root.getCurrentMarking().getMarkingAsArray()[Marking.CURRENT]);
 
-                boolean S3PR = true;//isS3PR();
                 boolean Deadlock = statesTree.hasDeadlock();
 
-                if(Deadlock ==false || S3PR==false)
+                if(Deadlock ==false)
                 {
-                    sPanel+="The net is not compatible with a deadlock supervision ,the net has to be S3PR and have a deadlock";
+                    sPanel+="The net has been supervised succesfully, no deadlocks pressent";
                     String[] treeInfo = new String[]{
                             "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",
-                            //"S3PR", "" + S3PR,        // ----------------------  ADD S3PR CLASSIFICATION
                             "Deadlock", "" + Deadlock
                     };
                     sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
@@ -736,7 +733,6 @@ public class SupervisionAction extends AbstractAction
                 SecondAnalizeButton.setButtonsEnabled(false);
                 String[] treeInfo = new String[]{
                         "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",
-                        //"S3PR", "" + S3PR,        // ----------------------  ADD S3PR CLASSIFICATION
                         "Deadlock", "" + Deadlock
                 };
                 sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
@@ -744,66 +740,61 @@ public class SupervisionAction extends AbstractAction
                 if(Runanalysis("2")==1)
                 {
                     guiDialog.setVisible(false);
-                    //closeProc();
+                    closeProc();
                     return;
                 }
-                //closeProc();
+
             }
             catch(OutOfMemoryError e)
             {
                 System.gc();
                 results.setText("");
-                sPanel = "Memory error: " + e.getMessage();
-
-                sPanel += "<br>Not enough memory. Please use a larger heap size." +
-                        "<br>" + "<br>Note:" +
-                        "<br>The Java heap size can be specified with the -Xmx option." +
-                        "<br>E.g., to use 512MB as heap size, the command line looks like this:" +
-                        "<br>java -Xmx512m -classpath ...\n";
-                results.setText(sPanel);
+                JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(),  "Not enough heap memory.", JOptionPane.ERROR_MESSAGE); 
+                e.printStackTrace();
                 guiDialog.setVisible(false);
-                //closeProc();
+                closeProc();
+                return;
             }
             catch (StackOverflowError e){
-                results.setText("An error has occurred, the net might have too many states...");
+                results.setText("");
+                JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(),  "Overflow detected, the net might have too many states", JOptionPane.ERROR_MESSAGE); 
+                e.printStackTrace();
                 guiDialog.setVisible(false);
-                //closeProc();
+                closeProc();
+                return;
             }
             catch(Exception e)
             {
+                results.setText("");
+                JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(),  "Exception ocurred in main analysis", JOptionPane.ERROR_MESSAGE); 
                 e.printStackTrace();
-                sPanel = "<br>Error" + e.getMessage();
-                results.setText(sPanel);
                 guiDialog.setVisible(false);
-                //closeProc();
+                closeProc();
+                return;
             }
-
             results.setText(sPanel);
         }
     };
 
-
-    //Listener for add supervisor button
+    /** 
+        Listener to add supervisors
+    **/
     private class AddSupervisorListener implements ActionListener {
 
         public void actionPerformed(ActionEvent actionEvent) {
-            //Runanalysis("2");
             System.out.println("----- Running Add Supervisor Analysis ------\n");
-/*             if(execServer()==1)
-            {
-                guiDialog.setVisible(false);
-                return;
-            } */
             remoteExecute("S",false);
             String[] choices;
 
             String Respuesta;
-
-                //writeout("S");
-                //outw.flush();
                 Respuesta = readInput();
-                if(Respuesta==null)return;
-                //PIDO ID
+                if(Respuesta==null)
+                {
+                    guiDialog.setVisible(false); 
+                    closeProc();
+                    return;
+                }
+                //Get posible supervisors id's
                 System.out.println("received problematic siphons " + Respuesta + " \n");
                 choices = Respuesta.split(" ");
                 String id;
@@ -811,8 +802,8 @@ public class SupervisionAction extends AbstractAction
 
                     id = (String) JOptionPane.showInputDialog(null, "Choose now...",
                             "Indicar ID", JOptionPane.QUESTION_MESSAGE, null,
-                            choices, // Array of choices
-                            choices[0]); // Initial choice
+                            choices, 
+                            choices[0]);
                     if (id == null)
                         break;
 
@@ -825,10 +816,10 @@ public class SupervisionAction extends AbstractAction
                         break;
 
                 }while(results.getText().contains("id="+id+"<br>Marcado_del_supervisor:0"));
-
-                if (id == null)//chequeo si se toco cancelar o cerrar
+                //Check if option panel has been closed
+                if (id == null)
                 {
-                    //closeProc();
+                    closeProc();
                     return;
                 }
 
@@ -836,8 +827,13 @@ public class SupervisionAction extends AbstractAction
                 outw.flush();
                 
                 Respuesta = readInput();
-                if(Respuesta==null)return;
-                //hasta aca
+                if(Respuesta==null)
+                {  
+                    guiDialog.setVisible(false); 
+                    closeProc();
+                    return;
+                }
+                // Save succesfully supervised net and show result
                 Save.reSaveNet(root);
                 String[] treeInfo = new String[]{
                         Respuesta
@@ -846,7 +842,6 @@ public class SupervisionAction extends AbstractAction
                 sPanel += ResultsHTMLPane.makeTable(treeInfo, 2, false, true, false, true);
                 results.setText(sPanel);
                 results.setEnabled(true);
-                //closeProc();
                 superviseButton.setButtonsEnabled(false);
                 fixConflictButton.setButtonsEnabled(false);
                 SecondAnalizeButton.setButtonsEnabled(true);
@@ -855,21 +850,25 @@ public class SupervisionAction extends AbstractAction
         }
 
     };
-    //Listener for fix conflict button
+
+    /** 
+        Listener to fix posible conflicts with original transitions invariants
+    **/
     private class FixConflictListener implements ActionListener {
 
         public void actionPerformed(ActionEvent actionEvent)
         {
             System.out.println("----- Running Fix Conflict Analysis ------\n");
-/*             if(execServer()==1)
-            {
-                guiDialog.setVisible(false);
-                return;
-            } */
+
             remoteExecute("3",false);
-            String Respuesta;
-                //writeout("3");
+            String Respuesta;;
                 Respuesta = readInput();
+                if(Respuesta==null)
+                {
+                    guiDialog.setVisible(false); 
+                    closeProc();
+                    return;
+                }
                 String[] treeInfo = new String[]{
                         Respuesta
                 };
@@ -878,7 +877,6 @@ public class SupervisionAction extends AbstractAction
                 results.setText(sPanel);
                 results.setEnabled(true);
                 Save.reSaveNet(root);
-                //closeProc();
                 fixConflictButton.setButtonsEnabled(false);
                 superviseButton.setButtonsEnabled(false);
                 SecondAnalizeButton.setButtonsEnabled(true);
@@ -887,14 +885,14 @@ public class SupervisionAction extends AbstractAction
         }
 
     };
-    //Function to save and reload net when the supervisor is added
+
+    /** 
+        Listener to open up help panel
+    **/
 
     private class HelpListener implements ActionListener {
         public void actionPerformed(ActionEvent e)
         {
-            /*
-             * Create the dialog
-             */
             EscapableDialog guiDialog = new EscapableDialog(root.getParentFrame(), "Help: Deadlock Supervisor", false);
             Container contentPane = guiDialog.getContentPane();
             org.petrinator.auxiliar.ResultsHTMLPane results = new org.petrinator.auxiliar.ResultsHTMLPane("");
@@ -904,9 +902,6 @@ public class SupervisionAction extends AbstractAction
             guiDialog.setLocationRelativeTo(root.getParentFrame());
             guiDialog.setVisible(true);
 
-            /*
-             * Read the about.html file
-             */
             InputStream aboutFile = getClass().getResourceAsStream("/DeadlockSupervisorHelp.html");
             Scanner scanner = null;
             scanner = new Scanner(aboutFile, "UTF-8");

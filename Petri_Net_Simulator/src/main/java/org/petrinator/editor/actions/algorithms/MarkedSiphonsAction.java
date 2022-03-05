@@ -70,7 +70,7 @@ public class MarkedSiphonsAction extends AbstractAction
     public void actionPerformed(ActionEvent e) {
         /*
          * Create tmp.pnml file
-         */
+         */ 
         FileChooserDialog chooser = new FileChooserDialog();
 
         if (root.getCurrentFile() != null) {
@@ -154,13 +154,11 @@ public class MarkedSiphonsAction extends AbstractAction
         int deadlock_cont;
         int inicial_marking[] = root.getDocument().getPetriNet().getInitialMarking().getMarkingAsArray()[1];
         CRTree statesTree = new CRTree(root, root.getCurrentMarking().getMarkingAsArray()[Marking.CURRENT]);
-        //sifones iniciales
+        //Initial siphons
         PetriNetView sourceDataLayer = new PetriNetView(Save.get_Current_JarPath(SupervisionAction.class, root, results) + "/tmp/tmp.pnml");
         MinimalSiphons siphonsAlgorithm = new MinimalSiphons();
-        //System.out.println(siphonsAlgorithm.analyse(sourceDataLayer));
         
         // Get all siphons
-        //Vector<boolean[]> siphons = get_all_siphons(siphonsAlgorithm,sourceDataLayer,inicial_marking.length);
         Vector<boolean[]> siphons = siphonsAlgorithm.getMinimalSiphons(sourceDataLayer);
 
         // Filter siphons to get the initially marked ones (those that generates deadlocks)
@@ -172,7 +170,7 @@ public class MarkedSiphonsAction extends AbstractAction
         double etime = (double)(stop_time.getTime() - start_time.getTime()) / 1000.0D;
         output +=  "<br>Analysis time: " + etime + "s";
 
-        //sifones marcados finales
+        //Initial marked siphons
         if(statesTree.hasDeadlock())
         {
             deadlock_cont=1;
@@ -209,12 +207,8 @@ public class MarkedSiphonsAction extends AbstractAction
             }
         }
 
-        //Print.print_boolean_vector(siphons,"All siphons");
-        //Print.print_arraylist_int(marked_places_index,"marked places indexes");
-
         for (int i = 0; i < marked_places_index.size(); i++)
         {
-            //System.out.println("Marcado :"+marked_places_index.get(i));
             Iterator iterator = siphons.iterator();
             while (iterator.hasNext()) {
                 boolean[] array = (boolean[]) iterator.next();
@@ -222,7 +216,7 @@ public class MarkedSiphonsAction extends AbstractAction
 
                     if (!MarkedSiphons.contains(array)) {
                         MarkedSiphons.add(array);
-                        //ya contiene una plaza marcada y no es necesario volver a analizar
+                        //There is already  a marked place, no need to analyse again
                         iterator.remove();
                     }
 
@@ -336,8 +330,6 @@ public class MarkedSiphonsAction extends AbstractAction
             
         }
 
-        //Print.print_boolean_vector(siphons_bool,"Boolean array");
-
         return siphons_bool;
     }
 
@@ -386,7 +378,6 @@ public class MarkedSiphonsAction extends AbstractAction
         {
             for (int y=0; y < multiplicacion[x].length; y++)
             {
-                // El nuevo bucle suma la multiplicación de la fila por la columna
                 for (int z=0; z<col_m1; z++) {
                     multiplicacion [x][y] += matrix[x][z]*v[z];
                 }
@@ -449,15 +440,7 @@ public class MarkedSiphonsAction extends AbstractAction
             {
                 conjunto[j]=data[j];
             }
-            /*
-            for (int k =0 ;k<conjunto.length;k++)
-            {
-                if(marked_places_index.contains(conjunto[k]))
-                {
-                    conjunto_marked_places_index.add(conjunto);
-                    break;
-                }
-            }*/
+
             conjunto_marked_places_index.add(conjunto);//solo plazas marcadas
             return;
         }
@@ -499,11 +482,11 @@ public class MarkedSiphonsAction extends AbstractAction
             {
                 auxI.add(0);
             }
-            //recorro las plazas del grupo
+            //Places of the group
             for (int j=0; j<group.length; j++)
             {
-                //recorro las transiciones de las plazas
-                t=0;//iterador para saber la transicion
+                //Transition of place
+                t=0;
                 for (int i : FordwardMatrix[group[j]])
                 {
                     if(i==1)
@@ -516,19 +499,19 @@ public class MarkedSiphonsAction extends AbstractAction
             InputArcs.add(auxI);
 
             ArrayList<Integer> auxO = new  ArrayList<>();
-            //inicializo en cero el vector de grupo
+            //Init to 0 the group vector
             for (int i : BackwardsMatrix[0])
             {
                 auxO.add(0);
             }
             for (int j=0; j<group.length; j++)
             {
-                t=0;//iterador para saber la transicion
+                t=0;
                 for (int i : BackwardsMatrix[group[j]])
                 {
                     if(i==1)
                     {
-                        auxO.set(t,-i);//se guardan como -1 para sumar XOR
+                        auxO.set(t,-i);
                     }
                     t++;
                 }
