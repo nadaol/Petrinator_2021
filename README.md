@@ -5,10 +5,8 @@
 #### <ins>Tema :</ins> Integración y desarrollo del editor/simulador Petrinator para análisis de sistemas mediante de redes de petri
 
 #### <ins>Autores</ins> 
-- Federico Bosack  (<fedebosack@gmail.com>)
-- Oliva Nahuel David   (<nahueloliva@gmail.com>)
+- Federico Bosack  (<fedebosack@gmail.com>) (39267560)
+- Oliva Nahuel David   (<nahueloliva@gmail.com>) (38337120)
 
 #### <ins>Director :</ins> Ing. Luis Orlando Ventre
 #### <ins>Co-director :</ins> Dr.Ing. Orlando Micolini
-
-#### - [Documentos](https://drive.google.com/drive/folders/1uNZ8VyM7oHyWAPjXcXDwKA1AN3WtBTnV?usp=sharing)
