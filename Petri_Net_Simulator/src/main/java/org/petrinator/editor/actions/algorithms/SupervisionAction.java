@@ -144,10 +144,10 @@ public class SupervisionAction extends AbstractAction
             JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "IO Exception", JOptionPane.ERROR_MESSAGE); 
             return null;
         }
-        if(Respuesta.contains("Error"))
+        if(Respuesta.contains("Err"))
         {
             results.setText("");
-            JOptionPane.showMessageDialog(root.getParentFrame(),Respuesta, "Runtime error in python module", JOptionPane.ERROR_MESSAGE); 
+            JOptionPane.showMessageDialog(root.getParentFrame(),Respuesta, "Error in python module", JOptionPane.ERROR_MESSAGE); 
             return null;
         }
         return Respuesta;
@@ -225,14 +225,14 @@ public class SupervisionAction extends AbstractAction
                     process = pb.start();
                     System.out.println("Starting process");
                     
-                    System.out.println("python3"+" "+pathToPythonMain+" "+root.getCurrentFile().getPath()+" " +jar_path);
+                    //System.out.println("python3"+" "+pathToPythonMain+" "+root.getCurrentFile().getPath()+" " +jar_path);
                 }
                 // get input stream connected to the std output of the subprocess.
                 if(inw == null) inw = new BufferedReader(new InputStreamReader(process.getInputStream()));
                 // get output stream connected to the standard input of the subprocess.
                 if(outw == null) outw = new PrintStream(process.getOutputStream());
                 }
-            catch (IOException e) {
+            catch (Exception e) {
             results.setText("");
             e.printStackTrace();
             JOptionPane.showMessageDialog(root.getParentFrame(),e.getMessage(), "Exception ocurred while starting python module", JOptionPane.ERROR_MESSAGE); 
@@ -338,8 +338,16 @@ public class SupervisionAction extends AbstractAction
             s += "Invalid net!";
         } else {
             try {
+                PrintStream dummyStream = new PrintStream(new OutputStream(){
+                    public void write(int b) {
+                        // NO-OP
+                    }
+                });
+                PrintStream originalStream = System.out;
+                System.setOut(dummyStream); // Disable system out
                 MinimalSiphons siphonsAlgorithm = new MinimalSiphons();
                 s += siphonsAlgorithm.analyse(sourceDataLayer);
+                System.setOut(originalStream);
                 results.setEnabled(false);
             } catch (OutOfMemoryError oome) {
                 System.gc();
@@ -601,7 +609,7 @@ public class SupervisionAction extends AbstractAction
 
         public void actionPerformed(ActionEvent actionEvent)
         {
-            System.out.println("----- Running Supervision Analysis -----");
+            System.out.println("---------- Running Supervision Analysis ----------\n");
             if(!root.getDocument().getPetriNet().getRootSubnet().isValid()) {
                 results.setText("3");
                 JOptionPane.showMessageDialog(null, "Invalid Net!", "Error analysing net", JOptionPane.ERROR_MESSAGE, null);
@@ -716,7 +724,7 @@ public class SupervisionAction extends AbstractAction
 
                 if(Deadlock ==false)
                 {
-                    sPanel+="The net has been supervised succesfully, no deadlocks pressent";
+                    sPanel+="No need to supervise the net, no deadlocks pressent";
                     String[] treeInfo = new String[]{
                             "&nbsp&emsp &emsp&nbsp", "&emsp&emsp&emsp",
                             "Deadlock", "" + Deadlock
@@ -783,10 +791,17 @@ public class SupervisionAction extends AbstractAction
 
         public void actionPerformed(ActionEvent actionEvent) {
             System.out.println("----- Running Add Supervisor Analysis ------\n");
-            remoteExecute("S",false);
+            if(remoteExecute("S",false)==1)
+            {
+                guiDialog.setVisible(false); 
+                closeProc();
+                return;
+            }
+
             String[] choices;
 
             String Respuesta;
+                // siphons to add
                 Respuesta = readInput();
                 if(Respuesta==null)
                 {
@@ -798,16 +813,17 @@ public class SupervisionAction extends AbstractAction
                 System.out.println("received problematic siphons " + Respuesta + " \n");
                 choices = Respuesta.split(" ");
                 String id;
+                //System.out.println(results.getText());
                 do{
 
-                    id = (String) JOptionPane.showInputDialog(null, "Choose now...",
-                            "Indicar ID", JOptionPane.QUESTION_MESSAGE, null,
+                    id = (String) JOptionPane.showInputDialog(null, "Choose supervisor",
+                            "Supervisor selection", JOptionPane.QUESTION_MESSAGE, null,
                             choices, 
                             choices[0]);
                     if (id == null)
                         break;
 
-                    if(results.getText().contains("id="+id+"<br>Marcado_del_supervisor:0"))
+                    if(results.getText().contains("id="+id+"<br>Supervisor_mark:0"))
                     {
                         JOptionPane.showMessageDialog(null, "The supervisor : " +id +" is invalid",
                                 "Warning: Help for more information!", JOptionPane.ERROR_MESSAGE);
@@ -815,7 +831,7 @@ public class SupervisionAction extends AbstractAction
                     else
                         break;
 
-                }while(results.getText().contains("id="+id+"<br>Marcado_del_supervisor:0"));
+                }while(results.getText().contains("id="+id+"<br>Supervisor_mark:0"));
                 //Check if option panel has been closed
                 if (id == null)
                 {
@@ -860,7 +876,12 @@ public class SupervisionAction extends AbstractAction
         {
             System.out.println("----- Running Fix Conflict Analysis ------\n");
 
-            remoteExecute("3",false);
+            if(remoteExecute("3",false)==1)
+            {
+                guiDialog.setVisible(false); 
+                closeProc();
+                return;
+            }
             String Respuesta;;
                 Respuesta = readInput();
                 if(Respuesta==null)

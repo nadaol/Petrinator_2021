@@ -15,15 +15,15 @@ public class S3pr {
       //S3PR classification
       public static boolean isS3PR(InvariantAction accion,Root root,String S3PRresults)
       {
-          System.out.println("----- Running S3PR Analysis -----\n");
+          System.out.println("Running S3PR Analysis ----------\n");
           int[][] IncidenceMatrix = root.getDocument().getPetriNet().getIncidenceMatrix();
           Matrix TInvariants = accion.findVectors(new Matrix(root.getDocument().getPetriNet().getIncidenceMatrix()));
           TInvariants.transpose();
-          System.out.println("There are "+ TInvariants.getColumnDimension()+ " T-invariants\n");
   
           //1°Check that there is more than one Tinvariant
           if(!check_num_Tinvariants(TInvariants,S3PRresults))return false;
-          System.out.println("1° CHECK: there is more than one T-Invariants");
+          System.out.println("1°) Verification: there is more than one T-Invariant\n");
+          System.out.println("Founded "+ TInvariants.getColumnDimension()+ " T-invariants\n");
           //Hashmaps of the transition and places of each Tinvariant
           Map<String,ArrayList<Integer>> Tinvariants_trans = new LinkedHashMap<String,ArrayList<Integer>>();
           Map<String,ArrayList<Integer>> Tinvariants_places = new LinkedHashMap<String,ArrayList<Integer>>();
@@ -36,26 +36,24 @@ public class S3pr {
   
           ArrayList<int[][]> Tinv_incidence_matrices = get_tinvariants_incidences_matrices(IncidenceMatrix, Tinvariants_trans, Tinvariants_places);
   
-          Print.print_hashmap(Tinvariants_trans,"T-Invariants Transitions");
-          Print.print_hashmap(Tinvariants_places,"T-Invariants Places");
-  
+          Print.print_hashmap(Tinvariants_trans,"°Related Invariant Transitions");
+          Print.print_hashmap(Tinvariants_places,"°Related Invariant Places");
+          System.out.println("\n2° Verification: Identification of invariants closed loops\n");
           if(!check_closed_Tinvariants(Tinv_incidence_matrices,Tinvariants_trans,Tinvariants_places,Tinvariants_SM_places,Tinvariants_SM_trans,S3PRresults,root))return false;
-          System.out.println("2° CHECK: All T-Invariants are closed paths, potential State Machines");
-          Print.print_hashmap(Tinvariants_SM_places,"T-Invariants loop Places");
-          Print.print_hashmap(Tinvariants_SM_trans,"T-invariant loop Transitions");
-  
+          Print.print_hashmap(Tinvariants_SM_places,"T-Invariants closed loop Places");
+          Print.print_hashmap(Tinvariants_SM_trans,"T-invariant closed loop Transitions");
+          System.out.println("\n3°) Verification: Closed loops are strongly connected state Machines/Sequential simple processes\n");
           if(!check_Tinvariants_SM(Tinv_incidence_matrices,Tinvariants_places,Tinvariants_SM_places,Tinvariants_trans,Tinvariants_SM_trans,Tinvariants_resources,root,S3PRresults))return false;
-          System.out.println("3° CHECK: All T-Invariants are State Machines");
           if(!get_shared_places(Tinvariants_resources,Tinvariants_shared_resoruces,S3PRresults))return false;
-          System.out.println("4° CHECK: All T-Invariants have Shared Resources");
+          System.out.println("\n4°) Verification: All processes share resources with another\n");
           Print.print_hashmap(Tinvariants_resources,"T-invariant resources");
           Print.print_hashmap(Tinvariants_shared_resoruces,"T-Invariants Shared Resources");
-          System.out.println("5° CHECK: All Resources have marking greater than or equal to one");
+          System.out.println("\n5°) Verification: All processes resources have marking greater than or equal to one\n");
           //print_arraylist(getEnabledTransitions(),"Enabled transitions");
           //aca verifica el marcado de las plazas del state machine y las plazas IDLE
           if(!check_SM_places_and_pidle_marking(Tinvariants_SM_places,S3PRresults,root))return false;
-          System.out.println("6° CHECK: All State Machine places have marking zero");
-          System.out.println("7° CHECK: All Idles Places have marking greater than or equal to one");
+          System.out.println("\n6°) Verification: All processes operational places have marking zero\n");
+          System.out.println("\n7°) Verification: All processes idles places have marking greater than or equal to one\n");
           return true;
       }
   
@@ -93,7 +91,7 @@ public class S3pr {
       private static boolean check_closed_Tinvariants(ArrayList<int[][]> Tinv_incidence_matrices,Map<String,ArrayList<Integer>> Tinvariants_trans,Map<String,ArrayList<Integer>> Tinvariants_places,
           Map<String,ArrayList<Integer>> Tinvariants_SM_place,Map<String,ArrayList<Integer>> Tinvariants_SM_trans,String S3PRresults,Root root)
       {
-      System.out.println("----- Running T-Invariants SM Analysis -----\n");
+      System.out.println("*Identifing Invariants closed loops\n");
       int cont = 1;
       ArrayList<Integer> Trans_Auxiliar = new ArrayList<Integer>();
       ArrayList<Integer> Places_Auxiliar = new ArrayList<Integer>();
@@ -123,7 +121,7 @@ public class S3pr {
           }
           p=0;
           pAnterior=0;
-          System.out.println("---------- Analyzing Tinv "+cont+" ----------");
+          System.out.println("-----------------------------------------\n*Analyzing T-inv "+cont+" for closed loops");
           while (true) 
           {
               p=0;
@@ -132,7 +130,7 @@ public class S3pr {
                   p++;
                   if(p==Incidence_Auxiliar.length)
                   {
-                      System.out.println("The T-invariant "+ cont + " dosn't have a closed loop\n");
+                      System.out.println("\n*The T-invariant "+ cont + " dosn't have a closed loop\n-----------------------------------------\n");
                       S3PRresults="<br>The net isn't S3PR because: The T Invariant "+cont+ " isn't closed";
                       return false;
                   }
@@ -149,15 +147,15 @@ public class S3pr {
                   {
                       Tinvariants_SM_place.put(String.format("TInv%d (P-Loop)",(cont)), new ArrayList<Integer>(Places_Auxiliar));
                       Tinvariants_SM_trans.put(String.format("TInv%d (T-Loop)",(cont)), new ArrayList<Integer>(Trans_Auxiliar));
-                      System.out.println("The T-invariant "+ cont +" contains a closed loop\n");
+                      System.out.println("\n*The T-invariant "+ cont +" contains a closed loop\n-----------------------------------------\n");
                       break;//Condition fullfilled
                   }
                   else
                   {
                       if(!(Trans_Auxiliar.get(0) == Tinvariants_trans.get(String.format("TInv%d (T)",cont)).get(t)))
-                          System.out.println("The transition that was repeated was not the first");
+                          System.out.println("\n°The transition that was repeated was not the first");
                       if(!(Trans_Auxiliar.containsAll(Tinvariants_trans.get(String.format("TInv%d (T)",cont)))))
-                          System.out.println("Encountered a loop that doesn't contain all T-invariant transitions");
+                          System.out.println("\n°Encountered a loop that doesn't contain all T-invariant transitions");
                     //Deletes the place arcs that forms the loop 
                       delete_place_arcs(Incidence_Auxiliar,pAnterior);
                       t=find_first_Tinvariants_enable_transition(Tinvariants_trans.get(String.format("TInv%d (T)",cont)),root);//para q comience desde la t sencibilizada, sino 0
@@ -165,7 +163,7 @@ public class S3pr {
                       pAnterior=0;
                       Trans_Auxiliar.clear();
                       Places_Auxiliar.clear();
-                      System.out.println("A resource of T-Invariant " + cont + " has been found\n");
+                      System.out.println("\n°A resource of T-Invariant " + cont + " has been found\n");
                       continue;
                   }
               }
@@ -207,7 +205,7 @@ public class S3pr {
           ArrayList<Integer> Places_leftOvers = new ArrayList<Integer>();
           // Deletes the places of the Tinvariant and the places with the primary loop
           get_leftOvers(Tinvariants_places.get(String.format("TInv%d (P)",Ntinv)), Tinvariants_SM_places.get(String.format("TInv%d (P-Loop)",(Ntinv))),Places_leftOvers);
-          Print.print_arraylist_int(Places_leftOvers, String.format("T-Invariant %d not operational places",Ntinv));
+          Print.print_arraylist_int(Places_leftOvers, String.format("\n*identifying T-Invariant %d not operational places",Ntinv));
   
         // Checks that the places are oposite to the flux of the primary loop, if not its not a SM.
           if(!check_Tinvariant_resources(Tinv_incidence_matrices.get(Ntinv-1),Tinvariants_places.get(String.format("TInv%d (P)",Ntinv)),Tinvariants_SM_places.get(String.format("TInv%d (P-Loop)",(Ntinv)))
@@ -224,6 +222,7 @@ public class S3pr {
   ArrayList<Integer>  Tinvariants_SM_place,ArrayList<Integer> Tinvariants_trans,ArrayList<Integer>  Tinvariants_SM_trans,ArrayList<Integer> Places_leftOvers,int Ntinv,int[] Initial_marking,String S3PRresults)
   {
       int place_row_index;
+      System.out.println(String.format("*Identifing processes resources\n"));
       for (Integer leftOver_place : Places_leftOvers)
       {
           //Go to row of place'leftOver_place'

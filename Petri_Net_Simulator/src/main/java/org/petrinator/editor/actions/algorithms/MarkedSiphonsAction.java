@@ -42,6 +42,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.*;
 import java.net.URLDecoder;
+import java.io.*;
 
 /**
  * MinimalSiphons computes minimal siphons and minimals traps of a Petri Net.
@@ -110,6 +111,15 @@ public class MarkedSiphonsAction extends AbstractAction
             /*
              * Read tmp file
              */
+            System.out.println("---------- Running problematic siphons analysis ----------\n");
+            PrintStream dummyStream = new PrintStream(new OutputStream(){
+                public void write(int b) {
+                    // NO-OP
+                }
+
+            });
+            PrintStream originalStream = System.out;
+            System.setOut(dummyStream); // Disable system out
             PetriNetView sourceDataLayer = new PetriNetView(get_Current_JarPath() +"/tmp/tmp.pnml");
             String s = "<h2>Inicial and Deadlock Marked Siphons</h2>";
 
@@ -144,6 +154,7 @@ public class MarkedSiphonsAction extends AbstractAction
                     return;
                 }
             }
+            System.setOut(originalStream);
             results.setText(s);
         }
     };
@@ -159,6 +170,8 @@ public class MarkedSiphonsAction extends AbstractAction
         MinimalSiphons siphonsAlgorithm = new MinimalSiphons();
         
         // Get all siphons
+
+        
         Vector<boolean[]> siphons = siphonsAlgorithm.getMinimalSiphons(sourceDataLayer);
 
         // Filter siphons to get the initially marked ones (those that generates deadlocks)
@@ -192,7 +205,6 @@ public class MarkedSiphonsAction extends AbstractAction
             output +=  "<br>Analysis time: " + etime + "s";
 
         }
-
         return output;
     }
 

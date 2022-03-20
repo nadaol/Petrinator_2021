@@ -238,14 +238,14 @@ def supervisor(cantidad_transiciones,cantidad_plazas,sifon,matriz_es_tr,matriz_p
     """
     trans_idle=[] #Transiciones habilitadas en el marcado inicial
     #Marcado del supervisor
-    print("Sifon a controlar: ",sifon[1]+1)
+    print("Siphon to supervise: ",sifon[1]+1)
     plazas_sifon_aux=np.copy(matriz_sifones[sifon[1]])
     sif_aux = []
     for i in range (len(plazas_sifon_aux)): 
         if(plazas_sifon_aux[i] != 0):
             sif_aux.append(f"P{i+1}")
-    print("Plazas del Sifon: ",sif_aux)
-    print("Marcado del supervisor",sifon[2]-1) #Es la posicion 2 debido que el sifon esta declarado estado deadlock[0], numero sifon[1], marcado sifon[2]
+    print("Siphon places: ",sif_aux)
+    print("Supervisor mark",sifon[2]-1) #Es la posicion 2 debido que el sifon esta declarado estado deadlock[0], numero sifon[1], marcado sifon[2]
 
     #Transiciones que salen del estado idle, le quitan tokens a los supervisores
     #estas se encuentran sensibilizadas en el estado inicial (0) y son las transiciones

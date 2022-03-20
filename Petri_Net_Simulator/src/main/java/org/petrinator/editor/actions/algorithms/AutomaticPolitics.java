@@ -228,7 +228,7 @@ public class AutomaticPolitics extends AbstractAction
                 JOptionPane.showMessageDialog(null, "Invalid firenumber or repeats");
                 return 1;
             }
-            Print.print_arraylist_string((ArrayList<String>) comandos,"comando");
+            //Print.print_arraylist_string((ArrayList<String>) comandos,"comando");
             ProcessBuilder pb = new ProcessBuilder(comandos);
             pb.redirectErrorStream(true);
             String Respuesta= getInputAsString(pb.start().getInputStream());
@@ -384,7 +384,7 @@ public class AutomaticPolitics extends AbstractAction
             guiDialog.setLocationRelativeTo(root.getParentFrame());
             guiDialog.setVisible(true);
 
-            System.out.println(fichero.getPath());
+            //System.out.println(fichero.getPath());
             books.getImage().flush();
         }
     }

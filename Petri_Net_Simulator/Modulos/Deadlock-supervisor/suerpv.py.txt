@@ -307,14 +307,14 @@ def supervisor(cantidad_transiciones,cantidad_plazas,sifon,matriz_es_tr,matriz_p
     respuestaSup+= "<br>Supervisor_mark:"+ str(marcado_supervisor)
     #end nuevo
     #("Sifon a controlar: ",sifon[1]+1)
-    respuestaSup+= "<br>Siphon to supervise: "+ str(sifon[1]+1)
+    respuestaSup+= "<br>Sifon a controlar: "+ str(sifon[1]+1)
     plazas_sifon_aux=np.copy(matriz_sifones[sifon[1]])
     sif_aux = []
     for i in range (len(plazas_sifon_aux)): 
         if(plazas_sifon_aux[i] != 0):
             sif_aux.append(f"P{i+1}")
     #print("Plazas del Sifon: ",sif_aux)
-    respuestaSup+= "<br>Siphon places: "+ str(sif_aux)
+    respuestaSup+= "<br>Plazas del Sifon: "+ str(sif_aux)
     #print("Marcado del supervisor",marcado_supervisor) 
     #respuestaSup+= "<br>Marcado del supervisor: "+ str(marcado_supervisor)
 
@@ -475,6 +475,7 @@ def main():
 
     if(analisis=="1"):
         #Obtenemos la cantidad de plazas de la red original
+        print("executing 1")
         file_plazas = open(Jar_path + '/tmp/cantidad_plazas_red_original.txt', 'w')
         file_plazas.write(str(len(matriz_es_pl[0])))
         file_plazas.close()
@@ -506,9 +507,9 @@ def main():
         for i in range (0, len(state_deadlock)):
             fun_sifones_deadlock(state_deadlock[i],matriz_sifones,matriz_es_pl,idle,cantidad_plazas,cantidad_sifones,sifon_idle,sifon_deadlock)
         #print("Cantidad de estados con deadlock:", len(state_deadlock))
-        respuesta = "Number of deadlock states: "+ str(len(state_deadlock)) +"<br>"
+        respuesta = "Cantidad de estados con deadlock: "+ str(len(state_deadlock)) +"<br>"
         #print("Cantidad de sifones vacios:", len(sifon_deadlock))
-        respuesta += "Number of empty siphons: "+ str(len(sifon_deadlock)) +"<br>"
+        respuesta += "Cantidad de sifones vacios: "+ str(len(sifon_deadlock)) +"<br>"
 
         lista_supervisores=[]
 
@@ -544,7 +545,7 @@ def main():
         #id_int= 0 #int(input("AGREGA EL ID: ")) 
         new_red.main(lista_supervisores[id_int][0],lista_supervisores[id_int][1],lista_supervisores[id_int][2],lista_supervisores[id_int][3],Pflow_path)
         #nuevo
-        respuesta = "Supervisor " + recv + " added succesfully"
+        respuesta = "Se agrego el supervisor id: " + recv
     
     
     if(analisis=="3"):   #se obtienen los supervisores (3) o Anular brazos de idle a supervisores (4)
@@ -609,14 +610,14 @@ def main():
                                 if(int(t_invariant_red_original[j][aux])==1): #La transicion en conflicto forma parte del T-invariante por lo tanto debe devolver el token 
                                     cont = cont + 1
                                     #print(f"La transicion en conflicto T{aux+1} le tiene que devolver un token al supervisor  P{array_supervisor[m]+1}")
-                                    msjadd.append('Arc added from '+ str(f'T{aux+1}') + ' to ' + str(f'P{array_supervisor[m]+1}'))
+                                    msjadd.append('Se agrego un arco desde '+ str(f'T{aux+1}') + ' hasta ' + str(f'P{array_supervisor[m]+1}'))
                                     #Se agrega el arco
                                     arcosrdp.agregararco(Pflow_path,aux+1,array_supervisor[m]+1)
 
                             if(cont == 0):
                                 if(int(matriz_pre[int(array_supervisor[m])][int(trans_idle[i])])==1):
                                     #print(f"Eliminar arco desde  P{array_supervisor[m]+1} hasta  T{trans_idle[i]+1}")
-                                    msjdel.append('Deleted arc from '+ str(f'P{array_supervisor[m]+1}') + ' to ' + str(f'T{trans_idle[i]+1}'))
+                                    msjdel.append('Se elimino el arco desde '+ str(f'P{array_supervisor[m]+1}') + ' hasta ' + str(f'T{trans_idle[i]+1}'))
                                     
                                     #Se elimina el arco
                                     arcosrdp.eliminararco(Pflow_path, array_supervisor[m]+1, trans_idle[i]+1)
@@ -644,7 +645,6 @@ try :
     Jar_path = str(sys.argv[2])
 
     while(1): #El algoritmo se ejecuta iterativamente hasta que se controla la red. De no ser así se dice que el algoritmo no converge
-        id=0
         main()
 except Exception as e:
     error = "Error : " + str(e)
